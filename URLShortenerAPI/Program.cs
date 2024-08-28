@@ -1,12 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Services;
+using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.MapperConfigs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
+
+builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
+builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
+builder.Services.AddAutoMapper(typeof(URLMapper));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
