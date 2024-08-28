@@ -39,7 +39,13 @@ namespace URLShortenerAPI.Data.Entites.User
         public required string Password { get; set; }
         public required string ConfirmPassword { get; set; }
     }
-    public class UserUpdateDTO : UserCreateDTO { public int ID { get; set; } }
+    public class UserUpdateDTO 
+    {
+        public int ID { get; set; }
+        public required string Name { get; set; }
+        public required string Email { get; set; }
+        public required string Username { get; set; }
+    }
 
     public class UserLoginDTO
     {
