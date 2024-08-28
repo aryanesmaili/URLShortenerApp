@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Services;
@@ -28,6 +29,10 @@ builder.Services.AddCors(options =>
                     builder.WithOrigins("https://localhost:7112").AllowAnyHeader().AllowAnyMethod();
                 });
 });
+
+// Automatically adds all validators of this project to DI pool.
+var assembly = typeof(Program).Assembly;
+builder.Services.AddValidatorsFromAssembly(assembly);
 
 var app = builder.Build();
 
