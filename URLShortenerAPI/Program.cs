@@ -1,9 +1,13 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Services;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.MapperConfigs;
+using Microsoft.IdentityModel.Tokens;
+using URLShortenerAPI.Data.Entites;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +37,30 @@ builder.Services.AddCors(options =>
 // Automatically adds all validators of this project to DI pool.
 var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
+
+JwtSettings jwtSettings = new();
+builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
+builder.Services.AddSingleton(jwtSettings);
+var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey!);
+
+builder.Services.AddAuthentication(auth =>
+{
+    auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(jwtBearer =>
+{
+    jwtBearer.RequireHttpsMetadata = true;
+    jwtBearer.SaveToken = true;
+    jwtBearer.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+    };
+});
 
 var app = builder.Build();
 
