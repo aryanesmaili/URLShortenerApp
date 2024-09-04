@@ -22,6 +22,12 @@ namespace URLShortenerAPI.Data
                 .HasForeignKey(x => x.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<UserModel>()
+                .HasMany(rt => rt.RefreshTokens)
+                .WithOne(u => u.User)
+                .HasForeignKey(fk => fk.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<URLModel>()
                 .HasMany(c => c.Clicks)
                 .WithOne(c => c.URL)
@@ -60,5 +66,6 @@ namespace URLShortenerAPI.Data
         public DbSet<URLAnalyticsModel> URLAnalytics { get; set; }
         public DbSet<LocationInfo> LocationInfos { get; set; }
         public DbSet<DeviceInfo> DeviceInfos { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

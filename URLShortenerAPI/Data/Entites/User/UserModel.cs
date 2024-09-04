@@ -16,6 +16,7 @@ namespace URLShortenerAPI.Data.Entites.User
 
         public ICollection<URLModel>? URLs { get; set; }
         public ICollection<URLCategoryModel>? URLCategories { get; set; }
+        public ICollection<RefreshToken>? RefreshTokens { get; set; }  
     }
     public class UserDTO
     {
@@ -26,7 +27,7 @@ namespace URLShortenerAPI.Data.Entites.User
         public UserType Role { get; set; }
 
         public string? JWToken { get; set; }
-        public string? RefreshToken { get; set; }
+        public RefreshTokenDTO? RefreshToken { get; set; }
 
         public List<URLDTO>? URLs { get; set; }
         public List<CategoryDTO>? Categories { get; set; } // owned categories
@@ -56,5 +57,26 @@ namespace URLShortenerAPI.Data.Entites.User
     {
         Admin,
         ChannelAdmin
+    }
+
+    internal class RefreshToken
+    {
+        public int Id { get; set; }
+        public required string Token { get; set; }
+        public DateTime Expires { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime? Revoked { get; set; }
+        public bool IsActive => Revoked == null && !IsExpired;
+        public bool IsExpired => DateTime.UtcNow >= Expires;
+
+        public required int UserId { get; set; }
+        public required UserModel User { get; set; }
+    }
+    public class RefreshTokenDTO
+    {
+        public int Id { get; set; }
+        public required string Token { get; set; }
+        public DateTime Expires { get; set; }
+        public DateTime Created { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Data.Entites
+﻿namespace URLShortenerAPI.Data.Entites.Settings
 {
     internal class JwtSettings
     {
