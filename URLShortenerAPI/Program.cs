@@ -66,6 +66,10 @@ builder.Services.AddAuthentication(auth =>
     };
 });
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
+    .AddPolicy("AllUsers", policy => policy.RequireRole("Admin", "ChannelAdmin"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

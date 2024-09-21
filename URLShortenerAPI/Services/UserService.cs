@@ -155,21 +155,21 @@ namespace URLShortenerAPI.Services
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<UserDTO> ChangePasswordAsync(UserDTO userInfo, string NewPassword, string ConfirmPassword, string requestingUsername)
+        public async Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername)
         {
-            if (NewPassword.IsNullOrEmpty() || ConfirmPassword.IsNullOrEmpty())
-                throw new ArgumentNullException(nameof(NewPassword));
-            else if (NewPassword != ConfirmPassword)
-                throw new ArgumentException($"Entered values {NewPassword} and {ConfirmPassword} Do not match.");
+            if (reqInfo.NewPassword.IsNullOrEmpty() || reqInfo.ConfirmPassword.IsNullOrEmpty())
+                throw new ArgumentNullException(nameof(reqInfo.NewPassword));
+            else if (reqInfo.NewPassword != reqInfo.ConfirmPassword)
+                throw new ArgumentException($"Entered values {reqInfo.NewPassword} and {reqInfo.ConfirmPassword} Do not match.");
 
             // checking if the user has the authorization to access this.
-            UserModel user = await _authService.AuthorizeUserAccessAsync(userInfo.ID, requestingUsername);
-            string hashedpassword = BCrypt.Net.BCrypt.HashPassword(NewPassword);
+            UserModel user = await _authService.AuthorizeUserAccessAsync(reqInfo.UserInfo.ID, requestingUsername);
+            string hashedpassword = BCrypt.Net.BCrypt.HashPassword(reqInfo.NewPassword);
             user.PasswordHash = hashedpassword;
             user.ResetCode = null;
             _context.Update(user);
             await _context.SaveChangesAsync();
-            return UserModelToDTO(user, userInfo.RefreshToken!, userInfo.JWToken!);
+            return UserModelToDTO(user, reqInfo.UserInfo.RefreshToken!, reqInfo.UserInfo.JWToken!);
         }
 
         /// <summary>

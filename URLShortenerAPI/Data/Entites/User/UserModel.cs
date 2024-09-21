@@ -59,6 +59,13 @@ namespace URLShortenerAPI.Data.Entites.User
         ChannelAdmin
     }
 
+    public class ChangePasswordRequest
+    {
+        public required UserDTO UserInfo { get; set; }
+        public required string NewPassword { get; set; }
+        public required string ConfirmPassword { get; set; }
+    }
+
     internal class RefreshToken
     {
         public int Id { get; set; }
