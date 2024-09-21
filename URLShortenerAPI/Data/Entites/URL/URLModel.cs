@@ -41,4 +41,11 @@ namespace URLShortenerAPI.Data.Entites.URL
         public int? CategoryID { get; set; }
         public int URLAnalyticsID { get; set; }
     }
+    public class URLCreateDTO
+    {
+        public int ID { get; set; }
+        public required string Description { get; set; }
+        public required string OriginalURL { get; set; }
+        public required int UserID { get; set; }
+    }
 }

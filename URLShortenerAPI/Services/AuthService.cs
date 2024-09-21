@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entites.Settings;
+using URLShortenerAPI.Data.Entites.URL;
 using URLShortenerAPI.Data.Entites.User;
 using URLShortenerAPI.Services.Interfaces;
 
@@ -17,12 +18,51 @@ namespace URLShortenerAPI.Services
         private readonly AppDbContext _context = context;
         private readonly JwtSettings _jwtSettings = jwtSettings;
 
+        /// <summary>
+        /// Authorizes whether a given username has authority to access a url.
+        /// </summary>
+        /// <param name="urlID"></param>
+        /// <param name="username"></param>
+        /// <returns>a <see cref="URLModel"/> object to modify.</returns>
+        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="NotAuthorizedException"></exception>
+        public async Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(nameof(username));
+            URLModel url = await _context.URLs
+                .Include(x => x.User)
+                .Include(x => x.Clicks)
+                .Include(x => x.Category)
+                .Include(x => x.URLAnalytics)
+                .FirstOrDefaultAsync(x => x.ID == urlID)
+                ?? throw new NotFoundException($"URL {urlID} Does not exist.");
+            UserModel reqUser = await _context.Users.AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Username == username) ?? throw new NotFoundException($"User {username} not found.");
+
+            bool isAdmin = reqUser.Role == UserType.Admin;
+            bool isOwner = reqUser.ID == url.UserID;
+
+            if (!isAdmin && !isOwner)
+            {
+                throw new NotAuthorizedException($"User {username} is not Authorized to access url {urlID}");
+            }
+            return url;
+        }
+
+        /// <summary>
+        /// Authorizes whether a given username has authority to access a user's data.
+        /// </summary>
+        /// <param name="UserID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns>the usermodel to be modified.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="NotAuthorizedException"></exception>
         public async Task<UserModel> AuthorizeUserAccessAsync(int UserID, string reqUsername)
         {
             if (string.IsNullOrEmpty(reqUsername))
-            {
                 throw new ArgumentNullException(nameof(reqUsername));
-            }
+
 
             UserModel user = await _context.Users
                 .Include(u => u.URLs)
@@ -31,7 +71,7 @@ namespace URLShortenerAPI.Services
                 ?? throw new NotFoundException($"User {UserID} not found.");
 
             UserModel reqUser = await _context.Users.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Username == reqUsername) ?? throw new NotFoundException($"User {UserID} not found."); ;
+                .FirstOrDefaultAsync(x => x.Username == reqUsername) ?? throw new NotFoundException($"User {reqUsername} not found.");
 
             bool isAdmin = reqUser.Role == UserType.Admin;
             bool isOwner = reqUser.ID == user.ID;
