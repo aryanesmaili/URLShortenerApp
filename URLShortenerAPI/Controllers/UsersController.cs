@@ -5,7 +5,7 @@ using Pexita.Utility.Exceptions;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography.Xml;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using YamlDotNet.Core.Tokens;
 
@@ -120,7 +120,7 @@ namespace URLShortenerAPI.Controllers
             {
                 await _userValidator.ValidateAndThrowAsync(userCreateDTO);
 
-                var result = await _userService.RegsiterUserAsync(userCreateDTO);
+                var result = await _userService.RegisterUserAsync(userCreateDTO);
                 return Ok(result);
             }
             catch (NotFoundException e)

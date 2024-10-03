@@ -1,5 +1,5 @@
-﻿using URLShortenerAPI.Data.Entites.URL;
-using URLShortenerAPI.Data.Entites.User;
+﻿using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Services.Interfaces
 {

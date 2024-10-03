@@ -1,9 +1,9 @@
-﻿using URLShortenerAPI.Data.Entites.Analytics;
-using URLShortenerAPI.Data.Entites.ClickInfo;
-using URLShortenerAPI.Data.Entites.URLCategory;
-using URLShortenerAPI.Data.Entites.User;
+﻿using URLShortenerAPI.Data.Entities.Analytics;
+using URLShortenerAPI.Data.Entities.ClickInfo;
+using URLShortenerAPI.Data.Entities.URLCategory;
+using URLShortenerAPI.Data.Entities.User;
 
-namespace URLShortenerAPI.Data.Entites.URL
+namespace URLShortenerAPI.Data.Entities.URL
 {
     internal class URLModel
     {
@@ -43,9 +43,10 @@ namespace URLShortenerAPI.Data.Entites.URL
     }
     public class URLCreateDTO
     {
-        public int ID { get; set; }
-        public required string Description { get; set; }
-        public required string OriginalURL { get; set; }
+        public required string LongURL { get; set; }
+        public string? Description { get; set; }
+        public bool IsActive { get; set; }
+        public string? Category { get; set; }
         public required int UserID { get; set; }
     }
 }

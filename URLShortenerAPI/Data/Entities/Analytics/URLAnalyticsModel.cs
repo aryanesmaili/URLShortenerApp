@@ -1,6 +1,6 @@
-﻿using URLShortenerAPI.Data.Entites.URL;
+﻿using URLShortenerAPI.Data.Entities.URL;
 
-namespace URLShortenerAPI.Data.Entites.Analytics
+namespace URLShortenerAPI.Data.Entities.Analytics
 {
     internal class URLAnalyticsModel
     {

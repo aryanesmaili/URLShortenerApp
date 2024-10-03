@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Services
@@ -101,7 +101,7 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="userCreateDTO">object containing information about the new user.</param>
         /// <returns>a <see cref="UserInfoDTO"/> object containing information about the new user.</returns>
-        public async Task<UserDTO> RegsiterUserAsync(UserCreateDTO newUserInfo)
+        public async Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo)
         {
             UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUserInfo.Password); // Hashing user's password to ensure security

@@ -1,6 +1,6 @@
-﻿using URLShortenerAPI.Data.Entites.URL;
+﻿using URLShortenerAPI.Data.Entities.URL;
 
-namespace URLShortenerAPI.Data.Entites.ClickInfo
+namespace URLShortenerAPI.Data.Entities.ClickInfo
 {
     internal class ClickInfoModel
     {

@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Data.Entites.Settings
+﻿namespace URLShortenerAPI.Data.Entities.Settings
 {
     internal class SMTPSettings
     {

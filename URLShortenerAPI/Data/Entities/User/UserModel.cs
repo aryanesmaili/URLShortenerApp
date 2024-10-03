@@ -1,7 +1,7 @@
-﻿using URLShortenerAPI.Data.Entites.URL;
-using URLShortenerAPI.Data.Entites.URLCategory;
+﻿using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
 
-namespace URLShortenerAPI.Data.Entites.User
+namespace URLShortenerAPI.Data.Entities.User
 {
     internal class UserModel
     {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using URLShortenerAPI.Data.Entites.Analytics;
-using URLShortenerAPI.Data.Entites.ClickInfo;
-using URLShortenerAPI.Data.Entites.URL;
-using URLShortenerAPI.Data.Entites.URLCategory;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.Analytics;
+using URLShortenerAPI.Data.Entities.ClickInfo;
+using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
+using URLShortenerAPI.Data.Entities.User;
 namespace URLShortenerAPI.Data
 {
     internal class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)

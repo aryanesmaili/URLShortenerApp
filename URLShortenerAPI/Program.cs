@@ -7,13 +7,15 @@ using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.MapperConfigs;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using URLShortenerAPI.Data.Entites.Settings;
+using URLShortenerAPI.Data.Entities.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IURLService, URLService>();
+builder.Services.AddTransient<IShortenerService, ShortenerService>();
 
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
@@ -29,7 +31,6 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
-
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>

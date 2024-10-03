@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Utility.MapperConfigs
 {

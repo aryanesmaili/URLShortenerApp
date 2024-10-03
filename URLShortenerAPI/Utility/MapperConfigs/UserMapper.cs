@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using URLShortenerAPI.Data.Entites.URL;
-using URLShortenerAPI.Data.Entites.URLCategory;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
+using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Utility.MapperConfigs
 {

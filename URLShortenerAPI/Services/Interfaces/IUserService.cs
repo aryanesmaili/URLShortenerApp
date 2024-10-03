@@ -1,4 +1,4 @@
-﻿using URLShortenerAPI.Data.Entites.User;
+﻿using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Services.Interfaces
 {
@@ -7,7 +7,7 @@ namespace URLShortenerAPI.Services.Interfaces
         public Task<UserDTO> GetUserByIDAsync(int id);
         public Task<UserDTO> GetFullUserInfo(int id);
         public Task<UserDTO> GetUserByUsernameAsync(string Username);
-        public Task<UserDTO> RegsiterUserAsync(UserCreateDTO newUserInfo);
+        public Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
         public Task<UserDTO> LoginUserAsync(UserLoginDTO user);
         public Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);
         public Task DeleteUser(int id);

@@ -6,9 +6,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Data.Entites.Settings;
-using URLShortenerAPI.Data.Entites.URL;
-using URLShortenerAPI.Data.Entites.User;
+using URLShortenerAPI.Data.Entities.Settings;
+using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Services

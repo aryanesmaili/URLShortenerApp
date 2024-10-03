@@ -1,13 +1,13 @@
-﻿using URLShortenerAPI.Data.Entites.URL;
+﻿using URLShortenerAPI.Data.Entities.URL;
 
 namespace URLShortenerAPI.Services.Interfaces
 {
     internal interface IURLService
     {
         public Task<URLDTO> GetURL(int urlID);
-        public Task<URLDTO> AddURL(URLCreateDTO url);
+        public Task<URLDTO> AddURL(URLCreateDTO url, string username);
         public Task ToggleActivation(int URLID, string reqUsername);
-        public string ShortURLGenerator(string LongURL);
+        public Task<string> ShortURLGenerator(string LongURL);
         public URLDTO URLModelToDTO(URLModel url);
     }
 }
