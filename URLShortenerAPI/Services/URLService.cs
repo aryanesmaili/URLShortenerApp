@@ -106,7 +106,7 @@ namespace URLShortenerAPI.Services
             return shortURL;
         }
 
-        public URLDTO URLModelToDTO(URLModel url)
+        private URLDTO URLModelToDTO(URLModel url)
         {
             return _mapper.Map<URLDTO>(url);
         }

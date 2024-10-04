@@ -313,7 +313,7 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="user">the database record.</param>
         /// <returns>a <see cref="UserInfoDTO"/> object containing information.</returns>
-        public UserDTO UserModelToDTO(UserModel user)
+        private UserDTO UserModelToDTO(UserModel user)
         {
             return _mapper.Map<UserDTO>(user);
         }
@@ -325,7 +325,7 @@ namespace URLShortenerAPI.Services
         /// <param name="refreshToken">RefreshToken of the user.</param>
         /// <param name="AccessToken">JWToken given to user to authenticate their requests.</param>
         /// <returns>a <see cref="UserDTO"/> object containing information.</returns>
-        public UserDTO UserModelToDTO(UserModel user, RefreshTokenDTO refreshToken, string AccessToken)
+        private UserDTO UserModelToDTO(UserModel user, RefreshTokenDTO refreshToken, string AccessToken)
         {
             var result = _mapper.Map<UserDTO>(user);
             result.RefreshToken = refreshToken;

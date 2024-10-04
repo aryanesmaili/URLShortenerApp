@@ -7,7 +7,7 @@ namespace URLShortenerAPI.Services.Interfaces
     {
         public string GenerateJWToken(string Username, string Role, string Email);
         public Task<UserModel> AuthorizeUserAccessAsync(int UserID, string reqUsername);
-        public Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username)
+        public Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username);
         public string GenerateRefreshToken();
         public string GenerateRandomPassword(int length);
 

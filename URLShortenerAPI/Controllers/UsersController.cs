@@ -11,8 +11,8 @@ using YamlDotNet.Core.Tokens;
 
 namespace URLShortenerAPI.Controllers
 {
-    [Route("/api/[controller]")]
     [ApiController]
+    [Route("/api/[Controller]")]
     internal class UsersController : ControllerBase
     {
         private readonly IUserService _userService;

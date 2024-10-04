@@ -8,9 +8,9 @@ using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    internal class URLController : ControllerBase
+    [Route("api/[Controller]")]
+    public class URLController : ControllerBase
     {
         private readonly IURLService _urlService;
         private readonly IValidator<URLCreateDTO> _validator;

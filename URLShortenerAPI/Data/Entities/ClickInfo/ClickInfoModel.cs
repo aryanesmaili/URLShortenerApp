@@ -11,9 +11,9 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
 
 
         public int LocationID { get; set; }
-        public required LocationInfo PossibleLocation { get; set; } // TODO: Detect this based on IP address
+        public LocationInfo? PossibleLocation { get; set; } // TODO: Detect this based on IP address
         public int DeviceInfoID { get; set; }
-        public required DeviceInfo DeviceInfo { get; set; } // TODO: Detect this based on User agent
+        public DeviceInfo? DeviceInfo { get; set; } // TODO: Detect this based on User agent
         public int URLID { get; set; }
         public required URLModel URL { get; set; }
     }
@@ -34,11 +34,15 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     internal class DeviceInfo
     {
         public int ID { get; set; }
-        public required string OS { set; get; }
-        public required string Browser { get; set; }
-        public required string Brand { get; set; }
+        public string? OS { set; get; }
+        public string? ClientInfo { get; set; }
+        public string? Brand { get; set; }
+        public bool IsBot { get; set; }
+        public string? BotInfo { get; set; }
+        public string? Device {  get; set; }
+        public string? Model {  get; set; }
 
-        public required int ClickID { get; set; }
-        public required ClickInfoModel ClickInfo {  get; set; }
+        public int ClickID { get; set; }
+        public ClickInfoModel? ClickInfo {  get; set; }
     }
 }

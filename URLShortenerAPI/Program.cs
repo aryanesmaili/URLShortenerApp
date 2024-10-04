@@ -11,20 +11,21 @@ using URLShortenerAPI.Data.Entities.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 // Add services to the container.
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IURLService, URLService>();
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
+builder.Services.AddTransient<IRedirectService, RedirectService>();
 
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
 builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
 builder.Services.AddAutoMapper(typeof(URLMapper));
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgre")));
 
@@ -81,9 +82,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapControllerRoute(
+    name: "redirect",
+    pattern: "{shortCode}",
+    defaults: new { controller = "Redirect", action = "RedirectToLongUrl" }
+);
 
 app.Run();

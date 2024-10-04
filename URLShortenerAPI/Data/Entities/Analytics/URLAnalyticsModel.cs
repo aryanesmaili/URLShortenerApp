@@ -27,4 +27,10 @@ namespace URLShortenerAPI.Data.Entities.Analytics
 
         public int URLID { get; set; }
     }
+    public class IncomingRequestInfo
+    {
+        public required string IPAddress { get; set; }
+        public required string UserAgent { get; set; }
+        public required Dictionary<string, string?> Headers { get; set; }
+    }
 }
