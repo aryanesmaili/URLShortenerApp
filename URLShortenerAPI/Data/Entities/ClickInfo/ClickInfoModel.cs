@@ -26,9 +26,11 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
         public required string Country { get; set; }
         public required string CountryCode { get; set; }
         public required string Continent { get; set; }
+        public required string Latitude { get; set; }
+        public required string Longitude { get; set; }
 
-        public required int ClickID { get; set; }
-        public required ClickInfoModel ClickInfo { get; set; }
+        public int ClickID { get; set; }
+        public ClickInfoModel? ClickInfo { get; set; }
     }
 
     internal class DeviceInfo
@@ -39,10 +41,10 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
         public string? Brand { get; set; }
         public bool IsBot { get; set; }
         public string? BotInfo { get; set; }
-        public string? Device {  get; set; }
-        public string? Model {  get; set; }
+        public string? Device { get; set; }
+        public string? Model { get; set; }
 
         public int ClickID { get; set; }
-        public ClickInfoModel? ClickInfo {  get; set; }
+        public ClickInfoModel? ClickInfo { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using URLShortenerAPI.Utility.MapperConfigs;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using URLShortenerAPI.Data.Entities.Settings;
+using IPinfo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add services to the container.
+builder.Services.AddSingleton<IIPInfoService, IPInfoService>();
+
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IURLService, URLService>();

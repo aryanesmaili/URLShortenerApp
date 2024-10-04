@@ -15,12 +15,13 @@ namespace URLShortenerAPI.Services
     internal class RedirectService : IRedirectService
     {
         private readonly AppDbContext _context;
-
-        public RedirectService(AppDbContext context)
+        private readonly IIPInfoService _ipInfoService;
+        public RedirectService(AppDbContext context, IIPInfoService ipInfoService)
         {
             _context = context;
+            _ipInfoService = ipInfoService;
         }
-
+        //TODO: Add caching to AddURL. add Refresh Cache here.
         public async Task<string> ResolveURL(string shortCode, IncomingRequestInfo requestInfo)
         {
             // first we try to retrieve URL from cache
@@ -28,7 +29,7 @@ namespace URLShortenerAPI.Services
 
             // If not found in cache, we query database
             result ??= await ResolveURLFromDatabaseAsync(shortCode);
-            
+
             ClickInfoModel clickInfo = new()
             {
                 IPAddress = requestInfo.IPAddress,
@@ -71,9 +72,21 @@ namespace URLShortenerAPI.Services
 
         private async Task<LocationInfo> AnalyzeIPAddress(string IP)
         {
-            throw new NotImplementedException();
+            var apiResponse = await _ipInfoService.GetIPDetailsAsync(IP);
+            LocationInfo locationInfo = new()
+            {
+                City = apiResponse.City,
+                Continent = apiResponse.Continent.Name,
+                Country = apiResponse.CountryName,
+                CountryCode = apiResponse.Country,
+                Region = apiResponse.Region,
+                Latitude = apiResponse.Latitude,
+                Longitude = apiResponse.Longitude,
+            };
+
+            return locationInfo;
         }
-        private DeviceInfo AnalyzeUserAgent(string userAgent, Dictionary<string, string?> headers)
+        private static DeviceInfo AnalyzeUserAgent(string userAgent, Dictionary<string, string?> headers)
         {
             DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE);
             var clientHints = ClientHints.Factory(headers);
