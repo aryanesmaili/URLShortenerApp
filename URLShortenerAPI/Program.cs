@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using URLShortenerAPI.Data.Entities.Settings;
 using IPinfo;
+using DeviceDetectorNET.Parser.Device;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,8 @@ builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IURLService, URLService>();
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
+builder.Services.AddTransient<ICacheService, CacheService>();
+builder.Services.AddTransient<IIPInfoService, IPInfoService>();
 
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
@@ -42,6 +46,15 @@ builder.Services.AddCors(options =>
                     builder.WithOrigins("https://localhost:7112").AllowAnyHeader().AllowAnyMethod();
                 });
 });
+
+
+// Add redis Service
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:9191,password=a123";
+    options.InstanceName = string.Empty;
+});
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMultiplexer.Connect("localhost:9191,password=a123"));
 
 // Automatically adds all validators of this project to DI pool.
 var assembly = typeof(Program).Assembly;

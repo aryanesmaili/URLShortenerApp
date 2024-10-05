@@ -3,7 +3,6 @@ using DeviceDetectorNET.Cache;
 using DeviceDetectorNET.Parser;
 using Microsoft.EntityFrameworkCore;
 using Pexita.Utility.Exceptions;
-using System.Security.Policy;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
@@ -16,10 +15,13 @@ namespace URLShortenerAPI.Services
     {
         private readonly AppDbContext _context;
         private readonly IIPInfoService _ipInfoService;
-        public RedirectService(AppDbContext context, IIPInfoService ipInfoService)
+        private readonly ICacheService _cacheService;
+
+        public RedirectService(AppDbContext context, IIPInfoService ipInfoService, ICacheService cacheService)
         {
             _context = context;
             _ipInfoService = ipInfoService;
+            _cacheService = cacheService;
         }
         //TODO: Add caching to AddURL. add Refresh Cache here.
         public async Task<string> ResolveURL(string shortCode, IncomingRequestInfo requestInfo)
@@ -27,16 +29,20 @@ namespace URLShortenerAPI.Services
             // first we try to retrieve URL from cache
             URLModel? result = await ResolveURLFromCacheAsync(shortCode);
 
-            // If not found in cache, we query database
-            result ??= await ResolveURLFromDatabaseAsync(shortCode);
+            // If not found in cache, we query database and cache it in Redis
+            if (result == null)
+            {
+                result = await ResolveURLFromDatabaseAsync(shortCode);
+                await _cacheService.SetAsync("URL", shortCode, result);
+            }
 
             ClickInfoModel clickInfo = new()
             {
                 IPAddress = requestInfo.IPAddress,
+                URLID = result.ID,
                 URL = result,
                 UserAgent = requestInfo.UserAgent,
                 ClickedAt = DateTime.UtcNow,
-                URLID = result.ID
             };
 
             // Analyze IP address and user agent for location and device info
@@ -48,9 +54,11 @@ namespace URLShortenerAPI.Services
             clickInfo.DeviceInfo = deviceInfo;
 
             // Add click info, location, and device info to the database.
-            await _context.Clicks.AddAsync(clickInfo);
-            await _context.LocationInfos.AddAsync(locationInfo);
-            await _context.DeviceInfos.AddAsync(deviceInfo);
+            await Task.WhenAll(
+                _context.Clicks.AddAsync(clickInfo).AsTask(),
+                _context.LocationInfos.AddAsync(locationInfo).AsTask(),
+                _context.DeviceInfos.AddAsync(deviceInfo).AsTask()
+                );
 
             // Save everything to database
             await _context.SaveChangesAsync();
@@ -60,7 +68,7 @@ namespace URLShortenerAPI.Services
 
         private async Task<URLModel?> ResolveURLFromCacheAsync(string shortCode)
         {
-            throw new NotImplementedException();
+            return await _cacheService.GetValueAsync<URLModel>("URL", shortCode);
         }
 
         private async Task<URLModel> ResolveURLFromDatabaseAsync(string shortCode)

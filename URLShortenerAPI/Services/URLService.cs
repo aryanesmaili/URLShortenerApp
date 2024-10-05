@@ -15,13 +15,14 @@ namespace URLShortenerAPI.Services
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
         private readonly IShortenerService _shortenerService;
-
-        public URLService(AppDbContext context, IMapper mapper, IAuthService authService, IShortenerService shortenerService)
+        private readonly ICacheService _cacheService;
+        public URLService(AppDbContext context, IMapper mapper, IAuthService authService, IShortenerService shortenerService, ICacheService cacheService)
         {
             _context = context;
             _mapper = mapper;
             _authService = authService;
             _shortenerService = shortenerService;
+            _cacheService = cacheService;
         }
         /// <summary>
         /// Adding a new URL to database after checking if this operation is authorized to happen.
@@ -43,6 +44,9 @@ namespace URLShortenerAPI.Services
 
             await _context.URLs.AddAsync(newRecord);
             await _context.SaveChangesAsync();
+
+            // we immediately cache it in Redis.
+            await _cacheService.SetAsync<URLModel>("URL", newRecord.ShortCode, newRecord);
 
             return URLModelToDTO(newRecord);
         }
