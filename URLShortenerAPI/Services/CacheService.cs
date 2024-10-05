@@ -33,7 +33,7 @@ namespace URLShortenerAPI.Services
             // Get all Redis keys matching the provided pattern.
             var redisKeys = _redis
                 .GetServer("localhost", 9191)
-                .Keys(pattern: type + "")
+                .Keys(pattern: type + "_")
                 .AsQueryable()
                 .Select(p => p.ToString())
                 .ToList();
