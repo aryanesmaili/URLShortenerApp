@@ -127,7 +127,7 @@ namespace URLShortenerAPI.Services
                 {
                     Title = categoryName,
                     User = user,
-                    URLs = [] 
+                    URLs = []
                 };
                 await _context.URLCategories.AddAsync(category);
             }
@@ -143,10 +143,11 @@ namespace URLShortenerAPI.Services
         private async Task EnsureURLDoesNotExistAsync(string longURL, int userID)
         {
             // Check if the URL already exists for this user.
-            if (await _context.URLs.AnyAsync(x => x.LongURL == longURL && x.UserID == userID))
-            {
+            URLModel? url = await _context.URLs.FirstOrDefaultAsync(x => x.LongURL == longURL);
+            if (url == null)
+                return;
+            else if (url.UserID == userID)
                 throw new ArgumentException("URL Already Exists.");
-            }
         }
 
         /// <summary>

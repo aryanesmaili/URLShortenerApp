@@ -72,13 +72,9 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                var error = new ErrorResponse()
-                {
-                    Message = e.Message,
-                    StackTrace = e.StackTrace,
-                    InnerException = e.InnerException.ToString(),
-                };
-                return StatusCode(500, e.Message);
+                var error = new ErrorResponse
+                { Message = e.Message, StackTrace = e.StackTrace };
+                return StatusCode(500, error);
             }
         }
 

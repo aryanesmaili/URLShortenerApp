@@ -1,4 +1,5 @@
-﻿using URLShortenerAPI.Data.Entities.Analytics;
+﻿using System.Text.Json.Serialization;
+using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
