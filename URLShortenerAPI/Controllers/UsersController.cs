@@ -7,13 +7,14 @@ using System.Security.Claims;
 using System.Security.Cryptography.Xml;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.Exceptions;
 using YamlDotNet.Core.Tokens;
 
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
     [Route("/api/[Controller]")]
-    internal class UsersController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
         private readonly IValidator<UserCreateDTO> _userValidator;
@@ -30,7 +31,7 @@ namespace URLShortenerAPI.Controllers
             _userLoginValidator = userLoginValidator;
             _userUpdateValidator = userUpdateValidator;
         }
-
+        [Authorize(Policy = "AllUsers")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById([FromRoute] int id)
         {
@@ -54,7 +55,7 @@ namespace URLShortenerAPI.Controllers
         {
             try
             {
-                var result = await _userService.GetFullUserInfo(id);
+                var result = await _userService.GetFullUserInfoAsync(id);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -67,7 +68,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("{username:string}")]
+        [HttpGet("{username}")]
         public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
         {
             try
@@ -109,7 +110,13 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new ErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException.ToString(),
+                    StackTrace = e.StackTrace 
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -164,7 +171,7 @@ namespace URLShortenerAPI.Controllers
         {
             try
             {
-                var result = await _userService.CheckResetCode(user, code);
+                var result = await _userService.CheckResetCodeAsync(user, code);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -206,11 +213,11 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("Logout")]
-        public async Task<IActionResult> Logout(string token)
+        public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
             try
             {
-                await _userService.RevokeToken(token);
+                await _userService.RevokeTokenAsync(refreshToken);
                 return Ok();
             }
             catch (NotFoundException e)
@@ -228,12 +235,12 @@ namespace URLShortenerAPI.Controllers
         }
         [Authorize(Policy = "AllUsers")]
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken(string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
             try
             {
-                await _userService.RevokeToken(refreshToken);
-                return Ok();
+                var result = await _userService.TokenRefresher(refreshToken);
+                return Ok(result);
             }
             catch (NotFoundException e)
             {
@@ -255,8 +262,8 @@ namespace URLShortenerAPI.Controllers
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                await _userService.UpdateUserInfoAsync(user, username!);
-                return Ok();
+                var result = await _userService.UpdateUserInfoAsync(user, username!);
+                return Ok(result);
             }
             catch (NotFoundException e)
             {
@@ -277,7 +284,7 @@ namespace URLShortenerAPI.Controllers
         {
             try
             {
-                await _userService.DeleteUser(id);
+                await _userService.DeleteUserAsync(id);
                 return Ok();
             }
             catch (NotFoundException e)

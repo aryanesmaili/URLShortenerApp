@@ -1,10 +1,12 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Pexita.Utility.Exceptions;
 using System.Security.Claims;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -21,8 +23,9 @@ namespace URLShortenerAPI.Controllers
             _validator = validator;
         }
 
+        [Authorize(Policy = "AllUsers")]
         [HttpGet("/{id:int}")]
-        public async Task<IActionResult> GetURL([FromBody] int id)
+        public async Task<IActionResult> GetURL([FromRoute] int id)
         {
             try
             {
@@ -35,18 +38,20 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                return StatusCode(500, e.StackTrace);
             }
         }
+
+        [Authorize(Policy = "AllUsers")]
         [HttpPost("AddURL")]
-        public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
+        public async Task<IActionResult> AddURL([FromForm] URLCreateDTO createDTO)
         {
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
 
-                var result = _urlService.AddURL(createDTO, username!);
+                var result = await _urlService.AddURL(createDTO, username!);
                 return Ok(result);
             }
             catch (ValidationException e)
@@ -67,9 +72,17 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
+                var error = new ErrorResponse()
+                {
+                    Message = e.Message,
+                    StackTrace = e.StackTrace,
+                    InnerException = e.InnerException.ToString(),
+                };
                 return StatusCode(500, e.Message);
             }
         }
+
+        [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleActivation/{id:int}")]
         public async Task<IActionResult> ToggleActivation(int id)
         {

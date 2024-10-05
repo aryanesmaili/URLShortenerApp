@@ -23,7 +23,7 @@ namespace URLShortenerAPI.Controllers
             {
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
                 var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
-                var headers = HttpContext.Request.Headers.ToDictionary(a => a.Key,a=>a.Value.ToArray().FirstOrDefault());
+                var headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
                 var result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers });
                 return Ok(result);

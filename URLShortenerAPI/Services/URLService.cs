@@ -4,6 +4,7 @@ using Pexita.Utility.Exceptions;
 using System.Text;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 
@@ -25,31 +26,129 @@ namespace URLShortenerAPI.Services
             _cacheService = cacheService;
         }
         /// <summary>
-        /// Adding a new URL to database after checking if this operation is authorized to happen.
+        /// Adds a new URL to the database after checking if this operation is authorized.
         /// </summary>
-        /// <param name="url">the object containing info about the new URL to be added.</param>
-        /// <param name="username">string containing the username requesting this operation.</param>
-        /// <returns> a <see cref="URLDTO"/> object representing the operation</returns>
+        /// <param name="url">The object containing information about the new URL to be added.</param>
+        /// <param name="username">The username of the user requesting this operation.</param>
+        /// <returns>A <see cref="URLDTO"/> object representing the newly added URL.</returns>
+        /// <exception cref="NotAuthorizedException">Thrown when the user is not authorized.</exception>
+        /// <exception cref="ArgumentException">Thrown when the URL already exists for the user.</exception>
+        /// <exception cref="Exception">Thrown when there's an error saving the URL record.</exception>
         public async Task<URLDTO> AddURL(URLCreateDTO url, string username)
         {
-            // Authorize user access.
+            // Authorize user access. This throws an exception if the user is not authorized.
             UserModel user = await _authService.AuthorizeUserAccessAsync(url.UserID, username);
 
-            // creating a new object to be later added to DB.
-            URLModel newRecord = _mapper.Map<URLModel>(url);
-            // after making sure this operation is authorized we assign the user.
-            newRecord.User = user;
-            // Generating the short URL
-            newRecord.ShortCode = await ShortURLGenerator(url.LongURL);
+            // Check if the user has already shortened this URL. Throws an exception if it exists.
+            await EnsureURLDoesNotExistAsync(url.LongURL, url.UserID);
 
-            await _context.URLs.AddAsync(newRecord);
-            await _context.SaveChangesAsync();
+            // Create a new URLModel object to be added to the database.
+            URLModel newRecord = await CreateNewURLRecord(url, user);
 
-            // we immediately cache it in Redis.
+            // Save the new record to the database using a transaction for atomicity.
+            await SaveURLRecordWithTransaction(newRecord);
+
+            // We immediately cache it in Redis.
             await _cacheService.SetAsync<URLModel>("URL", newRecord.ShortCode, newRecord);
 
             return URLModelToDTO(newRecord);
         }
+
+        /// <summary>
+        /// Creates a new URLModel DB record.
+        /// </summary>
+        /// <param name="url">The object containing the new URL's information.</param>
+        /// <param name="user">The owner of this URL.</param>
+        /// <returns>A new <see cref="URLModel"/> object.</returns>
+        private async Task<URLModel> CreateNewURLRecord(URLCreateDTO url, UserModel user)
+        {
+            // Map the DTO to a new URLModel object.
+            URLModel newRecord = _mapper.Map<URLModel>(url);
+
+            // Set the user for this URL.
+            newRecord.User = user;
+
+            // Generate a short code for this URL.
+            newRecord.ShortCode = await ShortURLGenerator(url.LongURL);
+
+            // If a category is specified, resolve or create it.
+            if (!string.IsNullOrEmpty(url.Category))
+            {
+                newRecord.Category = await ResolveOrCreateCategory(url.Category, user);
+                // Ensure the category's URLs collection is initialized.
+                newRecord.Category.URLs ??= [];
+                newRecord.Category.URLs.Add(newRecord);
+            }
+
+            return newRecord;
+        }
+
+        /// <summary>
+        /// Saves the URL record to the database using a transaction to ensure atomicity.
+        /// </summary>
+        /// <param name="newRecord">The URLModel to be saved.</param>
+        /// <exception cref="ApplicationException">Thrown when there's an error saving the record.</exception>
+        private async Task SaveURLRecordWithTransaction(URLModel newRecord)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Add the new URL to the context and save changes.
+                await _context.URLs.AddAsync(newRecord);
+                await _context.SaveChangesAsync();
+
+                // Commit the transaction if everything succeeded.
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                // If an error occurs, roll back the transaction.
+                await transaction.RollbackAsync();
+                throw new ApplicationException("Failed to save URL record", ex);
+            }
+        }
+
+        /// <summary>
+        /// Resolves the category by name or creates a new one if it does not exist.
+        /// </summary>
+        /// <param name="categoryName">The name of the category to resolve.</param>
+        /// <param name="user">The associated user who owns the category.</param>
+        /// <returns>A <see cref="URLCategoryModel"/> representing the resolved or created category.</returns>
+        private async Task<URLCategoryModel> ResolveOrCreateCategory(string categoryName, UserModel user)
+        {
+            // Attempt to resolve the category by title.
+            URLCategoryModel? category = await _context.URLCategories
+                                        .FirstOrDefaultAsync(c => c.Title == categoryName);
+
+            // If the category doesn't exist, we create a new one.
+            if (category == null)
+            {
+                category = new URLCategoryModel
+                {
+                    Title = categoryName,
+                    User = user,
+                    URLs = [] 
+                };
+                await _context.URLCategories.AddAsync(category);
+            }
+            return category;
+        }
+
+        /// <summary>
+        /// Ensures that the given URL does not already exist for the specified user.
+        /// </summary>
+        /// <param name="longURL">The long URL to check.</param>
+        /// <param name="userID">The ID of the owner.</param>
+        /// <exception cref="ArgumentException">Thrown when the URL already exists for the user.</exception>
+        private async Task EnsureURLDoesNotExistAsync(string longURL, int userID)
+        {
+            // Check if the URL already exists for this user.
+            if (await _context.URLs.AnyAsync(x => x.LongURL == longURL && x.UserID == userID))
+            {
+                throw new ArgumentException("URL Already Exists.");
+            }
+        }
+
         /// <summary>
         /// Get a URL's Info from database.
         /// </summary>
@@ -59,10 +158,8 @@ namespace URLShortenerAPI.Services
         public async Task<URLDTO> GetURL(int urlID)
         {
             URLModel url = await _context.URLs
-                .Include(x => x.URLAnalyticsID)
-                .Include(x => x.CategoryID)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.ID == urlID) 
+                .FirstOrDefaultAsync(x => x.ID == urlID)
                 ?? throw new NotFoundException($"URL {urlID} Does not Exist");
             return URLModelToDTO(url);
         }

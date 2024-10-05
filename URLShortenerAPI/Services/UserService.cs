@@ -34,7 +34,7 @@ namespace URLShortenerAPI.Services
         /// <param name="id"></param>
         /// <returns></returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<UserDTO> GetFullUserInfo(int id)
+        public async Task<UserDTO> GetFullUserInfoAsync(int id)
         {
             UserModel? user = await _context.Users
                 .Include(u => u.URLs)!
@@ -90,7 +90,7 @@ namespace URLShortenerAPI.Services
                 Created = DateTime.UtcNow,
                 UserId = user.ID
             };
-            _context.RefreshTokens.Add(refreshToken);
+            await _context.RefreshTokens.AddAsync(refreshToken);
             await _context.SaveChangesAsync();
             result.RefreshToken = _mapper.Map<RefreshTokenDTO>(refreshToken);
             return result;
@@ -137,10 +137,11 @@ namespace URLShortenerAPI.Services
             user.ResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
             string Subject = "Pexita Authentication code";
             string Body = $"Your Authentication Code Is {user.ResetCode}";
-            _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
 
             _context.Update(user);
             await _context.SaveChangesAsync();
+
+            _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
 
             return UserModelToDTO(user);
         }
@@ -165,6 +166,8 @@ namespace URLShortenerAPI.Services
             // checking if the user has the authorization to access this.
             UserModel user = await _authService.AuthorizeUserAccessAsync(reqInfo.UserInfo.ID, requestingUsername);
             string hashedpassword = BCrypt.Net.BCrypt.HashPassword(reqInfo.NewPassword);
+            if (hashedpassword == user.PasswordHash)
+                throw new ArgumentException("input password is no different from the current password.");
             user.PasswordHash = hashedpassword;
             user.ResetCode = null;
             _context.Update(user);
@@ -180,7 +183,7 @@ namespace URLShortenerAPI.Services
         /// <returns>a <see cref="UserInfoDTO"/> object containing tokens. the user is verified after this.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<UserDTO> CheckResetCode(UserDTO user, string Code)
+        public async Task<UserDTO> CheckResetCodeAsync(UserDTO user, string Code)
         {
             if (Code.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(Code));
@@ -219,7 +222,7 @@ namespace URLShortenerAPI.Services
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public async Task RevokeToken(string token)
+        public async Task RevokeTokenAsync(string token)
         {
             if (token == null)
                 throw new ArgumentNullException(token);
@@ -301,7 +304,7 @@ namespace URLShortenerAPI.Services
         /// <param name="id">ID of the user to be deleted.</param>
         /// <returns></returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task DeleteUser(int id)
+        public async Task DeleteUserAsync(int id)
         {
             UserModel user = await _context.Users.FindAsync(id) ?? throw new NotFoundException($"User {id} Does not Exist");
             _context.Remove(user);

@@ -4,6 +4,7 @@ using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 
@@ -17,6 +18,7 @@ namespace URLShortenerAPI.Utility.MapperConfigs
             CreateMap<URLCreateDTO, URLModel>()
                 .ForMember(u => u.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(u => u.Clicks, opt => opt.MapFrom(src => new List<ClickInfoModel>()))
+                .ForMember(u => u.Category, opt => opt.Ignore())
                 ;
 
         }

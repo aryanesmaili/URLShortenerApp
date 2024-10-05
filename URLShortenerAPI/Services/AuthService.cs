@@ -63,7 +63,6 @@ namespace URLShortenerAPI.Services
             if (string.IsNullOrEmpty(reqUsername))
                 throw new ArgumentNullException(nameof(reqUsername));
 
-
             UserModel user = await _context.Users
                 .Include(u => u.URLs)
                 .Include(u => u.URLCategories)

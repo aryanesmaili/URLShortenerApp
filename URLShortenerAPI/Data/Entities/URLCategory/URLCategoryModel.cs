@@ -10,7 +10,7 @@ namespace URLShortenerAPI.Data.Entities.URLCategory
         public string? Description { get; set; }
 
         public int UserID { get; set; }
-        public required UserModel User { get; set; }
+        public UserModel? User { get; set; }
         public ICollection<URLModel>? URLs { get; set; }
     }
     public class CategoryDTO

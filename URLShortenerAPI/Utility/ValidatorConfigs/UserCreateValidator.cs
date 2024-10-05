@@ -4,7 +4,7 @@ using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Utility.ValidatorConfigs
 {
-    internal class UserCreateValidator : AbstractValidator<UserCreateDTO>
+    public class UserCreateValidator : AbstractValidator<UserCreateDTO>
     {
         private readonly IUserService _userService;
         public UserCreateValidator(IUserService userService)
@@ -37,7 +37,7 @@ namespace URLShortenerAPI.Utility.ValidatorConfigs
                 .Must(x => !_userService.IsUser(x));
         }
     }
-    internal class UserUpdateValidator : AbstractValidator<UserUpdateDTO>
+    public class UserUpdateValidator : AbstractValidator<UserUpdateDTO>
     {
         private readonly IUserService _userService;
 
@@ -55,7 +55,7 @@ namespace URLShortenerAPI.Utility.ValidatorConfigs
             RuleFor(x => x.Username).Must(x => !_userService.IsUser(x)).When(x => x.Username.Length > 0);
         }
     }
-    internal class UserLoginDTOValidator : AbstractValidator<UserLoginDTO>
+    public class UserLoginDTOValidator : AbstractValidator<UserLoginDTO>
     {
         public UserLoginDTOValidator()
         {

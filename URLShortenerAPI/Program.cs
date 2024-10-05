@@ -18,6 +18,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Automatically adds all validators of this project to DI pool.
+var assembly = typeof(Program).Assembly;
+builder.Services.AddValidatorsFromAssembly(assembly);
+
 // Add services to the container.
 builder.Services.AddSingleton<IIPInfoService, IPInfoService>();
 
@@ -33,6 +37,8 @@ builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
 builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
 builder.Services.AddAutoMapper(typeof(URLMapper));
+builder.Services.AddAutoMapper(typeof(TokenMapper));
+
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgre")));
 
@@ -56,9 +62,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMultiplexer.Connect("localhost:9191,password=a123"));
 
-// Automatically adds all validators of this project to DI pool.
-var assembly = typeof(Program).Assembly;
-builder.Services.AddValidatorsFromAssembly(assembly);
 
 JwtSettings jwtSettings = new();
 builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
