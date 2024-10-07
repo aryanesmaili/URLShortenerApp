@@ -8,6 +8,7 @@ using URLShortenerAPI.Services.Interfaces;
 namespace URLShortenerAPI.Services
 {
     using System;
+    using System.Security;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -20,6 +21,8 @@ namespace URLShortenerAPI.Services
         private const int ShortUrlLength = 6;
         // Allowed characters to exist in shortened URL.
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        private const string Alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        private const string Numbers = "0123456789";
         // Random number generator for creating random suffixes
         private readonly static Random random = new();
 
@@ -34,18 +37,51 @@ namespace URLShortenerAPI.Services
             // Compute the SHA-256 hash of the long URL
             byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(longURL));
 
-            StringBuilder result = new();
+            StringBuilder stringHash = new();
 
             // Convert each byte of the hash to a 2-character hexadecimal representation
             foreach (byte b in fullHash)
             {
-                result.Append(b.ToString("x2")); // Append the hex representation
+                stringHash.Append(b.ToString("x2")); // Append the hex representation
             }
+            string result = stringHash.ToString();
 
-            // Return the first 6 characters of the hexadecimal string as the short URL
-            return result.ToString().Substring(0, 6);
+            result = EvaluateOutput(result); // check if the output is reliable.
+
+            return result;
         }
+        /// <summary>
+        /// checks if the string is reliable, because if all the characters in the string are digits, example.com/12345 might be mistaken for an integer ID, thus creating issues.
+        /// </summary>
+        /// <param name="result">the string to be checked.</param>
+        /// <returns>a reliable ShortCode string.</returns>
+        private static string EvaluateOutput(string result)
+        {
+            // the starting index for slicing.
+            int startingIndex = 0;
 
+            // finding the first letter in the string using a for loop.
+            for (int i = 0; i < result.Length - 6; i++) // (length -6) because we need at least 6 characters.
+            {
+                if (char.IsLetter(result[i]))
+                {
+                    startingIndex = i;
+                    break;
+                }
+            }
+            // the starting index is now 0 (if no letters are found or index 0 is a letter) or i (the index of the first found letter)/.
+            result = result.Substring(startingIndex, 6);
+
+            // check if all chars are digits
+            if (result.All(char.IsDigit))
+            {
+                // if they are all digits, we replace the first character with a random letter.
+                char[] temp = result.ToCharArray();
+                temp[0] = Alphabets[random.Next(Alphabets.Length)];
+                result = new string(temp);
+            }
+            return result;
+        }
         /// <summary>
         /// Handles collisions by generating a random suffix to ensure uniqueness of the short URL.
         /// </summary>
