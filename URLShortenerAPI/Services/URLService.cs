@@ -49,7 +49,7 @@ namespace URLShortenerAPI.Services
             await SaveURLRecordWithTransaction(newRecord);
 
             // We immediately cache it in Redis.
-            await _cacheService.SetAsync<URLModel>("URL", newRecord.ShortCode, newRecord);
+            await _cacheService.SetAsync("URL", newRecord.ShortCode, newRecord);
 
             return URLModelToDTO(newRecord);
         }

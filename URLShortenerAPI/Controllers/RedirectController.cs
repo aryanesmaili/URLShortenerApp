@@ -3,10 +3,11 @@ using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Data.Entities.Analytics;
+using URLShortenerAPI.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
-    [Route("[Controller]")]
+    [Route("/")]
     public class RedirectController : ControllerBase
     {
         private readonly IRedirectService _redirectService;
@@ -21,7 +22,7 @@ namespace URLShortenerAPI.Controllers
         {
             try
             {
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
                 var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
                 var headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
@@ -38,7 +39,14 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                ErrorResponse error =
+                    new()
+                    {
+                        Message = e.Message,
+                        InnerException = e.InnerException?.ToString() ?? "",
+                        StackTrace = e.StackTrace
+                    };
+                return StatusCode(500, error);
             }
         }
     }

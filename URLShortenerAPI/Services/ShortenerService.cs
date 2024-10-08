@@ -69,7 +69,7 @@ namespace URLShortenerAPI.Services
                     break;
                 }
             }
-            // the starting index is now 0 (if no letters are found or index 0 is a letter) or i (the index of the first found letter)/.
+            // the starting index is now 0 (if no letters are found or index 0 is a letter) or i (the index of the first found letter).
             result = result.Substring(startingIndex, 6);
 
             // check if all chars are digits

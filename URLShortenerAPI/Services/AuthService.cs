@@ -111,7 +111,11 @@ namespace URLShortenerAPI.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
+        /// <summary>
+        /// Generates a random password containing alphabet characters and numbers.
+        /// </summary>
+        /// <param name="length">length of password.</param>
+        /// <returns></returns>
         public string GenerateRandomPassword(int length)
         {
             Random random = new();

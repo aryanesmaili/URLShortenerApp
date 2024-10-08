@@ -18,6 +18,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Configuration.AddUserSecrets<Program>();
+
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+
 // Automatically adds all validators of this project to DI pool.
 var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
@@ -40,7 +45,7 @@ builder.Services.AddAutoMapper(typeof(URLMapper));
 builder.Services.AddAutoMapper(typeof(TokenMapper));
 
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgre")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLDocker")));
 
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
@@ -106,11 +111,5 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapControllerRoute(
-    name: "redirect",
-    pattern: "{shortCode}",
-    defaults: new { controller = "Redirect", action = "RedirectToLongUrl" }
-);
 
 app.Run();

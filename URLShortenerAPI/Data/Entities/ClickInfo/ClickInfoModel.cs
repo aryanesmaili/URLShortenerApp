@@ -41,7 +41,6 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
         public string? Brand { get; set; }
         public bool IsBot { get; set; }
         public string? BotInfo { get; set; }
-        public string? Device { get; set; }
         public string? Model { get; set; }
 
         public int ClickID { get; set; }

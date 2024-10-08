@@ -12,8 +12,8 @@ using URLShortenerAPI.Data;
 namespace URLShortenerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240828040035_Init2")]
-    partial class Init2
+    [Migration("20241008111328_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,40 @@ namespace URLShortenerAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.ClickInfoModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.Analytics.URLAnalyticsModel", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("ClickCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastTimeCalculated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MostUsedDevicesJSON")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MostUsedLocationsJSON")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("URLID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("URLID")
+                        .IsUnique();
+
+                    b.ToTable("URLAnalytics");
+                });
+
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.ClickInfoModel", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -60,7 +93,7 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("Clicks");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.DeviceInfo", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.DeviceInfo", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -68,19 +101,25 @@ namespace URLShortenerAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("Brand")
-                        .IsRequired()
+                    b.Property<string>("BotInfo")
                         .HasColumnType("text");
 
-                    b.Property<string>("Browser")
-                        .IsRequired()
+                    b.Property<string>("Brand")
                         .HasColumnType("text");
 
                     b.Property<int>("ClickID")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ClientInfo")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsBot")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text");
+
                     b.Property<string>("OS")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ID");
@@ -91,7 +130,7 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("DeviceInfos");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.LocationInfo", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.LocationInfo", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -118,6 +157,14 @@ namespace URLShortenerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Latitude")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Longitude")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Region")
                         .IsRequired()
                         .HasColumnType("text");
@@ -130,40 +177,7 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("LocationInfos");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.URLAnalytics", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
-
-                    b.Property<int>("ClickCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("LastTimeCalculated")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("MostUsedDevicesJSON")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("MostUsedLocationsJSON")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("URLID")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("URLID")
-                        .IsUnique();
-
-                    b.ToTable("URLAnalytics");
-                });
-
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URL.URLModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URL.URLModel", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -206,7 +220,7 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("URLs");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URLCategory.URLCategoryModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URLCategory.URLCategoryModel", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -231,7 +245,38 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("URLCategories");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.User.UserModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.User.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.User.UserModel", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -269,9 +314,20 @@ namespace URLShortenerAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.ClickInfoModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.Analytics.URLAnalyticsModel", b =>
                 {
-                    b.HasOne("URLShortenerAPI.Data.Entites.URL.URLModel", "URL")
+                    b.HasOne("URLShortenerAPI.Data.Entities.URL.URLModel", "URL")
+                        .WithOne("URLAnalytics")
+                        .HasForeignKey("URLShortenerAPI.Data.Entities.Analytics.URLAnalyticsModel", "URLID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("URL");
+                });
+
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.ClickInfoModel", b =>
+                {
+                    b.HasOne("URLShortenerAPI.Data.Entities.URL.URLModel", "URL")
                         .WithMany("Clicks")
                         .HasForeignKey("URLID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -280,47 +336,36 @@ namespace URLShortenerAPI.Migrations
                     b.Navigation("URL");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.DeviceInfo", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.DeviceInfo", b =>
                 {
-                    b.HasOne("URLShortenerAPI.Data.Entites.ClickInfo.ClickInfoModel", "ClickInfo")
+                    b.HasOne("URLShortenerAPI.Data.Entities.ClickInfo.ClickInfoModel", "ClickInfo")
                         .WithOne("DeviceInfo")
-                        .HasForeignKey("URLShortenerAPI.Data.Entites.ClickInfo.DeviceInfo", "ClickID")
+                        .HasForeignKey("URLShortenerAPI.Data.Entities.ClickInfo.DeviceInfo", "ClickID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ClickInfo");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.LocationInfo", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.LocationInfo", b =>
                 {
-                    b.HasOne("URLShortenerAPI.Data.Entites.ClickInfo.ClickInfoModel", "ClickInfo")
+                    b.HasOne("URLShortenerAPI.Data.Entities.ClickInfo.ClickInfoModel", "ClickInfo")
                         .WithOne("PossibleLocation")
-                        .HasForeignKey("URLShortenerAPI.Data.Entites.ClickInfo.LocationInfo", "ClickID")
+                        .HasForeignKey("URLShortenerAPI.Data.Entities.ClickInfo.LocationInfo", "ClickID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ClickInfo");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.URLAnalytics", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URL.URLModel", b =>
                 {
-                    b.HasOne("URLShortenerAPI.Data.Entites.URL.URLModel", "URL")
-                        .WithOne("URLAnalytics")
-                        .HasForeignKey("URLShortenerAPI.Data.Entites.ClickInfo.URLAnalytics", "URLID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("URL");
-                });
-
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URL.URLModel", b =>
-                {
-                    b.HasOne("URLShortenerAPI.Data.Entites.URLCategory.URLCategoryModel", "Category")
+                    b.HasOne("URLShortenerAPI.Data.Entities.URLCategory.URLCategoryModel", "Category")
                         .WithMany("URLs")
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("URLShortenerAPI.Data.Entites.User.UserModel", "User")
+                    b.HasOne("URLShortenerAPI.Data.Entities.User.UserModel", "User")
                         .WithMany("URLs")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -331,9 +376,9 @@ namespace URLShortenerAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URLCategory.URLCategoryModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URLCategory.URLCategoryModel", b =>
                 {
-                    b.HasOne("URLShortenerAPI.Data.Entites.User.UserModel", "User")
+                    b.HasOne("URLShortenerAPI.Data.Entities.User.UserModel", "User")
                         .WithMany("URLCategories")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -342,29 +387,40 @@ namespace URLShortenerAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.ClickInfo.ClickInfoModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.User.RefreshToken", b =>
                 {
-                    b.Navigation("DeviceInfo")
+                    b.HasOne("URLShortenerAPI.Data.Entities.User.UserModel", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PossibleLocation")
-                        .IsRequired();
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URL.URLModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.ClickInfoModel", b =>
+                {
+                    b.Navigation("DeviceInfo");
+
+                    b.Navigation("PossibleLocation");
+                });
+
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URL.URLModel", b =>
                 {
                     b.Navigation("Clicks");
 
                     b.Navigation("URLAnalytics");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.URLCategory.URLCategoryModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.URLCategory.URLCategoryModel", b =>
                 {
                     b.Navigation("URLs");
                 });
 
-            modelBuilder.Entity("URLShortenerAPI.Data.Entites.User.UserModel", b =>
+            modelBuilder.Entity("URLShortenerAPI.Data.Entities.User.UserModel", b =>
                 {
+                    b.Navigation("RefreshTokens");
+
                     b.Navigation("URLCategories");
 
                     b.Navigation("URLs");

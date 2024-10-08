@@ -110,9 +110,6 @@ namespace URLShortenerAPI.Migrations
                     b.Property<string>("ClientInfo")
                         .HasColumnType("text");
 
-                    b.Property<string>("Device")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsBot")
                         .HasColumnType("boolean");
 

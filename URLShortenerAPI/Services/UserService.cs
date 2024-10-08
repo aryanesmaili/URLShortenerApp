@@ -141,7 +141,7 @@ namespace URLShortenerAPI.Services
             _context.Update(user);
             await _context.SaveChangesAsync();
 
-            _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
+            await _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
 
             return UserModelToDTO(user);
         }

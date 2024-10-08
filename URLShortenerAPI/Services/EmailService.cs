@@ -16,7 +16,7 @@ namespace URLShortenerAPI.Services
         /// <param name="to">receiver of the email.</param>
         /// <param name="subject">Subject of the email.</param>
         /// <param name="body">Body of the email.</param>
-        public void SendEmail(string to, string subject, string body)
+        public async Task SendEmail(string to, string subject, string body)
         {
             SmtpClient smtpClient = new SmtpClient(_smtpSettings.Server, _smtpSettings.Port)
             {
@@ -33,7 +33,7 @@ namespace URLShortenerAPI.Services
             };
 
             mailMessage.To.Add(to);
-            smtpClient.Send(mailMessage);
+            await smtpClient.SendMailAsync(mailMessage);
         }
     }
 }
