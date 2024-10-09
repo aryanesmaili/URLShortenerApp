@@ -16,7 +16,7 @@ namespace URLShortenerAPI.Data.Entities.User
 
         public ICollection<URLModel>? URLs { get; set; }
         public ICollection<URLCategoryModel>? URLCategories { get; set; }
-        public ICollection<RefreshToken>? RefreshTokens { get; set; }  
+        public ICollection<RefreshToken>? RefreshTokens { get; set; }
     }
     public class UserDTO
     {
@@ -27,7 +27,6 @@ namespace URLShortenerAPI.Data.Entities.User
         public UserType Role { get; set; }
 
         public string? JWToken { get; set; }
-        public RefreshTokenDTO? RefreshToken { get; set; }
 
         public List<URLDTO>? URLs { get; set; }
         public List<CategoryDTO>? Categories { get; set; } // owned categories
@@ -40,7 +39,7 @@ namespace URLShortenerAPI.Data.Entities.User
         public required string Password { get; set; }
         public required string ConfirmPassword { get; set; }
     }
-    public class UserUpdateDTO 
+    public class UserUpdateDTO
     {
         public int ID { get; set; }
         public required string Name { get; set; }
@@ -52,6 +51,11 @@ namespace URLShortenerAPI.Data.Entities.User
     {
         public required string Identifier { get; set; } // could be email or password or phone number.
         public required string Password { get; set; }
+    }
+    public class UserLoginResponse
+    {
+        public required UserDTO User { get; set; }
+        public required RefreshTokenDTO RefreshToken { get; set; }
     }
     public enum UserType
     {

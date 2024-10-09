@@ -5,6 +5,7 @@ using Pexita.Utility.Exceptions;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography.Xml;
+using System.Text.Json;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;
@@ -93,8 +94,16 @@ namespace URLShortenerAPI.Controllers
             {
                 await _userLoginValidator.ValidateAndThrowAsync(LoginInfo);
 
-                var result = await _userService.LoginUserAsync(LoginInfo);
-                return Ok(result);
+                UserLoginResponse result = await _userService.LoginUserAsync(LoginInfo);
+                CookieOptions? cookieOptions = new()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Secure = true,   // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                };
+                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
+                return Ok(result.User);
             }
             catch (NotFoundException e)
             {
@@ -113,8 +122,8 @@ namespace URLShortenerAPI.Controllers
                 var errorResponse = new ErrorResponse
                 {
                     Message = e.Message,
-                    InnerException = e.InnerException.ToString(),
-                    StackTrace = e.StackTrace 
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
                 };
                 return StatusCode(500, errorResponse);
             }
@@ -167,12 +176,21 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("CheckResetCode")]
-        public async Task<IActionResult> CheckResetCode([FromQuery] string code, [FromBody] UserDTO user)
+        public async Task<IActionResult> CheckResetCode([FromQuery] string code, [FromBody] string identifier)
         {
             try
             {
-                var result = await _userService.CheckResetCodeAsync(user, code);
-                return Ok(result);
+                UserLoginResponse result = await _userService.CheckResetCodeAsync(identifier, code);
+                var cookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Secure = true,   // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                };
+                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
+
+                return Ok(result.User);
             }
             catch (NotFoundException e)
             {
@@ -195,6 +213,14 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.ChangePasswordAsync(reqInfo, username!);
+                var cookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Secure = true,   // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                };
+                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -240,6 +266,14 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.TokenRefresher(refreshToken);
+                var cookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Secure = true,   // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                };
+                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!, cookieOptions);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -263,6 +297,15 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.UpdateUserInfoAsync(user, username!);
+                var cookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Secure = true,   // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                };
+                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!, cookieOptions);
+
                 return Ok(result);
             }
             catch (NotFoundException e)
