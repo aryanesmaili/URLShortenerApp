@@ -213,13 +213,7 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.ChangePasswordAsync(reqInfo, username!);
-                var cookieOptions = new CookieOptions()
-                {
-                    HttpOnly = true, // Prevents access from JavaScript
-                    Secure = true,   // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
-                };
+
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 return Ok(result);
             }
@@ -266,14 +260,8 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.TokenRefresher(refreshToken);
-                var cookieOptions = new CookieOptions()
-                {
-                    HttpOnly = true, // Prevents access from JavaScript
-                    Secure = true,   // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
-                };
-                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!, cookieOptions);
+
+                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -297,14 +285,8 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.UpdateUserInfoAsync(user, username!);
-                var cookieOptions = new CookieOptions()
-                {
-                    HttpOnly = true, // Prevents access from JavaScript
-                    Secure = true,   // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
-                };
-                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!, cookieOptions);
+
+                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
 
                 return Ok(result);
             }
