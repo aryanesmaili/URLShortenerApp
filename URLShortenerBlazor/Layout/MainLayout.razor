@@ -1,16 +1,96 @@
-﻿@inherits LayoutComponentBase
+﻿@using System.Text
+@inherits LayoutComponentBase
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <nav class="navbar navbar-expand-lg navigationbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="https://picsum.photos/700/400" alt="WebsiteLogo" class="logo" width="30" height="30">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Profile/@userID">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)" @onclick="Logout">Logout</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/signup">Sign Up</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-
+    </nav>
+    <main class="content">
         <article class="content px-4">
             @Body
         </article>
     </main>
+    <footer class="footer text-white mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 URL Shortener. All rights reserved.</p>
+        </div>
+        <div class="row px-4">
+            <div class="col-md-3 pt-4">
+                <h5>About Us</h5>
+                <p>Pexita is a URL Shortener Service Established on October 2024.</p>
+            </div>
+            <div class="col-md-3 pt-4">
+                <h5>Help & Support</h5>
+                <p>Contact us at support@pexita.com for any questions or concerns.</p>
+            </div>
+            <div class="col-md-3 footer-info">
+                <ul>
+                    <li><a href="https://example.com/" target="_blank">Instagram</a></li>
+                    <li><a href="https://example.com/" target="_blank">X Account</a></li>
+                    <li><a href="https://example.com/" target="_blank">Github</a></li>
+                    <li><a href="https://example.com/" target="_blank">Linkedin</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 footer-info">
+                <ul>
+                    <li><a href="/privacy-policy">Privacy Policy</a></li>
+                    <li><a href="/terms-of-service">Terms Of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </footer>
 </div>
+
+@code
+{
+    private bool isLoggedIn;
+    private int userID;
+    protected override async Task OnInitializedAsync()
+    {
+        var jwt = await localStorage.GetItemAsync<string>("jwt");
+        isLoggedIn = !string.IsNullOrEmpty(jwt);
+        userID = await localStorage.GetItemAsync<int>("userID");
+    }
+
+    private async Task Logout()
+    {
+        string? refreshToken = await localStorage.GetItemAsync<string>("refreshToken") ?? "";
+        isLoggedIn = false;
+        var content = new StringContent(refreshToken, Encoding.UTF8, "application/json");
+        await Http.PostAsync("/api/Users/logout", content);
+        await localStorage.RemoveItemAsync("jwt");
+        await localStorage.RemoveItemAsync("refreshToken");
+        Navigation.NavigateTo("/login");
+    }
+}

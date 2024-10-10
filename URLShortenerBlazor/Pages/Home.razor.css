@@ -1,0 +1,175 @@
+body {
+    background-color: #e9ecef;
+    /* Light background for the body */
+    font-family: 'Arial', sans-serif;
+    /* Set a modern font */
+}
+
+img {
+    color: white;
+}
+
+
+.outer {
+    display: grid;
+    /* Enable grid layout */
+    place-items: center;
+    /* Center both horizontally and vertically */
+    background-color: lightgray;
+}
+
+.inner {
+    padding: 20px;
+    /* Inner div styles */
+}
+
+.hero {
+    background-color: #6f42c1;
+    /* Purple background for the hero section */
+    color: white;
+    /* White text color */
+    border-radius: 10px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow */
+    height: 300px;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .input-container input {
+        width: 300px;
+        padding: 10px;
+        border: 2px solid #ccc;
+        border-radius: 5px 0 0 5px;
+        border-right: none;
+        /* Rounded corners on the left */
+        font-size: 16px;
+    }
+
+        .input-container input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+    .input-container button {
+        padding: 10px 20px;
+        /* Match padding of the input */
+        border: 2px solid #007bff;
+        border-left: none;
+        /* Remove border overlap with input */
+        background-color: #007bff;
+        /* Button color */
+        color: white;
+        /* Text color */
+        font-size: 16px;
+        border-radius: 0 5px 5px 0;
+        /* Rounded corners on the right */
+        cursor: pointer;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+            /* Darker blue on hover */
+            border-color: #0056b3;
+            /* Darken border on hover */
+        }
+
+#url-preview {
+    margin-top: 10px;
+    /* Add space between input and preview */
+    text-align: left;
+    /* Align the text to the left */
+    width: 300px;
+    /* Same width as the input to align with it */
+    color: white;
+}
+
+.main-bg {
+    background-color: #6f42c1;
+    /* Purple background for the main section */
+    color: white;
+    /* White text color */
+    border-radius: 10px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow */
+}
+
+.features {
+    margin-top: 2rem;
+}
+
+.feature-item {
+    /* Light background for testimonials */
+    padding: 1.5rem;
+    border: 1px solid white;
+    border-radius: 15px;
+    /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    transition: transform 0.2s;
+    /* Smooth transition */
+}
+
+    .feature-item:hover {
+        transform: scale(1.05);
+        /* Scale effect on hover */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        /* More prominent shadow on hover */
+    }
+
+.cta {
+    width: 40%;
+    margin: auto;
+    background-color: #6f42c1;
+    /* Blue background for CTA section */
+    color: white;
+    /* White text color */
+    border-radius: 10px;
+    /* Rounded corners */
+}
+
+    .cta h2 {
+        margin-bottom: 5px;
+    }
+
+.instruction-colored {
+    background-color: #6f42c1;
+    color: white;
+    border-radius: 15px;
+    max-width: 900px;
+}
+
+    .instruction-colored p {
+        padding-left: 10px;
+    }
+
+.instruction-uncolored {
+    border: #007bff solid 1px;
+    color: black;
+    border-radius: 15px;
+    max-width: 900px;
+}
+
+    .instruction-uncolored p {
+        padding-left: 10px;
+    }
+
+.instructions-text {
+    text-align: left;
+}
+
+.instruction-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Ensures the image fills the container without distorting */
+    border-radius: 15px;
+    /* Or apply to the container if needed */
+}
