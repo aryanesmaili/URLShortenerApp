@@ -238,6 +238,13 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 await _userService.RevokeTokenAsync(refreshToken);
+                Response.Cookies.Append("refreshToken", "", new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddDays(-1), // Set expiration to the past
+                    Secure = true, // Ensure it's HTTPS only if needed
+                    SameSite = SameSiteMode.Strict // You can set SameSite as per your requirements
+                });
                 return Ok();
             }
             catch (NotFoundException e)
