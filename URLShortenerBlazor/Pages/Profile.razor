@@ -1,1 +1,103 @@
 ﻿@page "/Profile"
+
+<main class="container">
+    <div class="row">
+        <!-- Left Column: User URLs -->
+        <div class="col-md-9">
+            <div class="profile-header">
+                <h2>Your URLs</h2>
+            </div>
+            <div class="url-list">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Short Code</th>
+                            <th>Long URL</th>
+                            <th>Clicks</th>
+                            <th>Created At</th>
+                            <th>Category</th>
+                            <th>Active</th>
+                            <th>Analytics</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>My First URL</td>
+                            <td>abcd12</td>
+                            <td>https://example.com/long-url-1</td>
+                            <td>10</td>
+                            <td>2024-10-01</td>
+                            <td>
+                                <div>
+                                    <span class="badge bg-primary d-block mb-1">Category 1</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <a href="/URLAnalytics/1" class="btn btn-analytics btn-sm">View</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>My First URL</td>
+                            <td>abcd12</td>
+                            <td>https://example.com/long-url-1</td>
+                            <td>10</td>
+                            <td>2024-10-01</td>
+                            <td>
+                                <div>
+                                    <span class="badge bg-primary d-block mb-1">Category 1</span>
+                                    <span class="badge bg-secondary d-block mb-1">Category 2</span>
+                                    <span class="badge bg-success d-block mb-1">Category 3</span>
+                                </div>
+                            </td> <!-- Categories as badges in the same column -->
+                            <td><span class="badge bg-success">Active</span></td> <!-- IsActive value -->
+                            <td>
+                                <a href="/URLAnalytics/1" class="btn btn-analytics btn-sm">View</a>
+                                <!-- Analytics button -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>My Second URL</td>
+                            <td>efgh34</td>
+                            <td>https://example.com/long-url-2</td>
+                            <td>5</td>
+                            <td>2024-10-02</td>
+                            <td>
+                                <div>
+                                    <span class="badge bg-primary d-block mb-1">Category 4</span>
+                                    <span class="badge bg-secondary d-block mb-1">Category 5</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-danger">Inactive</span></td>
+                            <td>
+                                <a href="/URLAnalytics/2" class="btn btn-analytics btn-sm">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Right Column: User Profile Info -->
+        <div class="col-md-3">
+            <div class="profile-header">
+                <h2>Profile Info</h2>
+            </div>
+            <div class="profile-info">
+                <div class="profile-pic pb-4">
+                    <img src="https://picsum.photos/100/100" alt="">
+                </div>
+                <div class="profile-info-item">
+                    <h5><i class="icon fas fa-user"></i> Aryan</h5>
+                </div>
+                <div class="profile-info-item">
+                    <h6><i class="icon fas fa-envelope"></i> aryan@gmail.com</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

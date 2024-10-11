@@ -1,0 +1,27 @@
+﻿body {
+    background-color: #e9ecef; /* Light background for the body */
+    font-family: 'Arial', sans-serif; /* Set a modern font */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    /* Card styles */
+    width: 350px; /* Set a fixed width for the card */
+    background-color: #6f42c1; /* Purple background for the card */
+    color: white; /* White text color */
+}
+
+.custom-shadow {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Dense shadow */
+}
+
+.card a {
+    color: white; /* White link color */
+    text-decoration: none; /* Remove underline */
+}
+
+    .card a:hover {
+        color: black; /* Change link color on hover */
+    }

@@ -1,0 +1,86 @@
+﻿body {
+    background-color: #e9ecef;
+    /* Light background for the body */
+    font-family: 'Arial', sans-serif;
+    /* Set a modern font */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navigationbar {
+    background-color: #6f42c1;
+    /* Purple background for the navigation bar */
+}
+
+    .navigationbar a {
+        color: white;
+    }
+
+        .navigationbar a:hover {
+            color: black;
+        }
+
+img {
+    color: white;
+}
+
+.custom-shadow {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /* Adjust values as needed */
+}
+
+.card a {
+    color: white;
+    text-decoration: none;
+}
+
+    .card a:hover {
+        color: black;
+    }
+
+footer {
+    margin-top: auto;
+    width: 100%;
+    padding: 1rem;
+    background-color: #6f42c1;
+    /* Dark background for footer */
+    text-align: center;
+    color: white;
+}
+
+
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    /* Stack items vertically */
+    align-items: center;
+    /* Center the column in the middle */
+}
+
+    .footer-info ul {
+        list-style-type: none;
+        /* Remove bullet points */
+        padding: 0;
+        /* Remove padding */
+        margin: 0;
+    }
+
+    .footer-info li {
+        margin: 0.5rem 0;
+        /* Add vertical spacing between the social links */
+    }
+
+    .footer-info a {
+        text-decoration: none;
+        /* Remove underline */
+        color: white;
+        /* White text */
+        font-size: 18px;
+        /* Adjust font size */
+    }
+
+        .footer-info a:hover {
+            color: #ffcc00;
+            /* Change color on hover */
+        }
