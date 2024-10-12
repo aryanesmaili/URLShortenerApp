@@ -1,0 +1,107 @@
+﻿.outer {
+    display: grid;
+    /* Enable grid layout */
+    place-items: center;
+    /* Center both horizontally and vertically */
+    background-color: lightgray;
+}
+
+.info h2 {
+    font-weight: 700;
+    font-size: x-large;
+    border-bottom: 2px solid #007bff;
+    /* Change color as needed */
+    padding-bottom: 10px;
+    /* Space between text and border */
+    margin-bottom: 15px;
+    /* Space below the heading */
+    text-align: center;
+}
+
+.info h5 {
+    font-weight: 500;
+    font-size: large;
+}
+
+/* Styles for the circular countdown */
+.countdown-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    /* Center horizontally */
+}
+
+.countdown-circle {
+    transform: rotate(-90deg);
+    /* Rotate to start the circle from the top */
+}
+
+    .countdown-circle circle {
+        fill: none;
+        stroke-width: 8;
+    }
+
+    .countdown-circle .background-circle {
+        stroke: #e6e6e6;
+        /* Background circle color */
+    }
+
+    .countdown-circle .progress-circle {
+        stroke: #007bff;
+        /* Progress circle color */
+        stroke-linecap: round;
+        /* Smooth ends */
+        stroke-dasharray: 314;
+        /* Length of the circle's circumference (2 * π * r where r = 50) */
+        stroke-dashoffset: 0;
+        /* Initial offset (full circle) */
+        transition: stroke-dashoffset 1s linear;
+        /* Smooth transition */
+    }
+
+.countdown-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Center the number in the circle */
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#long-url a {
+    color: black;
+    text-decoration: none;
+}
+
+    #long-url a:hover {
+        color: #6f42c1;
+    }
+
+#long-url p {
+    border: rgba(0, 0, 0, 0.5) solid 2px;
+}
+
+.ad-section {
+    background-color: rgb(179, 179, 179);
+    color: white;
+}
+
+    .ad-section p {
+        text-align: center;
+        margin: 0;
+    }
+
+    .ad-section div {
+        border-left: white solid 10px;
+    }
+
+.full-width-ad div {
+    display: grid;
+    place-items: center;
+}
+
+.full-width-ad p {
+    margin: 0 !important;
+}

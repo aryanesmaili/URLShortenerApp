@@ -1,0 +1,122 @@
+﻿@page "/Redirect/{shortcode}"
+<main class="container d-flex justify-content-center align-items-center vh-100">
+    <div>
+        <section class="row mb-2 full-width-ad ad-section">
+            <div class="col-md-12 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+        </section>
+        <section class="row half-width-ads ad-section">
+            <div class="col-md-6 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+            <div class="col-md-6 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+        </section>
+        <div class="row my-5">
+            <div class="col-md-3 ad-sidebar ad-section d-flex align-items-center justify-content-center">
+                <p>Your Ad Goes Here</p>
+            </div>
+            <section class="col-md-6 content p-5">
+                <div class="info">
+                    <h2 class="mb-5">Your URL is Loading...</h2>
+                    <h5 class="mb-4">
+                        check out the advertisement on this page if possible, this supports our mission :)
+                    </h5>
+                    <p class="mb-3 text-wrap">
+                        Description:
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit nam omnis perspiciatis illo
+                        vitae
+                        voluptatibus at, aspernatur harum sapiente voluptatum veniam, quidem esse eum tenetur
+                        placeat
+                        facilis soluta? Autem, quod?
+                    </p>
+                    <div class="Category-holder">
+                        <div class="mt-2">
+                            <span class="badge bg-primary  mb-1 mx-1">Category 1</span>
+                            <span class="badge bg-secondary  mb-1 mx-1">Category 2</span>
+                            <span class="badge bg-success  mb-1 mx-1">Category 3</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="countdown mt-5 text-center">
+                    <div class="countdown-container">
+                        <svg class="countdown-circle" width="100" height="100">
+                            <circle class="background-circle" cx="50" cy="50" r="40"></circle>
+                            <circle class="progress-circle" cx="50" cy="50" r="40"></circle>
+                        </svg>
+                        <div id="countdown-number" class="countdown-number">10</div>
+                    </div>
+                </div>
+
+                <div id="long-url" class="mt-5 text-start px-3" style="display: none;">
+                    <p class="p-3">
+                        <a class="text-wrap" href="https://example.com" target="_blank">https://example.com</a>
+                    </p>
+                </div>
+
+            </section>
+            <div class="col-md-3 ad-sidebar ad-section d-flex align-items-center justify-content-center">
+                <p>Your Ad Goes Here</p>
+            </div>
+        </div>
+        <section class="row half-width-ads ad-section">
+            <div class="col-md-6 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+            <div class="col-md-6 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+        </section>
+        <section class="row my-2 full-width-ad ad-section">
+            <div class="col-md-12 p-3">
+                <p>Your Ad Goes Here</p>
+            </div>
+        </section>
+    </div>
+</main>
+<script>
+    // Countdown configuration
+    const startingCountdownValue = 10;
+    const radius = 40; // Set radius for the new circle
+    const circumference = 2 * Math.PI * radius; // Calculate circumference
+    let countdownValue = startingCountdownValue; // Starting value of the countdown
+    const countdownElement = document.getElementById('countdown-number');
+    const longUrlElement = document.getElementById('long-url');
+    const progressCircle = document.querySelector('.progress-circle');
+    const countdownCircle = document.querySelector('.countdown');
+
+    // Update the circle's progress by adjusting stroke-dashoffset
+    function updateCircleProgress(value) {
+        const offset = circumference - (value / startingCountdownValue) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+    }
+
+    // Function to handle the countdown and URL reveal
+    function startCountdown() {
+        // Set initial values for the progress circle
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = 0;
+
+        // Update the countdown every 1 second
+        const countdownInterval = setInterval(() => {
+            countdownElement.textContent = countdownValue; // Update the countdown display
+            updateCircleProgress(countdownValue); // Update circle progress
+            countdownValue--; // Decrease the countdown value
+
+            // When the countdown reaches 0
+            if (countdownValue < -1) {
+                clearInterval(countdownInterval); // Stop the countdown
+                countdownCircle.style.display = 'none'; // Hide the countdown number
+                longUrlElement.style.display = 'block'; // Display the long URL
+            }
+        }, 1000); // 1000 milliseconds = 1 second
+    }
+
+    // Start the countdown when the page loads
+    window.onload = () => {
+        updateCircleProgress(countdownValue); // Initialize the circle's progress
+        startCountdown();
+    };
+</script>
