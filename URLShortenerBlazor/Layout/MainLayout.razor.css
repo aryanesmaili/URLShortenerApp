@@ -1,3 +1,7 @@
+.content {
+    padding-top: 0 !important;
+}
+
 .navigationbar {
     background-color: #6f42c1;
     /* Purple background for the navigation bar */

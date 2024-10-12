@@ -1,0 +1,88 @@
+﻿.container-border {
+    border: rgb(230, 230, 230) solid 2px;
+    border-top: none;
+}
+
+.container {
+    padding: 0 !important;
+}
+
+.header {
+    background-color: #6f42c1;
+    color: white;
+    width: 350px;
+    border-radius: 25px;
+    margin-top:15px;
+}
+
+.row {
+    margin-top: 0 !important;
+}
+
+.header h1 {
+    font-weight: 700;
+    font-size: larger;
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+.header p {
+    margin: 0;
+    text-indent: 10px;
+}
+
+.form-group {
+    margin-left: 20px !important;
+}
+
+.form-check {
+    margin-left: 20px !important;
+}
+
+.button-style {
+    margin-left: 20px !important;
+    width: 95%;
+}
+
+.table td {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+    .table td:nth-child(2) {
+        white-space: normal;
+        word-break: break-word;
+        max-width: 200px;
+    }
+
+    .table td:nth-child(4) {
+        white-space: normal;
+        word-break: break-word;
+        max-width: 200px;
+    }
+
+.dec {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.batch-url-area {
+    width: 100%;
+    height: 100px;
+    max-height: 150px;
+}
+
+.btn-check:focus + .btn {
+    outline: none; /* Hide the default focus outline */
+    box-shadow: none; /* Remove any box shadow */
+}
+
+.btn-check:checked + .btn {
+    background-color: #6f42c1; /* Change background color for selected button */
+    color: white; /* Change text color */
+    border-color: #6f42c1; /* Ensure the border matches the background */
+}
+
+    .btn-check:checked + .btn:hover {
+        background-color: #5a30a2; /* Darker shade on hover when checked */
+        border-color: #5a30a2; /* Change border color */
+    }
