@@ -7,26 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Pages\Redirect.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Pages\Redirect.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\Redirect.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Pages\Redirect.razor" />
   </ItemGroup>
 
 </Project>

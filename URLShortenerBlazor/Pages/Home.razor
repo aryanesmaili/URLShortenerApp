@@ -1,133 +1,114 @@
 ﻿@page "/"
 
 <PageTitle>Pexita URL Shortener</PageTitle>
-<main>
-    <div class="container home-bg mt-4">
-        <header class="hero outer">
-            <div class="inner">
-                <h1 class="mb-5 text-center">Welcome to Pexita</h1>
-                <div class=" input-container">
-                    <input type="text" placeholder="Enter Link Here" />
-                    <button>Shorten Now!</button>
 
-                </div>
-                <p id="url-preview">Your shortened url will likely be: </p>
-            </div>
-        </header>
-
-        <section class=" main-bg features text-center px-5 pb-5">
-            <h2 class="title py-3">Why you should choose us!</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Secure</h5>
-                        <p>We Use Secure Algorithms to make sure you're safe with us!</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Instant Shortening</h5>
-                        <p>Pexita tries its best to shorten your URLs as fast as possible!</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Easy</h5>
-                        <p>Our Service is Designed to give you the best Experience with the least effort.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Monetization</h5>
-                        <p>We Use Secure Algorithms to make sure you're safe with us!</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Analytics</h5>
-                        <p>You can see statistics and analytics on your URLs anytime you want!</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-item">
-                        <h5>Multi-Platform Compatibility</h5>
-                        <p>Access your account on multiple platforms! Our Website, Telegram bot etc.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="my-4 instructions p-2">
-            <h3 class="text-center mb-5">
-                How Does URL Shortener Work?
-            </h3>
-            <!-- Instruction number One -->
-            <div class="container">
-                <div class="row p-5 mb-5 instruction-colored mx-auto">
-                    <div class="col-md-6 d-flex justify-content-end align-items-center instruction-text text-start">
-                        <div>
-                            <h5>URL Submission</h5>
-                            <p>Input your URL in the Box and click "Shorten Now!."</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 instruction-pic text-center">
-                        <img src="https://picsum.photos/300/300" alt="URL Submission">
-                    </div>
-                </div>
-            </div>
-
-            <!---Instruction number two-->
-            <div class="container">
-                <div class="row p-5 mb-5 instruction-uncolored mx-auto">
-                    <div class="col-md-6 instruction-pic text-start">
-                        <img src="https://picsum.photos/300/300" alt="URL Submission">
-                    </div>
-                    <div class="col-md-6 d-flex justify-content-end align-items-center instruction-text text-start">
-                        <div>
-                            <h5>Processing</h5>
-                            <p>Pexita will Process and generate a shortened URL for you</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!---Instruction number Three-->
-            <div class="container">
-                <div class="row p-5 mb-5 instruction-colored mx-auto">
-                    <div class="col-md-6 d-flex justify-content-end align-items-center instruction-text text-start">
-                        <div>
-                            <h5>Share With Friends and Audience</h5>
-                            <p>Share the Shortened URL with Friends and Audience.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 instruction-pic text-center">
-                        <img src="https://picsum.photos/300/300" alt="URL Submission">
-                    </div>
-                </div>
-            </div>
-            <!---Instruction number Four-->
-            <div class="container">
-                <div class="row p-5 mb-2 instruction-uncolored mx-auto">
-                    <div class="col-md-6 instruction-pic text-start">
-                        <img src="https://picsum.photos/300/300" alt="URL Submission">
-                    </div>
-                    <div class="col-md-6 d-flex justify-content-end align-items-center instruction-text text-start">
-                        <div>
-                            <h5>Check the Analytics</h5>
-                            <p>
-                                You Can See Information About Your Audience and Clickers in the Analytics Section Of
-                                Your Profile.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="cta text-center p-4 outer">
-            <h2 class="title pb-3">Ready to get started?</h2>
-            <a href="/SignUp" class="btn btn-primary">Start Shortening Your URLs Now!</a>
-        </section>
+<header class="hero">
+    <div class="container">
+        <h1 class="mb-5">Welcome to Pexita</h1>
+        <div class="input-container">
+            <input type="text" placeholder="Enter your long URL here" aria-label="URL input">
+            <button type="button" class="btn btn-primary">Shorten Now!</button>
+        </div>
+        <p id="url-preview" class="mt-3">Your shortened URL will appear here</p>
     </div>
-</main>
+</header>
+
+<section class="features">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Pexita?</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>Secure</h3>
+                    <p>We use secure algorithms to ensure your safety</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>Instant Shortening</h3>
+                    <p>Pexita shortens your URLs as fast as possible</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>Easy to Use</h3>
+                    <p>Designed for the best experience with minimal effort</p>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>
+                        Monetization
+                    </h3>
+                    <p>We Use Secure Algorithms to make sure you're safe with us!</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>
+                        Analytics
+                    </h3>
+                    <p>You can see statistics and analytics on your URLs anytime you want!</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-item">
+                    <h3>
+                        Multi-Platform Compatibility
+                    </h3>
+                    <p>Access your account on multiple platforms! Our Website, Telegram bot etc.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How Does URL Shortener Work?</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1. URL Submission</h3>
+                    <p>Input your long URL in the box and click "Shorten Now!"</p>
+                </div>
+                <div class="timeline-image">
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>2. Processing</h3>
+                    <p>Pexita will process and generate a shortened URL for you instantly.</p>
+                </div>
+                <div class="timeline-image">
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>3. Share</h3>
+                    <p>Share the shortened URL with friends and your audience.</p>
+                </div>
+                <div class="timeline-image">
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>4. Analytics</h3>
+                    <p>
+                        Check information about your audience and clicks in the Analytics section of your
+                        profile.
+                    </p>
+                </div>
+                <div class="timeline-image">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta text-center p-5 outer mt-5">
+    <h2 class="title pb-3">Ready to get started?</h2>
+    <a href="/SignUp" class="btn btn-primary">Start Shortening Your URLs Now!</a>
+</section>
