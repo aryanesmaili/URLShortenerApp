@@ -7,6 +7,7 @@ using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.CustomClass;
 
 namespace URLShortenerAPI.Services
 {
@@ -74,12 +75,18 @@ namespace URLShortenerAPI.Services
             // If a category is specified, resolve or create it.
             if (!string.IsNullOrEmpty(url.Category))
             {
-                newRecord.Category = await ResolveOrCreateCategory(url.Category, user);
-                // Ensure the category's URLs collection is initialized.
-                newRecord.Category.URLs ??= [];
-                newRecord.Category.URLs.Add(newRecord);
-            }
+                var categories = await ResolveOrCreateCategory(url.Category, user);
+                newRecord.Categories = categories;
 
+                foreach (var category in categories)
+                {
+                    // Attach each category to the context
+                    _context.Attach(category);
+
+                    // Add the new record to the category's URLs collection
+                    category.URLs?.Add(newRecord);
+                }
+            }
             return newRecord;
         }
 
@@ -111,27 +118,34 @@ namespace URLShortenerAPI.Services
         /// <summary>
         /// Resolves the category by name or creates a new one if it does not exist.
         /// </summary>
-        /// <param name="categoryName">The name of the category to resolve.</param>
+        /// <param name="categoryString">The name of the category to resolve.</param>
         /// <param name="user">The associated user who owns the category.</param>
         /// <returns>A <see cref="URLCategoryModel"/> representing the resolved or created category.</returns>
-        private async Task<URLCategoryModel> ResolveOrCreateCategory(string categoryName, UserModel user)
+        private async Task<List<URLCategoryModel>> ResolveOrCreateCategory(string categoryString, UserModel user)
         {
-            // Attempt to resolve the category by title.
-            URLCategoryModel? category = await _context.URLCategories
-                                        .FirstOrDefaultAsync(c => c.Title == categoryName);
+            var categories = categoryString.Split(',').Select(x => x.Trim());
+            List<URLCategoryModel> result = new List<URLCategoryModel>();
 
-            // If the category doesn't exist, we create a new one.
-            if (category == null)
+            foreach (var x in categories)
             {
-                category = new URLCategoryModel
+                // Attempt to resolve the category by title.
+                URLCategoryModel? category = await _context.URLCategories
+                                            .FirstOrDefaultAsync(c => c.Title == x);
+
+                // If the category doesn't exist, we create a new one.
+                if (category == null)
                 {
-                    Title = categoryName,
-                    User = user,
-                    URLs = []
-                };
-                await _context.URLCategories.AddAsync(category);
+                    category = new URLCategoryModel
+                    {
+                        Title = categoryString,
+                        User = user,
+                        URLs = []
+                    };
+                    await _context.URLCategories.AddAsync(category);
+                }
+                result.Add(category);
             }
-            return category;
+            return result;
         }
 
         /// <summary>
@@ -164,6 +178,7 @@ namespace URLShortenerAPI.Services
                 ?? throw new NotFoundException($"URL {urlID} Does not Exist");
             return URLModelToDTO(url);
         }
+
         /// <summary>
         /// Activate or Deactivates the url.
         /// </summary>
@@ -176,6 +191,7 @@ namespace URLShortenerAPI.Services
             url.IsActive = !url.IsActive;
             return;
         }
+
         /// <summary>
         /// Takes A long URL and converts it to shortened version.
         /// </summary>
@@ -191,6 +207,7 @@ namespace URLShortenerAPI.Services
 
             return shortenedURL;
         }
+
         /// <summary>
         /// solves a collision by adding a suffix to the shortened version of URL.
         /// </summary>
@@ -206,6 +223,19 @@ namespace URLShortenerAPI.Services
             while (await _context.URLs.AnyAsync(x => x.ShortCode == shortURL));
 
             return shortURL;
+        }
+
+        /// <summary>
+        /// Removes a URL from Database.
+        /// </summary>
+        /// <param name="URLID">ID of the URL to remove</param>
+        /// <param name="requestingUsername">the username requesting the deletion.</param>
+        /// <returns></returns>
+        public async Task DeleteURL(int URLID, string requestingUsername)
+        {
+            var url = await _authService.AuthorizeURLAccessAsync(URLID, requestingUsername);
+            _context.URLs.Remove(url);
+            return;
         }
 
         private URLDTO URLModelToDTO(URLModel url)

@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.CustomClass;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services
@@ -39,7 +41,7 @@ namespace URLShortenerAPI.Services
         {
             UserModel? user = await _context.Users
                 .Include(u => u.URLs)!
-                .ThenInclude(u => u.Category)
+                .ThenInclude(u => u.Categories)
                 .Include(u => u.URLs)!
                 .ThenInclude(u => u.URLAnalytics)
                 .AsNoTracking()
@@ -59,6 +61,31 @@ namespace URLShortenerAPI.Services
             UserModel? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == Username) ?? throw new NotFoundException($"User {Username} Does not Exist");
 
             return UserModelToDTO(user);
+        }
+
+        public async Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername)
+        {
+            await _authService.AuthorizeURLsAccessAsync(userID, reqUsername);
+
+            // get the total of URLs a user has shortened.
+            var totalCount = await _context.URLs.CountAsync(x => x.UserID == userID);
+            // Fetch the paginated URLs
+            var URLs = await _context.URLs
+                .Where(u => u.UserID == userID)
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = URLs.Select(_mapper.Map<URLDTO>).ToList();
+            return new PagedResult<URLDTO>
+            {
+                Items = result,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
         }
 
         /// <summary>

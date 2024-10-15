@@ -6,6 +6,7 @@ namespace URLShortenerAPI.Services.Interfaces
     internal interface IAuthService
     {
         public string GenerateJWToken(string Username, string Role, string Email);
+        public Task AuthorizeURLsAccessAsync(int userID, string reqUsername);
         public Task<UserModel> AuthorizeUserAccessAsync(int UserID, string reqUsername);
         public Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username);
         public string GenerateRefreshToken();

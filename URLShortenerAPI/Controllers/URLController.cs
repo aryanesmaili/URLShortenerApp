@@ -105,5 +105,39 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, e.Message);
             }
         }
+        [Authorize(Policy = "AllUsers")]
+        [HttpDelete("Delete/{id:int]")]
+        public async Task<IActionResult> DeleteURL(int id)
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                await _urlService.DeleteURL(id, username!);
+                return Ok();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+
+            catch (NotAuthorizedException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
+            {
+                ErrorResponse response = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace?.ToString() ?? ""
+                };
+                return StatusCode(500, response);
+            }
+        }
     }
 }

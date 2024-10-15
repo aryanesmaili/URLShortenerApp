@@ -8,5 +8,6 @@ namespace URLShortenerAPI.Services.Interfaces
         public Task<URLDTO> AddURL(URLCreateDTO url, string username);
         public Task ToggleActivation(int URLID, string reqUsername);
         public Task<string> ShortURLGenerator(string LongURL);
+        public Task DeleteURL(int URLID, string reqUsername);
     }
 }

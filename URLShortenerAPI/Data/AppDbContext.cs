@@ -35,10 +35,8 @@ namespace URLShortenerAPI.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<URLModel>()
-                .HasOne(x => x.Category)
-                .WithMany(x => x.URLs)
-                .HasForeignKey(x => x.CategoryID)
-                .OnDelete(DeleteBehavior.NoAction);
+                .HasMany(x => x.Categories)
+                .WithMany(x => x.URLs);
 
             builder.Entity<URLModel>()
                 .HasOne(x => x.URLAnalytics)

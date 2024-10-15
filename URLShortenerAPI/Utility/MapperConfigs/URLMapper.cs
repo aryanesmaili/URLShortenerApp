@@ -18,7 +18,7 @@ namespace URLShortenerAPI.Utility.MapperConfigs
             CreateMap<URLCreateDTO, URLModel>()
                 .ForMember(u => u.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(u => u.Clicks, opt => opt.MapFrom(src => new List<ClickInfoModel>()))
-                .ForMember(u => u.Category, opt => opt.Ignore())
+                .ForMember(u => u.Categories, opt => opt.Ignore())
                 ;
 
         }

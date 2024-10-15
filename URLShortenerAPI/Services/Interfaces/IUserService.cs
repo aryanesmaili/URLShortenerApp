@@ -1,4 +1,6 @@
-﻿using URLShortenerAPI.Data.Entities.User;
+﻿using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.User;
+using URLShortenerAPI.Utility.CustomClass;
 
 namespace URLShortenerAPI.Services.Interfaces
 {
@@ -10,6 +12,7 @@ namespace URLShortenerAPI.Services.Interfaces
         public Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
         public Task<UserLoginResponse> LoginUserAsync(UserLoginDTO user);
         public Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);
+        public Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername);
         public Task DeleteUserAsync(int id);
         public Task<UserDTO> ResetPasswordAsync(string Identifier);
         public Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername);

@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using URLShortenerAPI.Data.Entities.Analytics;
+﻿using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
@@ -22,7 +21,7 @@ namespace URLShortenerAPI.Data.Entities.URL
         public ICollection<ClickInfoModel>? Clicks { get; set; }
 
         public int? CategoryID { get; set; }
-        public URLCategoryModel? Category { get; set; }
+        public ICollection<URLCategoryModel>? Categories { get; set; }
 
         public int URLAnalyticsID { get; set; }
         public URLAnalyticsModel? URLAnalytics { get; set; }
@@ -42,6 +41,7 @@ namespace URLShortenerAPI.Data.Entities.URL
         public int? CategoryID { get; set; }
         public int URLAnalyticsID { get; set; }
     }
+
     public class URLCreateDTO
     {
         public required string LongURL { get; set; }

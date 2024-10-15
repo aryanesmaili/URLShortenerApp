@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pexita.Utility.Exceptions;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Security.Cryptography.Xml;
 using System.Text.Json;
+using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.CustomClass;
 using URLShortenerAPI.Utility.Exceptions;
-using YamlDotNet.Core.Tokens;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -32,6 +31,50 @@ namespace URLShortenerAPI.Controllers
             _userLoginValidator = userLoginValidator;
             _userUpdateValidator = userUpdateValidator;
         }
+        [Authorize("AllUsers")]
+        [HttpGet("Profile/{userId}")]
+        public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                if (pageNumber < 1)
+                    return BadRequest("Page number must be greater than or equal to 1.");
+
+                else if (pageSize < 1)
+                    return BadRequest("Page size must be greater than or equal to 1.");
+
+                var result = await _userService.GetPagedResult(userId, pageNumber, pageSize, username!);
+
+                if (result.Items.Count == 0)
+                    return NotFound("No URLs found for the specified user.");
+
+                return Ok(result);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (NotAuthorizedException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                ErrorResponse response = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace?.ToString() ?? ""
+                };
+                return StatusCode(500, response);
+            }
+        }
+
         [Authorize(Policy = "AllUsers")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById([FromRoute] int id)
@@ -39,24 +82,6 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 var result = await _userService.GetUserByIDAsync(id);
-                return Ok(result);
-            }
-            catch (NotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
-        }
-        [Authorize(Policy = "AllUsers")]
-        [HttpGet("Profile/{id:int}")]
-        public async Task<IActionResult> GetUserFullInfo([FromRoute] int id)
-        {
-            try
-            {
-                var result = await _userService.GetFullUserInfoAsync(id);
                 return Ok(result);
             }
             catch (NotFoundException e)

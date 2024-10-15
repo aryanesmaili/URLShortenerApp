@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pexita.Utility.Exceptions;
+using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -18,6 +19,19 @@ namespace URLShortenerAPI.Services
         private readonly AppDbContext _context = context;
         private readonly JwtSettings _jwtSettings = jwtSettings;
 
+        public async Task AuthorizeURLsAccessAsync(int userID, string reqUsername)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(reqUsername);
+
+            UserModel reqUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == reqUsername)
+                ?? throw new NotFoundException($"user {reqUsername} Does not Exist");
+
+            if (!await _context.Users.AnyAsync(x => x.ID == userID))
+                throw new NotFoundException($"user {userID} Does not Exist");
+
+            else if (reqUser.ID != userID)
+                throw new NotAuthorizedException($"User {reqUsername} cannot access user {userID}'s URLs.");
+        }
         /// <summary>
         /// Authorizes whether a given username has authority to access a url.
         /// </summary>
@@ -28,11 +42,11 @@ namespace URLShortenerAPI.Services
         /// <exception cref="NotAuthorizedException"></exception>
         public async Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(username));
+            ArgumentException.ThrowIfNullOrEmpty(username);
             URLModel url = await _context.URLs
                 .Include(x => x.User)
                 .Include(x => x.Clicks)
-                .Include(x => x.Category)
+                .Include(x => x.Categories)
                 .Include(x => x.URLAnalytics)
                 .FirstOrDefaultAsync(x => x.ID == urlID)
                 ?? throw new NotFoundException($"URL {urlID} Does not exist.");
@@ -54,7 +68,7 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="UserID"></param>
         /// <param name="reqUsername"></param>
-        /// <returns>the usermodel to be modified.</returns>
+        /// <returns>the <see cref="UserModel"/> to be modified.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
         /// <exception cref="NotAuthorizedException"></exception>
