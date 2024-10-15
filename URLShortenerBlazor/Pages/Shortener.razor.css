@@ -1,0 +1,242 @@
+﻿/* Global styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Container styles */
+.container {
+    max-width: 1100px;
+    padding: 0 !important;
+}
+
+.container-border {
+    border: rgb(230, 230, 230) solid 2px;
+    border-top: none;
+}
+
+/* Color classes */
+.text-purple {
+    color: #6f42c1;
+}
+
+.bg-purple {
+    background-color: #6f42c1;
+}
+
+/* Button styles */
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.btn-purple {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+    .btn-purple:hover,
+    .btn-purple:focus {
+        background-color: #5a30a2;
+        border-color: #5a30a2;
+        color: white;
+    }
+
+.btn-icon {
+    background-color: transparent;
+    /* Transparent background */
+    border: none;
+    /* Remove border */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    padding: 5px;
+    /* Padding around icon */
+    transition: color 0.3s;
+    /* Transition for hover effect */
+    color: green;
+}
+
+    .btn-icon:hover {
+        color: #007bff;
+        /* Change color on hover */
+    }
+
+/* Button for Bootstrap switch */
+.btn-check:focus + .btn {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-check:checked + .btn {
+    background-color: #6f42c1;
+    color: white;
+    border-color: #6f42c1;
+}
+
+    .btn-check:checked + .btn:hover {
+        background-color: #5a30a2;
+        border-color: #5a30a2;
+    }
+
+/* Card styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    background-color: #6f42c1;
+    color: white;
+}
+
+/* Header styles */
+.header {
+    background-color: #6f42c1;
+    color: white;
+}
+
+    .header h1 {
+        font-weight: 700;
+        font-size: larger;
+        margin: 0;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        margin: 0;
+        text-indent: 10px;
+    }
+
+/* Badge styles */
+.badge {
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 2px;
+    /* Add some space between badges */
+}
+
+.badge-purple {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Form styles */
+.form-control {
+    border-radius: 8px;
+}
+
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+
+.form-group {
+    margin-left: 20px !important;
+}
+
+/* Switch control styles */
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    margin-top: 0.25em;
+}
+
+    .form-switch .form-check-input:checked {
+        background-color: #5a30a2 !important;
+        border-color: #5a30a2 !important;
+    }
+
+/* Textarea for batch URL input */
+.batch-url-area {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+#batchDescription {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+#description {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+/* Button styles specific to forms */
+.button-style {
+    margin-left: 20px !important;
+    width: 95%;
+}
+
+/* Text decoration class */
+.dec {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+/* Table styles */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .table thead th {
+        background-color: #6f42c1;
+        color: white;
+        border: none;
+    }
+
+    .table tbody tr {
+        background-color: #fff;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+        border: none;
+    }
+
+    .table td {
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+        /* Specific column styles for wrapping text */
+        .table td:nth-child(2),
+        .table td:nth-child(4) {
+            max-width: 200px;
+        }
+
+        .table td:nth-child(5) {
+            max-width: 200px;
+            white-space: normal;
+            word-wrap: break-word;
+            /* Break long words to avoid overflow */
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+/* Responsive styles */
+@media (max-width: 576px) {
+    .card-header .h5 {
+        font-size: 1rem;
+    }
+
+    .form-switch .form-check-label {
+        font-size: 0.9rem;
+    }
+}
+
+/* Bootstrap focus overrides */
+.btn:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+}

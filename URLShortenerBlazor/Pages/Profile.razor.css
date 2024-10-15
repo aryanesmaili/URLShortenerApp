@@ -1,100 +1,70 @@
 body {
-    background-color: #f4f4f4;
-    /* Light background for the entire page */
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .container {
-    margin-top: 30px;
-    border-radius: 10px;
+    max-width: 1400px;
+    margin-top: 50px;
+    margin-bottom: 50px;
 }
 
-.profile-header {
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
     background-color: #6f42c1;
-    /* Primary color */
     color: white;
-    padding: 20px;
-    border-radius: 10px 10px 0 0;
-    /* Rounded corners at the top */
-    text-align: center;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 30px;
 }
 
 .profile-info {
     background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    /* Subtle shadow */
-    margin-top: 20px;
-    text-align: center;
-    /* Apply text-center here */
+    padding: 30px;
 }
 
-    .profile-info .icon {
-        font-size: 18px;
-        color: #007bff;
-        /* Icon color */
+    .profile-info i {
+        color: #6f42c1;
         margin-right: 10px;
     }
 
-.profile-info-item {
-    display: flex;
-    justify-content: center;
-    /* Horizontally center */
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    /* Subtle border between items */
+.table {
+    margin-top: 30px;
 }
 
-.profile-info h5,
-.profile-info h6 {
-    margin: 0;
-    color: #333;
-}
+    .table th {
+        background-color: #6f42c1;
+        color: white;
+        font-weight: 500;
+    }
 
-.url-list {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    /* Subtle shadow */
-    margin-top: 20px;
-}
-
-.table th {
-    background-color: #007bff;
-    /* Table header background */
-    color: white;
-    /* Table header text color */
-}
-
-.table td {
-    vertical-align: middle;
-    /* Center align content vertically */
-}
+    .table td {
+        vertical-align: middle;
+    }
 
 .btn-analytics {
     background-color: #28a745;
-    /* Green background for the Analytics button */
     color: white;
-    /* White text color */
 }
 
     .btn-analytics:hover {
         background-color: #218838;
-        /* Darker green on hover */
     }
 
-.profile-pic img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    /* Ensures the image fills the container without distorting */
-    border-radius: 15px;
-    /* Or apply to the container if needed */
+.badge {
+    font-size: 0.8em;
+    margin-right: 5px;
 }
 
-thead th {
-    background-color: #6f42c1 !important;
+.table-responsive {
+    overflow-x: auto;
+}
+
+.user-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
 }

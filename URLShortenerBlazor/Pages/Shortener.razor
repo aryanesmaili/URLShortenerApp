@@ -1,0 +1,157 @@
+﻿@page "/URLShortener"
+
+<body class="bg-light">
+    <div class="container py-5">
+        <header class="text-center mb-5">
+            <h1 class="display-4 text-purple">URL Shortener</h1>
+            <p class="lead">Simplify your links with ease!</p>
+        </header>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-purple text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Shorten Your URLs</h2>
+                    <div class="d-flex justify-content-center align-items-center">
+                        <label class="me-2" for="modeSwitch">Single Mode</label> <!-- Label on the left -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="modeSwitch">
+                        </div>
+                        <label class="ms-2" for="modeSwitch">Batch Mode</label> <!-- Label on the right -->
+                    </div>
+
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="singleMode">
+                    <form id="singleForm">
+                        <div class="mb-3">
+                            <label for="longUrl" class="form-label">Long URL <span style="color:red;">*</span></label>
+                            <input type="url" class="form-control" id="longUrl" placeholder="https://www.example.com"
+                                   required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categories" class="form-label">URL Categories (Comma Separated)</label>
+                            <input type="text" class="form-control" id="categories"
+                                   placeholder="LordOfTheRings, Western-Cinima, Telegram_Channel">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" rows="3"
+                                      placeholder="These URLs are related to the Lord Of The Rings Trilogy."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="active" checked>
+                            <label class="form-check-label" for="active">Active</label>
+                        </div>
+                        <button type="submit" class="btn btn-purple">Shorten!</button>
+                    </form>
+                </div>
+                <div id="batchMode" style="display: none;">
+                    <form id="batchForm">
+                        <div class="mb-3">
+                            <label for="batchUrls" class="form-label">
+                                List of URLs (one per line) <span style="color:red;">*</span>
+                            </label>
+                            <textarea class="form-control batch-url-area" id="batchUrls" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="batchCategories" class="form-label">URL Categories (Comma Separated)</label>
+                            <input type="text" class="form-control" id="batchCategories"
+                                   placeholder="LordOfTheRings, Western-Cinima, Telegram_Channel">
+                        </div>
+                        <div class="mb-3">
+                            <label for="batchDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="batchDescription" rows="3"
+                                      placeholder="These URLs are related to the Lord Of The Rings Trilogy."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="batchActive" checked>
+                            <label class="form-check-label" for="batchActive">Active</label>
+                        </div>
+                        <button type="submit" class="btn btn-purple">Shorten Batch!</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-purple">
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Short Code</th>
+                            <th>Long URL</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>This is My First URL1222222222222222222222222222222222222222222222222222222222</td>
+                            <td><a href="#" class="text-decoration-none">uio5b2</a></td>
+                            <td class="text-truncate">www.example.com12222222222222222222222222222/</td>
+                            <td>
+                                <span class="badge bg-purple">Cinema</span>
+                                <span class="badge bg-purple">Cinema</span>
+                                <span class="badge bg-purple">CinemaisgoodsoImadethisURL</span>
+                                <span class="badge bg-purple">Cinema</span>
+                                <span class="badge bg-purple">Cinema</span>
+                                <span class="badge bg-purple">Cinema</span>
+                            </td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-icon" title="Copy URL">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Add more rows as needed -->
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-muted">
+                <small>
+                    ** The shortcodes specified are estimates, may be different after the real
+                    shortening!
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modeSwitch = document.getElementById('modeSwitch');
+            const singleMode = document.getElementById('singleMode');
+            const batchMode = document.getElementById('batchMode');
+
+            modeSwitch.addEventListener('change', function () {
+                if (this.checked) {
+                    singleMode.style.display = 'none';
+                    batchMode.style.display = 'block';
+                } else {
+                    singleMode.style.display = 'block';
+                    batchMode.style.display = 'none';
+                }
+            });
+
+            // Form submission handlers
+            document.getElementById('singleForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                // Add your single URL shortening logic here
+                console.log('Single URL form submitted');
+            });
+
+            document.getElementById('batchForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                // Add your batch URL shortening logic here
+                console.log('Batch URL form submitted');
+            });
+        });
+    </script>
+</body>
