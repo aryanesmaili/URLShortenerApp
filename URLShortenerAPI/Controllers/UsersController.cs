@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pexita.Utility.Exceptions;
+using SharedDataModels.DTOs;
 using System.Security.Claims;
 using System.Text.Json;
-using URLShortenerAPI.Data.Entities.URL;
-using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.CustomClass;
 using URLShortenerAPI.Utility.Exceptions;
