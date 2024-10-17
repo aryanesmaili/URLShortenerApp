@@ -38,7 +38,7 @@ namespace URLShortenerAPI.Services
             if (urlRecord == null)
             {
                 urlRecord = await ResolveURLFromDatabaseAsync(shortCode);
-                await _cacheService.SetAsync("URL", shortCode, urlRecord);
+                await _cacheService.SetAsync(shortCode, urlRecord);
             }
 
             _context.Attach(urlRecord); // to prevent PostgreSQL from throwing duplicate PK Error.
@@ -76,7 +76,7 @@ namespace URLShortenerAPI.Services
         /// <returns>a <see cref="URLModel"/> record cached in Redis.</returns>
         private async Task<URLModel?> ResolveURLFromCacheAsync(string shortCode)
         {
-            return await _cacheService.GetValueAsync<URLModel>("URL", shortCode);
+            return await _cacheService.GetValueAsync<URLModel>(shortCode);
         }
         /// <summary>
         /// fetches a URL from database by query.
