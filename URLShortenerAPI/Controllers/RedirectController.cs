@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Pexita.Utility.Exceptions;
-using URLShortenerAPI.Data;
-using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Data.Entities.Analytics;
+using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {
@@ -26,7 +25,7 @@ namespace URLShortenerAPI.Controllers
                 var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
                 var headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
-                var result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers });
+                var result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
                 return Ok(result);
             }
             catch (NotFoundException e)

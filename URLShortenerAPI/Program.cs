@@ -38,6 +38,10 @@ builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<ICacheService, CacheService>();
 builder.Services.AddTransient<IIPInfoService, IPInfoService>();
 
+builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
+
+builder.Services.AddHostedService<ClickProcessService>(); // Background Service.
+
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
 builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
