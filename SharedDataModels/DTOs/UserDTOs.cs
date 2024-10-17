@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 namespace SharedDataModels.DTOs
 {
-
-
     public class UserDTO
     {
         public int ID { get; set; }
@@ -45,8 +43,8 @@ namespace SharedDataModels.DTOs
 
     public class UserLoginDTO
     {
-        public required string Identifier { get; set; } // could be email or password or phone number.
-        public required string Password { get; set; }
+        public string? Identifier { get; set; } // could be email or password or phone number.
+        public string? Password { get; set; }
     }
 
     public class UserLoginResponse

@@ -45,7 +45,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("AddURL")]
-        public async Task<IActionResult> AddURL([FromForm] URLCreateDTO createDTO)
+        public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
             var username = User.FindFirstValue(ClaimTypes.Name);
             try

@@ -112,7 +112,7 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromForm] UserLoginDTO LoginInfo)
+        public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
         {
             try
             {
@@ -129,6 +129,7 @@ namespace URLShortenerAPI.Controllers
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
                 return Ok(result.User);
             }
+
             catch (NotFoundException e)
             {
                 return NotFound(e.Message);
@@ -154,7 +155,7 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromForm] UserCreateDTO userCreateDTO)
+        public async Task<IActionResult> Register([FromBody] UserCreateDTO userCreateDTO)
         {
             try
             {
@@ -178,7 +179,7 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromForm] string identifier)
+        public async Task<IActionResult> ResetPassword([FromBody] string identifier)
         {
             try
             {
@@ -286,11 +287,13 @@ namespace URLShortenerAPI.Controllers
         }
         [Authorize(Policy = "AllUsers")]
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken()
         {
             try
             {
-                var result = await _userService.TokenRefresher(refreshToken);
+                var refreshToken = Request.Cookies["refreshToken"];
+
+                var result = await _userService.TokenRefresher(refreshToken!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 return Ok(result);
@@ -310,7 +313,7 @@ namespace URLShortenerAPI.Controllers
         }
         [Authorize(Policy = "AllUsers")]
         [HttpPut("UpdateUser")]
-        public async Task<IActionResult> UpdateUser([FromForm] UserUpdateDTO user)
+        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
         {
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
