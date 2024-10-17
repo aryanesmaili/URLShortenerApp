@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Pexita.Utility.Exceptions;
 using SharedDataModels.DTOs;
 using System.Security.Claims;
 using URLShortenerAPI.Services.Interfaces;

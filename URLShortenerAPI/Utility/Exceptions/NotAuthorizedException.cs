@@ -1,4 +1,4 @@
-﻿namespace Pexita.Utility.Exceptions
+﻿namespace URLShortenerAPI.Utility.Exceptions
 {
     public class NotAuthorizedException : Exception
     {

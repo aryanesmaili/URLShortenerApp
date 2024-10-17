@@ -1,5 +1,5 @@
-﻿using SharedDataModels.DTOs;
-using URLShortenerAPI.Utility.CustomClass;
+﻿using SharedDataModels.CustomClasses;
+using SharedDataModels.DTOs;
 
 namespace URLShortenerAPI.Services.Interfaces
 {

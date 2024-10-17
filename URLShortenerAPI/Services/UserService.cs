@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pexita.Utility.Exceptions;
+using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Utility.CustomClass;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services

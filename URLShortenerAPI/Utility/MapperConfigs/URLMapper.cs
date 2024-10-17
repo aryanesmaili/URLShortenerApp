@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Pexita.Utility.Exceptions;
+using URLShortenerAPI.Utility.Exceptions;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;

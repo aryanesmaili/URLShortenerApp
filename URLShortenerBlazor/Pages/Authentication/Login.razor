@@ -46,7 +46,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<UserDTO>();
-                await LocalStorage.SetItemAsync("authToken", result.JWToken);
+                await LocalStorage.SetItemAsync("authToken", result!.JWToken);
                 Navigation.NavigateTo("/");
             }
             else

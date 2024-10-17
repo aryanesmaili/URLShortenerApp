@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;

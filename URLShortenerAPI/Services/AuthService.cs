@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pexita.Utility.Exceptions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -10,6 +9,7 @@ using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services
 {

@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Utility.CustomClass
+﻿namespace SharedDataModels.CustomClasses
 {
     public class PagedResult<T>
     {
