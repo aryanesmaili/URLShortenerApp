@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SharedDataModels.DTOs;
 using URLShortenerAPI.Data.Entities.Analytics;
 
 namespace URLShortenerAPI.Utility.MapperConfigs
