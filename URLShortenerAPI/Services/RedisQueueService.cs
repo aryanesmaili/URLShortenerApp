@@ -18,7 +18,12 @@ namespace URLShortenerAPI.Services
             _serializerOptions = new()
             { ReferenceHandler = ReferenceHandler.Preserve };
         }
-
+        /// <summary>
+        /// Adds an item to the Redis Queue.
+        /// </summary>
+        /// <typeparam name="T">Type of the item to be added.</typeparam>
+        /// <param name="Data">the object to be added.</param>
+        /// <returns></returns>
         public async Task EnqueueItem<T>(T Data) where T : class
         {
             // Serialize info to JSON
@@ -27,7 +32,11 @@ namespace URLShortenerAPI.Services
             // Push the serialized info onto a Redis list (queue)
             await _db.ListLeftPushAsync(typeof(T).Name.ToLower(), infoJason);
         }
-
+        /// <summary>
+        /// pulls an item out of the Redis queue.
+        /// </summary>
+        /// <typeparam name="T">type of the data you ask.</typeparam>
+        /// <returns>an item of type <typeparamref name="T"/> pulled from redis queue. </returns>
         public async Task<T?> DequeueItem<T>() where T : class
         {
             // Get Item from Queue

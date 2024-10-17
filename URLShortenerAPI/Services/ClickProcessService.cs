@@ -27,6 +27,11 @@ namespace URLShortenerAPI.Services
             {
                 IncomingRequestInfo? itemToProcess = await _redisQueueService.DequeueItem<IncomingRequestInfo>();
 
+                if (itemToProcess == null) // means the queue is empty.
+                {
+                    await Task.Delay(30000, stoppingToken);
+                    continue;
+                }
                 await ProcessClick(itemToProcess!);
 
                 // to process 20 items per minute to save hardware resources.
