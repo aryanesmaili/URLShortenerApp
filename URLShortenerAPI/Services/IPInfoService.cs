@@ -1,8 +1,5 @@
 ﻿using IPinfo;
 using IPinfo.Models;
-using Microsoft.Extensions.Options;
-using System.Text.Json;
-using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Services.Interfaces;
 namespace URLShortenerAPI.Services
 {

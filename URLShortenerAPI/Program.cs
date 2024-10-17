@@ -1,16 +1,14 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
+using System.Text;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Services;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.MapperConfigs;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using URLShortenerAPI.Data.Entities.Settings;
-using IPinfo;
-using DeviceDetectorNET.Parser.Device;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,5 +1,4 @@
-﻿using SharedDataModels.DTOs;
-using URLShortenerAPI.Data.Entities.URL;
+﻿using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Data.Entities.URLCategory

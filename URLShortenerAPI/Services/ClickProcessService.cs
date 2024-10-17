@@ -1,14 +1,11 @@
-﻿using DeviceDetectorNET.Cache;
+﻿using DeviceDetectorNET;
+using DeviceDetectorNET.Cache;
 using DeviceDetectorNET.Parser;
-using DeviceDetectorNET;
-using System.Net;
-using System.Security.Policy;
+using Microsoft.EntityFrameworkCore;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
-using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace URLShortenerAPI.Services
 {

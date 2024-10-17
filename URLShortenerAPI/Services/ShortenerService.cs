@@ -1,14 +1,8 @@
-﻿using Pexita.Utility.Exceptions;
-using System.Security.Cryptography;
-using System.Text;
-using URLShortenerAPI.Data;
-using URLShortenerAPI.Data.Entities.URL;
-using URLShortenerAPI.Services.Interfaces;
+﻿using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Services
 {
     using System;
-    using System.Security;
     using System.Security.Cryptography;
     using System.Text;
 

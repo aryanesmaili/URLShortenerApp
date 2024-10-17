@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using System.Net.Mail;
 using System.Net;
-using URLShortenerAPI.Services.Interfaces;
+using System.Net.Mail;
 using URLShortenerAPI.Data.Entities.Settings;
+using URLShortenerAPI.Services.Interfaces;
 
 namespace URLShortenerAPI.Services
 {

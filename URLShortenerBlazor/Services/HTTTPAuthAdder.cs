@@ -1,7 +1,6 @@
-﻿using System.Net.Http;
+﻿using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Blazored.LocalStorage;
 
 namespace URLShortenerBlazor.Services
 {

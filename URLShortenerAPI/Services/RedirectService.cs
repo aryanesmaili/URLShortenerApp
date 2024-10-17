@@ -1,11 +1,7 @@
-﻿using DeviceDetectorNET;
-using DeviceDetectorNET.Cache;
-using DeviceDetectorNET.Parser;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pexita.Utility.Exceptions;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
-using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Services.Interfaces;
 

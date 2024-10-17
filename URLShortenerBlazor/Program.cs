@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using URLShortenerBlazor;
 using Blazored.LocalStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using URLShortenerBlazor;
 using URLShortenerBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

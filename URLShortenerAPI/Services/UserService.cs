@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Pexita.Utility.Exceptions;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.CustomClass;
@@ -89,46 +88,46 @@ namespace URLShortenerAPI.Services
             };
         }
 
-            /// <summary>
-            /// logs a user in and gives them respective tokens to surf across webpages.
-            /// </summary>
-            /// <param name="info">user login info</param>
-            /// <returns>a <see cref="UserInfoDTO"/> object containing information.</returns>
-            /// <exception cref="NotFoundException"></exception>
-            /// <exception cref="NotAuthorizedException"></exception>
-            public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
+        /// <summary>
+        /// logs a user in and gives them respective tokens to surf across webpages.
+        /// </summary>
+        /// <param name="info">user login info</param>
+        /// <returns>a <see cref="UserInfoDTO"/> object containing information.</returns>
+        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="NotAuthorizedException"></exception>
+        public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
+        {
+            UserModel? user = null;
+            if (info.Identifier.IsEmail())
+
+                user = await _context.Users.FirstOrDefaultAsync(x => x.Email == info.Identifier) ?? throw new NotFoundException($"No user with email {info.Identifier} exists.");
+            else
+                user = await _context.Users.FirstOrDefaultAsync(u => u.Username == info.Identifier) ?? throw new NotFoundException($"No user with username {info.Identifier} exists.");
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(info.Password, user?.PasswordHash))
+                throw new ArgumentException("Username or Password is not correct");
+
+            UserDTO userDTO = UserModelToDTO(user!);
+            userDTO.JWToken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
+            string rawRefreshToken = _authService.GenerateRefreshToken();
+            RefreshToken refreshToken = new()
             {
-                UserModel? user = null;
-                if (info.Identifier.IsEmail())
+                Token = rawRefreshToken,
+                User = user,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow,
+                UserId = user.ID
+            };
 
-                    user = await _context.Users.FirstOrDefaultAsync(x => x.Email == info.Identifier) ?? throw new NotFoundException($"No user with email {info.Identifier} exists.");
-                else
-                    user = await _context.Users.FirstOrDefaultAsync(u => u.Username == info.Identifier) ?? throw new NotFoundException($"No user with username {info.Identifier} exists.");
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
 
-                if (user == null || !BCrypt.Net.BCrypt.Verify(info.Password, user?.PasswordHash))
-                    throw new ArgumentException("Username or Password is not correct");
+            RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
+            UserLoginResponse response = new()
+            { User = userDTO, RefreshToken = refreshTokenDTO };
 
-                UserDTO userDTO = UserModelToDTO(user!);
-                userDTO.JWToken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
-                string rawRefreshToken = _authService.GenerateRefreshToken();
-                RefreshToken refreshToken = new()
-                {
-                    Token = rawRefreshToken,
-                    User = user,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Created = DateTime.UtcNow,
-                    UserId = user.ID
-                };
-
-                await _context.RefreshTokens.AddAsync(refreshToken);
-                await _context.SaveChangesAsync();
-
-                RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
-                UserLoginResponse response = new()
-                { User = userDTO, RefreshToken = refreshTokenDTO };
-
-                return response;
-            }
+            return response;
+        }
 
         /// <summary>
         /// registers a new user.
