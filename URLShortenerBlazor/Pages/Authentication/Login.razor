@@ -1,16 +1,20 @@
 ﻿@page "/Login"
+@using SharedDataModels.DTOs;
+@inject HttpClient client
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card custom-shadow p-4" style="width: 350px;background-color:  #6f42c1; color:white;">
+    <div class="card custom-shadow p-4" style="width: 350px;background-color: #6f42c1; color:white;">
         <h3 class="text-center mb-4">Login</h3>
-        <form>
+        <EditForm Model="@loginDTO" OnValidSubmit="HandleLogin">
             <div class="mb-3">
                 <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                <InputText @bind-Value="loginDTO.Identifier" type="email" class="form-control" id="email" placeholder="Enter your email" required />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                <InputText @bind-Value="loginDTO.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Login</button>
@@ -21,9 +25,38 @@
             <div class="mt-2 text-center">
                 <small>Don't have an account? <a href="/Signup">Sign up</a></small>
             </div>
-        </form>
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+        </EditForm>
     </div>
 </div>
-@code{
-    
+
+@code {
+    UserLoginDTO? loginDTO = new UserLoginDTO(); // Initialize DTO
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var response = await client.PostAsJsonAsync("api/Users/login", loginDTO);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UserDTO>();
+                await LocalStorage.SetItemAsync("authToken", result.JWToken);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Invalid login credentials. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+    }
 }
