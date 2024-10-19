@@ -104,7 +104,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
         [Authorize(Policy = "AllUsers")]
-        [HttpDelete("Delete/{id:int]")]
+        [HttpDelete("Delete/{id:int}")]
         public async Task<IActionResult> DeleteURL(int id)
         {
             var username = User.FindFirstValue(ClaimTypes.Name);
