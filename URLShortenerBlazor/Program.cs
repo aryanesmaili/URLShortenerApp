@@ -6,13 +6,16 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using URLShortenerBlazor;
 using URLShortenerBlazor.Services;
+using URLShortenerBlazor.Services.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddBlazoredLocalStorage();
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5261") });
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)
@@ -20,8 +23,7 @@ builder.Services
     .AddFontAwesomeIcons();
 
 builder.Services.AddScoped<HTTTPAuthAdder>();
-
-builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("https://Pexita.Click"))
+builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("http://localhost:5261"))
 
     .AddHttpMessageHandler<HTTTPAuthAdder>();
 

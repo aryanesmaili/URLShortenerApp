@@ -3,6 +3,8 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IAuthenticationService AuthService
+
 
 <div class="page">
     <nav class="navbar navbar-expand-lg navigationbar">
@@ -19,21 +21,27 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/URLShortener">Shortener</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Profile">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" @onclick="Logout">Logout</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/signup">Sign Up</a>
-                    </li>
+                    @if (isLoggedIn)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/URLShortener">Shortener</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Profile">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" @onclick="Logout">Logout</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/signup">Sign Up</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -79,19 +87,16 @@
     private int userID;
     protected override async Task OnInitializedAsync()
     {
-        var jwt = await localStorage.GetItemAsync<string>("jwt");
-        isLoggedIn = !string.IsNullOrEmpty(jwt);
-        userID = await localStorage.GetItemAsync<int>("userID");
+        isLoggedIn = await AuthService.IsLoggedInAsync();
+
+        if (isLoggedIn)
+            userID = (await localStorage.GetItemAsync<UserDTO>("user"))!.ID;
     }
 
     private async Task Logout()
     {
-        string? refreshToken = await localStorage.GetItemAsync<string>("refreshToken") ?? "";
+        await AuthService.LogOut();
         isLoggedIn = false;
-        var content = new StringContent(refreshToken, Encoding.UTF8, "application/json");
-        await Http.PostAsync("/api/Users/logout", content);
-        await localStorage.RemoveItemAsync("jwt");
-        await localStorage.RemoveItemAsync("refreshToken");
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/");
     }
 }

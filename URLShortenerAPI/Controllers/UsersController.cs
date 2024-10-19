@@ -257,11 +257,20 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("Logout")]
-        public async Task<IActionResult> Logout([FromBody] string refreshToken)
+        public async Task<IActionResult> Logout()
         {
+            // Retrieve the refresh token from the cookies
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            {
+                return BadRequest("No refresh token found in cookies.");
+            }
+
             try
             {
+                // Invalidate the refresh token in the database
                 await _userService.RevokeTokenAsync(refreshToken);
+
+                // Remove the cookie
                 Response.Cookies.Append("refreshToken", "", new CookieOptions
                 {
                     HttpOnly = true,
@@ -269,6 +278,7 @@ namespace URLShortenerAPI.Controllers
                     Secure = true, // Ensure it's HTTPS only if needed
                     SameSite = SameSiteMode.Strict // You can set SameSite as per your requirements
                 });
+
                 return Ok();
             }
             catch (NotFoundException e)
@@ -284,6 +294,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, e.Message);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken()
