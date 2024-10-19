@@ -12,13 +12,13 @@ namespace URLShortenerAPI.Services
     internal class ClickProcessService : BackgroundService
     {
         private readonly IRedisQueueService _redisQueueService;
-        private readonly AppDbContext _context;
-        private readonly IPInfoService _ipInfoService;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IIPInfoService _ipInfoService;
 
-        public ClickProcessService(IRedisQueueService redisQueueService, AppDbContext context, IPInfoService ipInfoService)
+        public ClickProcessService(IRedisQueueService redisQueueService, IServiceProvider serviceProvider, IIPInfoService ipInfoService)
         {
             _redisQueueService = redisQueueService;
-            _context = context;
+            _serviceProvider = serviceProvider;
             _ipInfoService = ipInfoService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,7 +32,12 @@ namespace URLShortenerAPI.Services
                     await Task.Delay(30000, stoppingToken);
                     continue;
                 }
-                await ProcessClick(itemToProcess!);
+
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    await ProcessClick(itemToProcess!, dbContext);
+                }
 
                 // to process 20 items per minute to save hardware resources.
                 await Task.Delay(3000, stoppingToken);
@@ -44,14 +49,14 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="requestInfo">Information about the click.</param>
         /// <returns></returns>
-        public async Task ProcessClick(IncomingRequestInfo requestInfo)
+        public async Task ProcessClick(IncomingRequestInfo requestInfo, AppDbContext context)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                if (_context.Entry(requestInfo.URL!).State == EntityState.Detached)
+                if (context.Entry(requestInfo.URL!).State == EntityState.Detached)
                 {
-                    _context.Attach(requestInfo.URL!); // to avoid postgreSQL from throwing PK error.
+                    context.Attach(requestInfo.URL!); // to avoid postgreSQL from throwing PK error.
                 }
 
                 ClickInfoModel clickInfo = new()
@@ -72,12 +77,12 @@ namespace URLShortenerAPI.Services
 
 
                 // Add click info, location, and device info to the database.
-                await _context.Clicks.AddAsync(clickInfo);
-                await _context.LocationInfos.AddAsync(locationInfo);
-                await _context.DeviceInfos.AddAsync(deviceInfo);
+                await context.Clicks.AddAsync(clickInfo);
+                await context.LocationInfos.AddAsync(locationInfo);
+                await context.DeviceInfos.AddAsync(deviceInfo);
 
                 // Save everything to database
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 // commit as transaction to ensure atomicity (all or nothing)
                 await transaction.CommitAsync();

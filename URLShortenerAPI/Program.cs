@@ -26,6 +26,7 @@ var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
 
 // Add services to the container.
+
 builder.Services.AddSingleton<IIPInfoService, IPInfoService>();
 
 builder.Services.AddTransient<IUserService, UserService>();
@@ -34,7 +35,6 @@ builder.Services.AddTransient<IURLService, URLService>();
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<ICacheService, CacheService>();
-builder.Services.AddTransient<IIPInfoService, IPInfoService>();
 
 builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
 
@@ -52,12 +52,17 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
-                {
-                    builder.WithOrigins("https://localhost:7112").AllowAnyHeader().AllowAnyMethod();
-                });
+    {
+        builder
+            .WithOrigins("http://localhost:5083")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();  // Important for cookies/authentication
+    });
 });
 
 
@@ -109,6 +114,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors();
 
 app.UseAuthorization();
 

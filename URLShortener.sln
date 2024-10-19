@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "URLShortenerBlazor", "URLSh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "URLShortenerAPI", "URLShortenerAPI\URLShortenerAPI.csproj", "{838B61ED-34DD-4180-8535-8FD222E76D5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedDataModels", "SharedDataModels\SharedDataModels.csproj", "{669D1524-1210-409F-8CCC-F46700A8CD6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedDataModels", "SharedDataModels\SharedDataModels.csproj", "{669D1524-1210-409F-8CCC-F46700A8CD6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

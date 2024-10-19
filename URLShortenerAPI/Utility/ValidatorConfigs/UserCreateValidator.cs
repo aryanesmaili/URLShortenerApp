@@ -19,7 +19,7 @@ namespace URLShortenerAPI.Utility.ValidatorConfigs
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .EmailAddress()
-                .Must(x => !_userService.IsEmailTaken(x));
+                .Must(x => !_userService.IsEmailTaken(x)).WithMessage("Email Taken");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
@@ -34,7 +34,7 @@ namespace URLShortenerAPI.Utility.ValidatorConfigs
             RuleFor(x => x.Username)
                 .NotEmpty()
                 .MinimumLength(5)
-                .Must(x => !_userService.IsUser(x));
+                .Must(x => !_userService.IsUser(x)).WithMessage($"Username Taken.");
         }
     }
     public class UserUpdateValidator : AbstractValidator<UserUpdateDTO>
