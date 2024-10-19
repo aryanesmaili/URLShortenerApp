@@ -1,4 +1,6 @@
-﻿namespace SharedDataModels.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SharedDataModels.DTOs
 {
     public class URLDTO
     {
@@ -17,6 +19,7 @@
 
     public class URLCreateDTO
     {
+        [Required]
         public required string LongURL { get; set; }
         public string? Description { get; set; }
         public bool IsActive { get; set; }

@@ -4,17 +4,22 @@
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
 
+@if(loginDTO != null)
+{
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card custom-shadow p-4" style="width: 350px;background-color: #6f42c1; color:white;">
         <h3 class="text-center mb-4">Login</h3>
         <EditForm Model="@loginDTO" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator/>
             <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <InputText @bind-Value="loginDTO.Identifier" type="email" class="form-control" id="email" placeholder="Enter your email" required />
+                <label for="email" class="form-label">Email address Or Username</label>
+                <InputText @bind-Value="loginDTO.Identifier" type="text" class="form-control" id="identifier" placeholder="Email or username" required />
+                <ValidationMessage For="() => loginDTO.Identifier"/>>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <InputText @bind-Value="loginDTO.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
+                <ValidationMessage For="() => loginDTO.Password" />
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Login</button>
@@ -32,6 +37,7 @@
         </EditForm>
     </div>
 </div>
+}
 
 @code {
     UserLoginDTO? loginDTO = new UserLoginDTO(); // Initialize DTO
@@ -41,7 +47,7 @@
     {
         try
         {
-            var response = await client.PostAsJsonAsync("api/Users/login", loginDTO);
+            var response = await client.PostAsJsonAsync("http://localhost:5261/api/Users/Login", loginDTO);
 
             if (response.IsSuccessStatusCode)
             {
@@ -51,7 +57,7 @@
             }
             else
             {
-                errorMessage = "Invalid login credentials. Please try again.";
+                errorMessage = $"{response.StatusCode}: {response.Content}";
             }
         }
         catch (Exception ex)
