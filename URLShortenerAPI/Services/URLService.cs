@@ -25,25 +25,26 @@ namespace URLShortenerAPI.Services
             _shortenerService = shortenerService;
             _cacheService = cacheService;
         }
+
         /// <summary>
         /// Adds a new URL to the database after checking if this operation is authorized.
         /// </summary>
-        /// <param name="url">The object containing information about the new URL to be added.</param>
+        /// <param name="createDTO">The object containing information about the new URL to be added.</param>
         /// <param name="username">The username of the user requesting this operation.</param>
         /// <returns>A <see cref="URLDTO"/> object representing the newly added URL.</returns>
         /// <exception cref="NotAuthorizedException">Thrown when the user is not authorized.</exception>
         /// <exception cref="ArgumentException">Thrown when the URL already exists for the user.</exception>
         /// <exception cref="Exception">Thrown when there's an error saving the URL record.</exception>
-        public async Task<URLDTO> AddURL(URLCreateDTO url, string username)
+        public async Task<URLDTO> AddURL(URLCreateDTO createDTO, string username)
         {
             // Authorize user access. This throws an exception if the user is not authorized.
-            UserModel user = await _authService.AuthorizeUserAccessAsync(url.UserID, username);
+            UserModel user = await _authService.AuthorizeUserAccessAsync(createDTO.UserID, username);
 
             // Check if the user has already shortened this URL. Throws an exception if it exists.
-            await EnsureURLDoesNotExistAsync(url.LongURL, url.UserID);
+            await EnsureURLDoesNotExistAsync(createDTO.LongURL, createDTO.UserID);
 
             // Create a new URLModel object to be added to the database.
-            URLModel newRecord = await CreateNewURLRecord(url, user);
+            URLModel newRecord = await CreateNewURLRecord(createDTO, user);
 
             // Save the new record to the database using a transaction for atomicity.
             await SaveURLRecordWithTransaction(newRecord);
@@ -52,6 +53,68 @@ namespace URLShortenerAPI.Services
             await _cacheService.SetAsync(newRecord.ShortCode, newRecord);
 
             return URLModelToDTO(newRecord);
+        }
+
+        /// <summary>
+        /// Adds a batch of URLs to Database.
+        /// </summary>
+        /// <param name="batchURL">the batch of URLs to be added.</param>
+        /// <param name="username">username of the user requesting the Addition.</param>
+        /// <returns>a response containing two lists, one for the new URLs that have been added, another for URLs that already existed.</returns>
+        public async Task<BatchURLAdditionResponse> AddBatchURL(List<URLCreateDTO> batchURL, string username)
+        {
+            // get userID of the user asking the addition.
+            int userID = batchURL[0].UserID;
+
+            // Authorize user access. This throws an exception if the user is not authorized.
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, username);
+
+            // the HashSet of all the new URLs to be added. later used to pull out the new ones. HashSet helps with avoiding duplicates.
+            HashSet<string> AllNewURLs = batchURL.Select(x => x.LongURL).ToHashSet();
+
+            // Check if the user has already shortened any of these URLs. returns the list of already existing URLs.
+            HashSet<URLModel> conflictURLs = (await EnsureURLDoesNotExistAsync(AllNewURLs, userID)).ToHashSet();
+
+            // getting the HashSet of LongURLs that already exist in our URL. HashSet helps with avoiding duplicates and has faster search time.
+            HashSet<string> alreadyExistingURLs = conflictURLs.Select(x => x.LongURL).ToHashSet();
+
+            // Filter unique URLs in batchURL that are not already existing
+            List<URLCreateDTO> uniqueItems = batchURL.Where(unique => !alreadyExistingURLs.Contains(unique.LongURL)).ToList();
+
+            // creating a list of tasks do be done. this benefits from concurrency.
+            List<Task<URLModel>> tasks = uniqueItems.Select(async x => await CreateNewURLRecord(x, user)).ToList();
+
+            // executing the tasks
+            List<URLModel> newRecords = (await Task.WhenAll(tasks)).ToList();
+
+            // we save the new URLs in a transaction to ensure Atomicity(all done or nothing done).
+            await SaveURLRecordWithTransaction(newRecords);
+
+            // We cache all of the new URLs in Redis right away.
+            await _cacheService.SetRange(newRecords, "ShortCode");
+
+            // Creating a list of new records that were added.
+            List<URLDTO> newURLs = newRecords.Select(_mapper.Map<URLDTO>).ToList();
+
+            // Creating a list of already existing URLs that were not added.
+            List<URLDTO> conflicts = conflictURLs.Select(_mapper.Map<URLDTO>).ToList();
+
+            // Creating the response to be returned to user.
+            BatchURLAdditionResponse response = new() { NewURLs = newURLs, ConflictedURLs = conflicts };
+            return response;
+        }
+
+        /// <summary>
+        /// Checks the database to see if certain URLs exist.
+        /// </summary>
+        /// <param name="longURLs">the HashSet of URLs to be checked.</param>
+        /// <param name="userID">ID of the owner.</param>
+        /// <returns></returns>
+        private async Task<List<URLModel>> EnsureURLDoesNotExistAsync(HashSet<string> longURLs, int userID)
+        {
+            // Check if the URL already exists for this user.
+            List<URLModel> URLs = await _context.URLs.AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();
+            return URLs;
         }
 
         /// <summary>
@@ -101,6 +164,32 @@ namespace URLShortenerAPI.Services
             {
                 // Add the new URL to the context and save changes.
                 await _context.URLs.AddAsync(newRecord);
+                await _context.SaveChangesAsync();
+
+                // Commit the transaction if everything succeeded.
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                // If an error occurs, roll back the transaction.
+                await transaction.RollbackAsync();
+                throw new ApplicationException("Failed to save URL record", ex);
+            }
+        }
+
+        /// <summary>
+        /// Adds the batch of new Records to database in a transaction.
+        /// </summary>
+        /// <param name="newRecords">the list containing the new records to be added.</param>
+        /// <returns></returns>
+        /// <exception cref="ApplicationException"></exception>
+        private async Task SaveURLRecordWithTransaction(List<URLModel> newRecords)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Add the new URLs to the context and save changes.
+                await _context.URLs.AddRangeAsync(newRecords);
                 await _context.SaveChangesAsync();
 
                 // Commit the transaction if everything succeeded.
