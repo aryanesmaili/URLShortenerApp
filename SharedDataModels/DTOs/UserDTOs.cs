@@ -23,35 +23,42 @@ namespace SharedDataModels.DTOs
 
     public class UserCreateDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Full Name is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Full Name should have at least 5 Characters and at most 64 Characters.")]
         public required string Name { get; set; }
-        [Required]
-        [EmailAddress]
+
+        [Required(ErrorMessage = "Email is Required.")]
+        [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
         public required string Email { get; set; }
-        [Required]
-        [Length(5, 32)]
+
+        [Required(ErrorMessage = "Username is Required.")]
+        [Length(5, 32, ErrorMessage = "Your Username should have at least 5 Characters and at most 32 Characters.")]
         public required string Username { get; set; }
-        [Required]
-        [Length(5, 64)]
+
+        [Required(ErrorMessage = "Password is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
         public required string Password { get; set; }
-        [Required]
-        [Length(5, 64)]
+
+        [Required(ErrorMessage = "Confirm Password is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
+        [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
         public required string ConfirmPassword { get; set; }
     }
     public class UserUpdateDTO
     {
         public int ID { get; set; }
         public string? Name { get; set; }
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
         public string? Email { get; set; }
         public string? Username { get; set; }
     }
 
     public class UserLoginDTO
     {
-        [Required]
-        public string? Identifier { get; set; } // could be email or password or phone number.
-        [Required]
+        [Required(ErrorMessage = "Email or Username is Required.")]
+        public string? Identifier { get; set; } // could be email or Username.
+        [Required(ErrorMessage = "Password is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
         public string? Password { get; set; }
     }
 
@@ -63,13 +70,16 @@ namespace SharedDataModels.DTOs
 
     public class ChangePasswordRequest
     {
-        [Required]
+        [Required(ErrorMessage ="A valid UserInfo is required.")]
         public required UserDTO UserInfo { get; set; }
-        [Required]
-        [Length(5, 64)]
+
+        [Required(ErrorMessage = "Password is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
         public required string NewPassword { get; set; }
-        [Required]
-        [Length(5, 64)]
+
+        [Required(ErrorMessage = "Confirm Password is Required.")]
+        [Length(5, 64, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
+        [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
         public required string ConfirmPassword { get; set; }
     }
     public class RefreshTokenDTO
@@ -79,6 +89,5 @@ namespace SharedDataModels.DTOs
         public DateTime Expires { get; set; }
         public DateTime Created { get; set; }
     }
-
 }
 
