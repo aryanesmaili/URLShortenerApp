@@ -1,4 +1,5 @@
-﻿@page "/URLShortener"
+﻿@page "/URLShortener/{url?}"
+@inject IAuthenticationService AuthService
 
 <body class="bg-light pt-5">
     <div class="container py-5">
@@ -12,66 +13,70 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="h5 mb-0">Shorten Your URLs</h2>
                     <div class="d-flex justify-content-center align-items-center">
-                        <label class="me-2" for="modeSwitch">Single Mode</label> <!-- Label on the left -->
+                        <label class="me-2" for="modeSwitch">Single Mode</label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="modeSwitch">
                         </div>
-                        <label class="ms-2" for="modeSwitch">Batch Mode</label> <!-- Label on the right -->
+                        <label class="ms-2" for="modeSwitch">Batch Mode</label>
                     </div>
 
                 </div>
             </div>
             <div class="card-body">
                 <div id="singleMode">
-                    <form id="singleForm">
+                    <EditForm Model="@urlCreate" OnValidSubmit="HandleSubmit" id="singleForm">
+                        <DataAnnotationsValidator />
                         <div class="mb-3">
                             <label for="longUrl" class="form-label">Long URL <span style="color:red;">*</span></label>
-                            <input type="url" class="form-control" id="longUrl" placeholder="https://www.example.com"
-                                   required>
+                            <InputText @bind-Value="urlCreate.LongURL" type="url" class="form-control" id="longUrl" placeholder="https://www.example.com"
+                                       required />
+                            <ValidationMessage For="() => urlCreate.LongURL" />
                         </div>
                         <div class="mb-3">
                             <label for="categories" class="form-label">URL Categories (Comma Separated)</label>
-                            <input type="text" class="form-control" id="categories"
-                                   placeholder="LordOfTheRings, Western-Cinima, Telegram_Channel">
+                            <InputText @bind-Value="urlCreate.Category" type="text" class="form-control" id="categories"
+                                       placeholder="LordOfTheRings, Western-Cinema, Telegram_Channel" />
+                            <ValidationMessage For="() => urlCreate.Category " />
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" rows="3"
+                            <textarea @bind="urlCreate.Description" @bind:event="onchange" class="form-control" id="description" rows="3"
                                       placeholder="These URLs are related to the Lord Of The Rings Trilogy."></textarea>
+                            <ValidationMessage For="() => urlCreate.Description" />
                         </div>
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="active" checked>
+                            <InputCheckbox @bind-Value="urlCreate.IsActive" type="checkbox" class="form-check-input" id="active" checked />
                             <label class="form-check-label" for="active">Active</label>
                         </div>
                         <button type="submit" class="btn btn-purple">Shorten!</button>
-                    </form>
+                    </EditForm>
                 </div>
-                <div id="batchMode" style="display: none;">
-                    <form id="batchForm">
-                        <div class="mb-3">
-                            <label for="batchUrls" class="form-label">
-                                List of URLs (one per line) <span style="color:red;">*</span>
-                            </label>
-                            <textarea class="form-control batch-url-area" id="batchUrls" rows="5" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="batchCategories" class="form-label">URL Categories (Comma Separated)</label>
-                            <input type="text" class="form-control" id="batchCategories"
-                                   placeholder="LordOfTheRings, Western-Cinima, Telegram_Channel">
-                        </div>
-                        <div class="mb-3">
-                            <label for="batchDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="batchDescription" rows="3"
-                                      placeholder="These URLs are related to the Lord Of The Rings Trilogy."></textarea>
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="batchActive" checked>
-                            <label class="form-check-label" for="batchActive">Active</label>
-                        </div>
-                        <button type="submit" class="btn btn-purple">Shorten Batch!</button>
-                    </form>
-                </div>
-            </div>
+                 <div id="batchMode" style="display: none;">
+                     <form id="batchForm">
+                         <div class="mb-3">
+                             <label for="batchUrls" class="form-label">
+                                 List of URLs (one per line) <span style="color:red;">*</span>
+                             </label>
+                             <textarea class="form-control batch-url-area" id="batchUrls" rows="5" required></textarea>
+                         </div>
+                         <div class="mb-3">
+                             <label for="batchCategories" class="form-label">URL Categories (Comma Separated)</label>
+                             <input type="text" class="form-control" id="batchCategories"
+                                    placeholder="LordOfTheRings, Western-Cinima, Telegram_Channel">
+                         </div>
+                         <div class="mb-3">
+                             <label for="batchDescription" class="form-label">Description</label>
+                             <textarea class="form-control" id="batchDescription" rows="3"
+                                       placeholder="These URLs are related to the Lord Of The Rings Trilogy."></textarea>
+                         </div>
+                         <div class="mb-3 form-check">
+                             <input type="checkbox" class="form-check-input" id="batchActive" checked>
+                             <label class="form-check-label" for="batchActive">Active</label>
+                         </div>
+                         <button type="submit" class="btn btn-purple">Shorten Batch!</button>
+                     </form>
+                 </div>
+             </div>
         </div>
 
         <div class="mt-5">
@@ -155,3 +160,25 @@
         });
     </script>
 </body>
+@code {
+    [Parameter]
+    public string? url { get; set; }
+
+    URLCreateDTO urlCreate = new()
+        {
+            LongURL = string.Empty,
+            UserID = 0 
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        urlCreate.LongURL = string.IsNullOrEmpty(url) ? string.Empty : url;
+        urlCreate.UserID = await AuthService.GetUserID();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+
+    }
+}

@@ -58,5 +58,9 @@ namespace URLShortenerBlazor.Services
 
             throw new Exception(await response.Content.ReadAsStringAsync());
         }
+        public async Task<int> GetUserID()
+        {
+            return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;
+        }
     }
 }

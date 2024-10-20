@@ -41,7 +41,7 @@ img {
     display: flex;
 }
 
-    .input-container input {
+    .input-container ::deep input {
         flex-grow: 1;
         padding: 10px 15px;
         border: 2px solid #fff;
@@ -63,6 +63,7 @@ img {
         .input-container button:hover {
             background-color: #218838;
         }
+
 
 #url-preview {
     margin-top: 1rem;
@@ -250,6 +251,10 @@ img {
         margin-bottom: 5px;
     }
 
+    .cta a {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
 
 footer {
     position: relative;

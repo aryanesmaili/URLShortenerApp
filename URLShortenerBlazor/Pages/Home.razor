@@ -1,13 +1,13 @@
 ﻿@page "/"
-
+@inject NavigationManager Navigation
 <PageTitle>Pexita URL Shortener</PageTitle>
 
 <header class="hero">
     <div class="container">
         <h1 class="mb-5">Welcome to Pexita</h1>
         <div class="input-container">
-            <input type="text" placeholder="Enter your long URL here" aria-label="URL input">
-            <button type="button" class="btn btn-primary">Shorten Now!</button>
+            <InputText @bind-Value="input.url" type="text" placeholder="Long URL" aria-label="URL input" />
+            <button type="submit" @onclick="HandleClick" class="btn btn-primary">Shorten Now!</button>
         </div>
         <p id="url-preview" class="mt-3">Your shortened URL will appear here</p>
     </div>
@@ -112,3 +112,15 @@
     <h2 class="title pb-3">Ready to get started?</h2>
     <a href="/URLShortener" class="btn btn-primary">Start Shortening Your URLs Now!</a>
 </section>
+
+@code {
+    private class Input
+    {
+        public string url = string.Empty;
+    }
+    private Input input = new();
+    private void HandleClick()
+    {
+        Navigation.NavigateTo($"/URLShortener/{input.url}");
+    }
+}

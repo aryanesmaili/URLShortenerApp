@@ -8,5 +8,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public Task LogOut();
         public Task Login(UserLoginDTO userLogin);
         public Task Register(UserCreateDTO userCreateDTO);
+        Task<int> GetUserID();
     }
 }
