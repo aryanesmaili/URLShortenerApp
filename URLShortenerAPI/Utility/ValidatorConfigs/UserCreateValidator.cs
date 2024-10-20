@@ -18,7 +18,7 @@ namespace URLShortenerAPI.Utility.ValidatorConfigs
 
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .EmailAddress()
+                .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$").WithMessage("Invalid email address format.")
                 .Must(x => !_userService.IsEmailTaken(x)).WithMessage("Email Taken");
 
             RuleFor(x => x.Password)
