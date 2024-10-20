@@ -1,11 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using URLShortenerAPI.Services.Interfaces;
-using YamlDotNet.Core.Tokens;
 namespace URLShortenerAPI.Services
 {
     internal class CacheService : ICacheService

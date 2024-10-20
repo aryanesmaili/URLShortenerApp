@@ -1,5 +1,4 @@
 ﻿using SharedDataModels.DTOs;
-using URLShortenerAPI.Data.Entities.URL;
 
 namespace URLShortenerAPI.Services.Interfaces
 {

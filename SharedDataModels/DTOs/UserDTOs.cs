@@ -70,7 +70,7 @@ namespace SharedDataModels.DTOs
 
     public class ChangePasswordRequest
     {
-        [Required(ErrorMessage ="A valid UserInfo is required.")]
+        [Required(ErrorMessage = "A valid UserInfo is required.")]
         public required UserDTO UserInfo { get; set; }
 
         [Required(ErrorMessage = "Password is Required.")]

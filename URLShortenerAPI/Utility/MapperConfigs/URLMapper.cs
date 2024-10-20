@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using URLShortenerAPI.Utility.Exceptions;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
+using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Utility.MapperConfigs
 {
