@@ -1,28 +1,51 @@
 ﻿@page "/SignUp"
+@using System.Text.Json
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Register</PageTitle>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card custom-shadow p-4" style="width: 350px; background-color: #6f42c1; color: white;">
         <h3 class="text-center mb-4">Register</h3>
-        <form>
+            
+            @if (errorMessage?.Count != 0 && errorMessage is not null)
+            {
+                <div class="alert alert-danger mb-2 py-1">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var error in errorMessage)
+                        {
+                            <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+        <EditForm Model="userInfo" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
             <div class="mb-3">
                 <label for="name" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="name" placeholder="Enter your Full Name" required>
+                <InputText @bind-Value="userInfo.Name" type="text" class="form-control" id="name" placeholder="Enter your Full Name" required />
+                <ValidationMessage For="() => userInfo.Name" />
             </div>
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+                <InputText @bind-Value="userInfo.Username" type="text" class="form-control" id="username" placeholder="Enter your username" required />
+                <ValidationMessage For="() =>userInfo.Username" />
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                <InputText @bind-Value="userInfo.Email" type="email" class="form-control" id="email" placeholder="Enter your email" required />
+                <ValidationMessage For="() => userInfo.Email" />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                <InputText @bind-Value="userInfo.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
+                <ValidationMessage For="() => userInfo.Password" />
             </div>
             <div class="mb-3">
                 <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                <InputText @bind-Value="userInfo.ConfirmPassword" type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required />
+                <ValidationMessage For="() => userInfo.ConfirmPassword" />
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Register</button>
@@ -30,6 +53,45 @@
             <div class="mt-3 text-center">
                 <small>Already have an account? <a href="/login">Login</a></small>
             </div>
-        </form>
+        </EditForm>
     </div>
 </div>
+
+
+@code {
+    private UserCreateDTO userInfo = new UserCreateDTO
+        {
+            Name = string.Empty,
+            Email = string.Empty,
+            Username = string.Empty,
+            Password = string.Empty,
+            ConfirmPassword = string.Empty
+        };
+    private List<string>? errorMessage;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            if (userInfo is null)
+                throw new ArgumentException($"Input cannot be null.");
+
+            await AuthService.Register(userInfo);
+
+            Navigation.NavigateTo("/Login");
+        }
+
+        catch (Exception ex)
+        {
+            try
+            {
+                errorMessage = JsonSerializer.Deserialize<List<string>>(ex.Message)!;
+            }
+            catch (JsonException)
+            {
+                // this means the error wasn't a list and it was a single string.
+                errorMessage = new() { ex.Message };
+            }
+        }
+    }
+}

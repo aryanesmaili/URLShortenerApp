@@ -84,3 +84,13 @@ footer {
             color: #ffcc00;
             /* Change color on hover */
         }
+
+
+.alert {
+    padding: 0 !important;
+}
+
+.list-group-item {
+    border: none !important;
+    padding: 0 !important;
+}

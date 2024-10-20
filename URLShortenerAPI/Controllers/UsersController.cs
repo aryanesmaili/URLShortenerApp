@@ -139,7 +139,14 @@ namespace URLShortenerAPI.Controllers
             }
             catch (ValidationException e)
             {
-                return BadRequest(e.Message);
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+
+                return BadRequest(errors);
             }
             catch (Exception e)
             {
@@ -169,7 +176,14 @@ namespace URLShortenerAPI.Controllers
             }
             catch (ValidationException e)
             {
-                return BadRequest(e.Message);
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+
+                return BadRequest(errors);
             }
             catch (Exception e)
             {
