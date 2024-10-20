@@ -27,6 +27,12 @@ namespace SharedDataModels.DTOs
         public required int UserID { get; set; }
     }
 
+    public class BatchURLAdditionResponse
+    {
+        public List<URLDTO>? NewURLs { get; set; }
+        public List<URLDTO>? ConflictedURLs { get; set; }
+    }
+
     public class URLAnalyticsDTO
     {
         public int ID { get; set; }
