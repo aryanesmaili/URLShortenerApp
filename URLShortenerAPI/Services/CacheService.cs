@@ -1,23 +1,56 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using URLShortenerAPI.Services.Interfaces;
+using YamlDotNet.Core.Tokens;
 namespace URLShortenerAPI.Services
 {
     internal class CacheService : ICacheService
     {
         private readonly IDistributedCache _cache;
         private readonly IConnectionMultiplexer _redis;
+        private readonly IDatabase _batchRedis;
         private readonly JsonSerializerOptions _serializerOptions;
         public CacheService(IDistributedCache cache, IConnectionMultiplexer redis)
         {
             _cache = cache;
             _redis = redis;
+            _batchRedis = redis.GetDatabase();
             _serializerOptions = new()
             { ReferenceHandler = ReferenceHandler.Preserve };
         }
+
+        /// <summary>
+        /// Adds A batch of items to cache.
+        /// </summary>
+        /// <typeparam name="T">Type of the Item to be added.</typeparam>
+        /// <param name="items"> the items to be added.</param>
+        /// <param name="propertyNameForKey">the property in the type to be used as unique identifier (Reflection)</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async Task SetRange<T>(List<T> items, string propertyNameForKey)
+        {
+            var batch = _batchRedis.CreateBatch();
+
+            foreach (var item in items)
+            {
+                var propertyInfo = typeof(T).GetProperty(propertyNameForKey) ?? throw new ArgumentException($"Property '{propertyNameForKey}' does not exist on type '{typeof(T).Name}'.");
+
+                var key = typeof(T).Name.ToLower() + "_" + propertyInfo.GetValue(item)?.ToString();
+
+                if (key != null)
+                {
+                    string content = JsonSerializer.Serialize(item, _serializerOptions);
+                    // Set the value in Redis with the property in the key.
+                    await batch.StringSetAsync(key, content, TimeSpan.FromDays(3), When.NotExists);
+                }
+            }
+            batch.Execute();
+        }
+
         /// <summary>
         /// Sets a value in Redis Cache in type_Key:Value format (e.g URL_a62b53:Value).
         /// </summary>
@@ -32,6 +65,7 @@ namespace URLShortenerAPI.Services
             var content = Encoding.UTF8.GetBytes(serializedData);
             await _cache.SetAsync(typeof(T).Name.ToLower() + "_" + key, content, new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromDays(1) });
         }
+
         /// <summary>
         /// gets all data saved in Redis cache.
         /// </summary>
@@ -67,6 +101,7 @@ namespace URLShortenerAPI.Services
             }
             return result;
         }
+
         /// <summary>
         /// Gets a Value from Redis Cache based on Type_Key:Value format (e.g URL_a62b53:Value).
         /// </summary>
@@ -82,6 +117,7 @@ namespace URLShortenerAPI.Services
 
             return JsonSerializer.Deserialize<T>(cachedData, _serializerOptions);
         }
+
         /// <summary>
         /// Removes a data from redis Cache.
         /// </summary>
