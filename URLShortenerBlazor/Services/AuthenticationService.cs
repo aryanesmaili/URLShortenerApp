@@ -1,9 +1,8 @@
 ﻿using Blazored.LocalStorage;
 using SharedDataModels.DTOs;
 using System.Net.Http.Json;
-using System.Net;
 using URLShortenerBlazor.Services.Interfaces;
-using System.Text.Json;
+
 namespace URLShortenerBlazor.Services
 {
     public class AuthenticationService : IAuthenticationService

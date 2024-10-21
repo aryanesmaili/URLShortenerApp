@@ -16,6 +16,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5261") });
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+builder.Services.AddTransient<IShortenerService, ShortenerService>();
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)
@@ -24,7 +25,6 @@ builder.Services
 
 builder.Services.AddScoped<HTTTPAuthAdder>();
 builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("http://localhost:5261"))
-
     .AddHttpMessageHandler<HTTTPAuthAdder>();
 
 await builder.Build().RunAsync();
