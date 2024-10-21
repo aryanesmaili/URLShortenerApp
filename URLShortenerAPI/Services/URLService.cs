@@ -135,19 +135,10 @@ namespace URLShortenerAPI.Services
             newRecord.ShortCode = await ShortURLGenerator(url.LongURL);
 
             // If a category is specified, resolve or create it.
-            if (!string.IsNullOrEmpty(url.Category))
+            if (!string.IsNullOrEmpty(url.Categories))
             {
-                var categories = await ResolveOrCreateCategory(url.Category, user);
+                var categories = await ResolveOrCreateCategory(url.Categories, user);
                 newRecord.Categories = categories;
-
-                foreach (var category in categories)
-                {
-                    // Attach each category to the context
-                    _context.Attach(category);
-
-                    // Add the new record to the category's URLs collection
-                    category.URLs?.Add(newRecord);
-                }
             }
             return newRecord;
         }
@@ -211,22 +202,23 @@ namespace URLShortenerAPI.Services
         /// <returns>A <see cref="URLCategoryModel"/> representing the resolved or created category.</returns>
         private async Task<List<URLCategoryModel>> ResolveOrCreateCategory(string categoryString, UserModel user)
         {
-            var categories = categoryString.Split(',').Select(x => x.Trim());
-            List<URLCategoryModel> result = new List<URLCategoryModel>();
+            IEnumerable<string> categories = categoryString.Split(',').Select(x => x.Trim());
+            List<URLCategoryModel> result = [];
 
-            foreach (var x in categories)
+            foreach (var categoryName in categories)
             {
                 // Attempt to resolve the category by title.
                 URLCategoryModel? category = await _context.URLCategories
-                                            .FirstOrDefaultAsync(c => c.Title == x);
+                                                .FirstOrDefaultAsync(c => c.Title == categoryName && c.UserID == user.ID);
 
                 // If the category doesn't exist, we create a new one.
                 if (category == null)
                 {
                     category = new URLCategoryModel
                     {
-                        Title = categoryString,
+                        Title = categoryName,
                         User = user,
+                        UserID = user.ID,
                         URLs = []
                     };
                     await _context.URLCategories.AddAsync(category);
@@ -275,8 +267,15 @@ namespace URLShortenerAPI.Services
         /// <returns></returns>
         public async Task ToggleActivation(int URLID, string reqUsername)
         {
+            // first we update db
             URLModel url = await _authService.AuthorizeURLAccessAsync(URLID, reqUsername);
             url.IsActive = !url.IsActive;
+            await _context.SaveChangesAsync();
+            // now we update cache:
+            if (!url.IsActive) // if the url is no longer active
+                await _cacheService.RemoveAsync<URLModel>(url.ShortCode); // we remove the old record.
+            else // if it is active now:
+                await _cacheService.SetAsync(url.ShortCode, url); // we cache it.
             return;
         }
 
