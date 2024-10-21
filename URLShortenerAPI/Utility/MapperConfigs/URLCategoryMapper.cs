@@ -2,7 +2,7 @@
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data.Entities.URLCategory;
 
-namespace URLShortenerAPI.Utility.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs
 {
     internal class URLCategoryMapper : Profile
     {

@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Utility.Exceptions
+﻿namespace SharedDataModels.Responses
 {
     public class APIResponse<T> where T : class
     {

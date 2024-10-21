@@ -6,9 +6,9 @@ using StackExchange.Redis;
 using System.Text;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Settings;
+using URLShortenerAPI.Responses.MapperConfigs;
 using URLShortenerAPI.Services;
 using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Utility.MapperConfigs;
 
 var builder = WebApplication.CreateBuilder(args);
 

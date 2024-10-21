@@ -214,12 +214,12 @@
             ClearFields();
         }
 
-        catch (NotAuthorizedException e)
-        {
-            // Display some kind of error here.
+        // catch (NotAuthorizedException e)
+        // {
+        //     Display some kind of error here.
 
-            Navigation.NavigateTo("/Login", true);
-        }
+        //     Navigation.NavigateTo("/Login", true);
+        // }
         catch (Exception)
         {
 
@@ -248,12 +248,12 @@
             List<BatchURLAdditionResponse> response = await ShortenerService.ShortenBatch(createDTOs);
 
         }
-        catch (NotAuthorizedException e)
-        {
-            // Display some kind of error here.
+        // catch (NotAuthorizedException e)
+        // {
+        //     Display some kind of error here.
 
-            Navigation.NavigateTo("/Login", true);
-        }
+        //     Navigation.NavigateTo("/Login", true);
+        // }
         catch (Exception)
         {
 

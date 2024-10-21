@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedDataModels.Utility.Exceptions;
+using SharedDataModels.Responses;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;

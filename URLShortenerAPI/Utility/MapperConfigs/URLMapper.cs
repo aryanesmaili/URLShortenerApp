@@ -6,7 +6,7 @@ using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Utility.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs
 {
     internal class URLMapper : Profile
     {

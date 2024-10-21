@@ -2,7 +2,7 @@
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Services.Interfaces;
 
-namespace URLShortenerAPI.Utility.ValidatorConfigs
+namespace URLShortenerAPI.Responses.ValidatorConfigs
 {
     public class UserCreateValidator : AbstractValidator<UserCreateDTO>
     {

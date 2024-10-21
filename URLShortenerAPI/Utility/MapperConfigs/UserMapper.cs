@@ -4,7 +4,7 @@ using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 
-namespace URLShortenerAPI.Utility.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs
 {
     internal class UserMapper : Profile
     {

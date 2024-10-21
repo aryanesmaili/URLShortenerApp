@@ -47,7 +47,7 @@ namespace URLShortenerBlazor.Services
 
             else if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
+                //throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
             }
             throw new Exception(await response.Content.ReadAsStringAsync());
         }
@@ -75,7 +75,7 @@ namespace URLShortenerBlazor.Services
 
             else if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
+                //throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
             }
             throw new Exception(await response.Content.ReadAsStringAsync());
         }

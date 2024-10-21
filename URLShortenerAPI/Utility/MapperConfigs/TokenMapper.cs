@@ -2,7 +2,7 @@
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data.Entities.User;
 
-namespace URLShortenerAPI.Utility.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs
 {
     internal class TokenMapper : Profile
     {

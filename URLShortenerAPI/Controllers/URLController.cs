@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.DTOs;
-using SharedDataModels.Utility.Exceptions;
+using SharedDataModels.Responses;
 using System.Security.Claims;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;
