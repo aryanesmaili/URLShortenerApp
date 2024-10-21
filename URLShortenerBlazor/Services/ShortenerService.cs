@@ -1,9 +1,8 @@
 ﻿using SharedDataModels.DTOs;
+using Standart.Hash.xxHash;
+using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.Net;
-using SharedDataModels.Utility.Exceptions;
-using Standart.Hash.xxHash;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
