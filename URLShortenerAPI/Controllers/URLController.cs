@@ -14,11 +14,12 @@ namespace URLShortenerAPI.Controllers
     {
         private readonly IURLService _urlService;
         private readonly IValidator<URLCreateDTO> _validator;
-
-        public URLController(IURLService urlService, IValidator<URLCreateDTO> validator)
+        private readonly IValidator<List<URLCreateDTO>> _listValidator;
+        public URLController(IURLService urlService, IValidator<URLCreateDTO> validator, IValidator<List<URLCreateDTO>> listValidator)
         {
             _urlService = urlService;
             _validator = validator;
+            _listValidator = listValidator;
         }
 
         [Authorize(Policy = "AllUsers")]
@@ -27,7 +28,7 @@ namespace URLShortenerAPI.Controllers
         {
             try
             {
-                var result = await _urlService.GetURL(id);
+                URLDTO result = await _urlService.GetURL(id);
                 return Ok(result);
             }
             catch (NotFoundException e)
@@ -49,12 +50,62 @@ namespace URLShortenerAPI.Controllers
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
 
-                var result = await _urlService.AddURL(createDTO, username!);
+                URLDTO result = await _urlService.AddURL(createDTO, username!);
+                return Ok(result);
+            }
+
+            catch (ValidationException e)
+            {
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+
+                return BadRequest(errors);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (NotAuthorizedException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                var error = new ErrorResponse
+                { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+                return StatusCode(500, error);
+            }
+        }
+        [Authorize(Policy = "AllUsers")]
+        [HttpPost("AddBatchURL")]
+        public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                await _listValidator.ValidateAndThrowAsync(createDTO);
+
+                var result = await _urlService.AddBatchURL(createDTO, username!);
                 return Ok(result);
             }
             catch (ValidationException e)
             {
-                return BadRequest(e.Message);
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+
+                return BadRequest(errors);
             }
             catch (NotFoundException e)
             {
@@ -75,7 +126,6 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, error);
             }
         }
-
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleActivation/{id:int}")]
         public async Task<IActionResult> ToggleActivation(int id)
