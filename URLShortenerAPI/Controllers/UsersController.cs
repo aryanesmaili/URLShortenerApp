@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using IPinfo.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.CustomClasses;
@@ -7,6 +8,7 @@ using SharedDataModels.Utility.Exceptions;
 using System.Security.Claims;
 using System.Text.Json;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -33,43 +35,51 @@ namespace URLShortenerAPI.Controllers
         [HttpGet("Profile/{userId}")]
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
+            APIResponse<PagedResult<URLDTO>> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 if (pageNumber < 1)
-                    return BadRequest("Page number must be greater than or equal to 1.");
+                    throw new ArgumentException("Page number must be greater than or equal to 1.");
 
                 else if (pageSize < 1)
-                    return BadRequest("Page size must be greater than or equal to 1.");
+                    throw new ArgumentException("Page size must be greater than or equal to 1.");
 
-                var result = await _userService.GetPagedResult(userId, pageNumber, pageSize, username!);
+                PagedResult<URLDTO> result = await _userService.GetPagedResult(userId, pageNumber, pageSize, username!);
 
                 if (result.Items.Count == 0)
-                    return NotFound("No URLs found for the specified user.");
-
-                return Ok(result);
+                    throw new NotFoundException("No URLs found for the specified user.");
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
-                return Unauthorized(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                return Unauthorized(response);
             }
             catch (Exception e)
             {
-                DebugErrorResponse response = new()
+                DebugErrorResponse errorResponse = new()
                 {
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",
                     StackTrace = e.StackTrace?.ToString() ?? ""
                 };
-                return StatusCode(500, response);
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -77,42 +87,65 @@ namespace URLShortenerAPI.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById([FromRoute] int id)
         {
+            APIResponse<UserDTO> response;
             try
             {
-                var result = await _userService.GetUserByIDAsync(id);
-                return Ok(result);
+                UserDTO result = await _userService.GetUserByIDAsync(id);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
         [Authorize(Policy = "AllUsers")]
         [HttpGet("{username}")]
         public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
         {
+            APIResponse<UserDTO> response;
             try
             {
-                var result = await _userService.GetUserByUsernameAsync(username);
-                return Ok(result);
+                UserDTO result = await _userService.GetUserByUsernameAsync(username);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
         {
+            APIResponse<UserDTO> response;
             try
             {
                 await _userLoginValidator.ValidateAndThrowAsync(LoginInfo);
@@ -126,16 +159,20 @@ namespace URLShortenerAPI.Controllers
                     Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
-                return Ok(result.User);
+                response = new()
+                { Result = result.User };
+                return Ok(response);
             }
 
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (ValidationException e)
             {
@@ -145,8 +182,9 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
+                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
 
-                return BadRequest(errors);
+                return BadRequest(response);
             }
             catch (Exception e)
             {
@@ -163,16 +201,25 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserCreateDTO userCreateDTO)
         {
+            APIResponse<UserDTO> response;
             try
             {
                 await _userValidator.ValidateAndThrowAsync(userCreateDTO);
 
-                var result = await _userService.RegisterUserAsync(userCreateDTO);
-                return Ok(result);
+                UserDTO result = await _userService.RegisterUserAsync(userCreateDTO);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
+            }
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (ValidationException e)
             {
@@ -182,40 +229,60 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
+                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
 
-                return BadRequest(errors);
+                return BadRequest(response);
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] string identifier)
         {
+            APIResponse<UserDTO> response;
             try
             {
-                var result = await _userService.ResetPasswordAsync(identifier);
-                return Ok(result);
+                UserDTO result = await _userService.ResetPasswordAsync(identifier);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
         [HttpPost("CheckResetCode")]
         public async Task<IActionResult> CheckResetCode([FromQuery] string code, [FromBody] string identifier)
         {
+            APIResponse<UserDTO> response;
             try
             {
                 UserLoginResponse result = await _userService.CheckResetCodeAsync(identifier, code);
@@ -227,45 +294,68 @@ namespace URLShortenerAPI.Controllers
                     Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
-
-                return Ok(result.User);
+                response = new()
+                { Result = result.User };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest reqInfo)
         {
+            APIResponse<UserDTO> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                var result = await _userService.ChangePasswordAsync(reqInfo, username!);
+                UserDTO result = await _userService.ChangePasswordAsync(reqInfo, username!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
-                return Ok(result);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -273,12 +363,12 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
+            APIResponse<string> response;
             // Retrieve the refresh token from the cookies
             if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
             {
                 return BadRequest("No refresh token found in cookies.");
             }
-
             try
             {
                 // Invalidate the refresh token in the database
@@ -297,15 +387,24 @@ namespace URLShortenerAPI.Controllers
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -313,36 +412,51 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken()
         {
+            APIResponse<string> response;
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            {
+                return BadRequest("No refresh token found in cookies.");
+            }
             try
             {
-                var refreshToken = Request.Cookies["refreshToken"];
-
-                var result = await _userService.TokenRefresher(refreshToken!);
+                string result = await _userService.TokenRefresher(refreshToken!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
-                return Ok(result);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
         [Authorize(Policy = "AllUsers")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
         {
+            APIResponse<UserDTO> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                var result = await _userService.UpdateUserInfoAsync(user, username!);
+                UserDTO result = await _userService.UpdateUserInfoAsync(user, username!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
 
@@ -350,21 +464,31 @@ namespace URLShortenerAPI.Controllers
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("Delete/{id:int}")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
+            APIResponse<string> response;
             try
             {
                 await _userService.DeleteUserAsync(id);
@@ -372,11 +496,24 @@ namespace URLShortenerAPI.Controllers
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
+            }
+
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
             }
         }
     }

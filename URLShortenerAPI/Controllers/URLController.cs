@@ -5,6 +5,7 @@ using SharedDataModels.DTOs;
 using System.Security.Claims;
 using URLShortenerAPI.Services.Interfaces;
 using SharedDataModels.Utility.Exceptions;
+using URLShortenerAPI.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
@@ -25,18 +26,25 @@ namespace URLShortenerAPI.Controllers
         [HttpGet("/{id:int}")]
         public async Task<IActionResult> GetURL([FromRoute] int id)
         {
+            APIResponse<URLDTO> response;
             try
             {
                 URLDTO result = await _urlService.GetURL(id);
+                response = new()
+                { Result = result };
                 return Ok(result);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.StackTrace);
+                DebugErrorResponse errorResponse = new()
+                { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -44,13 +52,16 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("AddURL")]
         public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
+            APIResponse<URLDTO> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
 
                 URLDTO result = await _urlService.AddURL(createDTO, username!);
-                return Ok(result);
+                response = new()
+                { Result = result };
+                return Ok(response);
             }
 
             catch (ValidationException e)
@@ -61,20 +72,24 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
+                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
 
-                return BadRequest(errors);
+                return BadRequest(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
-                return Unauthorized(e.Message);
+                response = new() { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                return Unauthorized(response);
             }
             catch (Exception e)
             {
@@ -83,16 +98,20 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, error);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPost("AddBatchURL")]
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
+            APIResponse<BatchURLAdditionResponse> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _listValidator.ValidateAndThrowAsync(createDTO);
 
-                var result = await _urlService.AddBatchURL(createDTO, username!);
+                BatchURLAdditionResponse result = await _urlService.AddBatchURL(createDTO, username!);
+                response = new()
+                { Result = result };
                 return Ok(result);
             }
             catch (ValidationException e)
@@ -104,31 +123,37 @@ namespace URLShortenerAPI.Controllers
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
 
-                return BadRequest(errors);
+                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
+                return BadRequest(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (ArgumentNullException e)
             {
-                return BadRequest(e.Message);
+                response = new() { ErrorType = ErrorType.ArgumentNullException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
-                return Unauthorized(e.Message);
+                response = new() { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                return Unauthorized(response);
             }
             catch (Exception e)
             {
                 var error = new DebugErrorResponse
-                { Message = e.Message, StackTrace = e.StackTrace };
+                { Message = e.Message, StackTrace = e.StackTrace ?? "", InnerException = e.InnerException?.ToString() ?? "" };
                 return StatusCode(500, error);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleActivation/{id:int}")]
         public async Task<IActionResult> ToggleActivation(int id)
         {
+            APIResponse<string> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
@@ -137,53 +162,70 @@ namespace URLShortenerAPI.Controllers
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                return BadRequest(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
             catch (NotAuthorizedException e)
             {
-                return Unauthorized(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                return Unauthorized(response);
             }
             catch (Exception e)
             {
-                return StatusCode(500, e.Message);
+                DebugErrorResponse errorResponse = new()
+                { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+                return StatusCode(500, errorResponse);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpDelete("Delete/{id:int}")]
         public async Task<IActionResult> DeleteURL(int id)
         {
+            APIResponse<string> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _urlService.DeleteURL(id, username!);
                 return Ok();
             }
+
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                return NotFound(response);
             }
 
             catch (NotAuthorizedException e)
             {
-                return Unauthorized(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                return Unauthorized(response);
             }
             catch (ArgumentException e)
             {
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
                 return BadRequest(e.Message);
             }
             catch (Exception e)
             {
-                DebugErrorResponse response = new()
+                DebugErrorResponse errorResponse = new()
                 {
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",
                     StackTrace = e.StackTrace?.ToString() ?? ""
                 };
-                return StatusCode(500, response);
+                return StatusCode(500, errorResponse);
             }
         }
     }

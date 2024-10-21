@@ -2,6 +2,7 @@
 using SharedDataModels.Utility.Exceptions;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -19,22 +20,33 @@ namespace URLShortenerAPI.Controllers
         [HttpGet("{shortCode}")]
         public async Task<IActionResult> RedirectToLongUrl([FromRoute] string shortCode)
         {
+            APIResponse<string> response;
             try
             {
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
-                var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
-                var headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
+                string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+                string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+                Dictionary<string, string?> headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
-                var result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
-                return Ok(result);
+                string result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
+
+                response = new()
+                { Result = result };
+
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                return NotFound(e.Message);
+                response = new()
+                { ErrorType = ErrorType.NotFound, Message = e.Message, };
+
+                return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                return BadRequest(e.Message);
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+
+                return BadRequest(response);
             }
             catch (Exception e)
             {
@@ -43,7 +55,7 @@ namespace URLShortenerAPI.Controllers
                     {
                         Message = e.Message,
                         InnerException = e.InnerException?.ToString() ?? "",
-                        StackTrace = e.StackTrace
+                        StackTrace = e.StackTrace ?? ""
                     };
                 return StatusCode(500, error);
             }
