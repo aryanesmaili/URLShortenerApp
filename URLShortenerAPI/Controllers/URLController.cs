@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.DTOs;
 using System.Security.Claims;
 using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Utility.Exceptions;
-
+using SharedDataModels.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
@@ -79,7 +78,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                var error = new ErrorResponse
+                var error = new DebugErrorResponse
                 { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
                 return StatusCode(500, error);
             }
@@ -121,7 +120,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                var error = new ErrorResponse
+                var error = new DebugErrorResponse
                 { Message = e.Message, StackTrace = e.StackTrace };
                 return StatusCode(500, error);
             }
@@ -178,7 +177,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                ErrorResponse response = new()
+                DebugErrorResponse response = new()
                 {
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",

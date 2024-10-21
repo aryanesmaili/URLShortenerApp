@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
+using SharedDataModels.Utility.Exceptions;
 using System.Security.Claims;
 using System.Text.Json;
 using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -63,7 +63,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                ErrorResponse response = new()
+                DebugErrorResponse response = new()
                 {
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",
@@ -150,7 +150,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                var errorResponse = new ErrorResponse
+                var errorResponse = new DebugErrorResponse
                 {
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",

@@ -1,6 +1,6 @@
 ﻿namespace SharedDataModels.Utility.Exceptions
 {
-    internal class DebugErrorResponse
+    public class DebugErrorResponse
     {
         public string Message { get; set; }
         public string InnerException { get; set; }

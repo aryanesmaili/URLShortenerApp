@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SharedDataModels.Utility.Exceptions;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Utility.Exceptions;
+
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
@@ -37,7 +38,7 @@ namespace URLShortenerAPI.Controllers
             }
             catch (Exception e)
             {
-                ErrorResponse error =
+                DebugErrorResponse error =
                     new()
                     {
                         Message = e.Message,
