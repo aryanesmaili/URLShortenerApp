@@ -9,7 +9,7 @@ namespace URLShortenerAPI.Utility.MapperConfigs
         public URLCategoryMapper()
         {
             CreateMap<URLCategoryModel, CategoryDTO>()
-                .ForMember(x => x.URLs, opt => opt.MapFrom<CategoryURLsResolver>());
+                .ForMember(x => x.URLs, opt => opt.Ignore());
         }
     }
 
@@ -19,7 +19,7 @@ namespace URLShortenerAPI.Utility.MapperConfigs
 
         public List<URLDTO>? Resolve(URLCategoryModel source, CategoryDTO destination, List<URLDTO>? destMember, ResolutionContext context)
         {
-            return source.URLs?.Select(x => _mapper.Map<URLDTO>(x)).ToList();
+            return source.URLs?.Select(_mapper.Map<URLDTO>).ToList();
         }
     }
 }
