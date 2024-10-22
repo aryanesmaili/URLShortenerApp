@@ -61,7 +61,7 @@ namespace URLShortenerAPI.Services
         /// <param name="batchURL">the batch of URLs to be added.</param>
         /// <param name="username">username of the user requesting the Addition.</param>
         /// <returns>a response containing two lists, one for the new URLs that have been added, another for URLs that already existed.</returns>
-        public async Task<BatchURLAdditionResponse> AddBatchURL(List<URLCreateDTO> batchURL, string username)
+        public async Task<List<BatchURLResponse>> AddBatchURL(List<URLCreateDTO> batchURL, string username)
         {
             // get userID of the user asking the addition.
             int userID = batchURL[0].UserID;
@@ -99,8 +99,12 @@ namespace URLShortenerAPI.Services
             // Creating a list of already existing URLs that were not added.
             List<URLDTO> conflicts = conflictURLs.Select(_mapper.Map<URLDTO>).ToList();
 
-            // Creating the response to be returned to user.
-            BatchURLAdditionResponse response = new() { NewURLs = newURLs, ConflictedURLs = conflicts };
+            // Combine the new and existing URLs into a single response list
+            List<BatchURLResponse> response = newURLs
+                .Select(url => new BatchURLResponse { URL = url, IsNew = true })
+                .Concat(conflicts.Select(url => new BatchURLResponse { URL = url, IsNew = false }))
+                .ToList();
+
             return response;
         }
 
