@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using URLShortenerBlazor;
 using URLShortenerBlazor.Services;
 using URLShortenerBlazor.Services.Interfaces;
+using Blazorise.Components;
+using Blazored.Toast;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddBlazoredLocalStorage();
@@ -22,6 +24,8 @@ builder.Services
     .AddBlazorise(options => options.Immediate = true)
     .AddBootstrapProviders()
     .AddFontAwesomeIcons();
+
+builder.Services.AddBlazoredToast();
 
 builder.Services.AddScoped<HTTTPAuthAdder>();
 builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("http://localhost:5261"))
