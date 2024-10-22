@@ -8,18 +8,18 @@
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card custom-shadow p-4" style="width: 350px; background-color: #6f42c1; color: white;">
         <h3 class="text-center mb-4">Register</h3>
-            
-            @if (errorMessage?.Count != 0 && errorMessage is not null)
-            {
-                <div class="alert alert-danger mb-2 py-1">
-                    <ul class="list-group list-group-flush">
-                        @foreach (var error in errorMessage)
-                        {
-                            <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
-                        }
-                    </ul>
-                </div>
-            }
+
+        @if (errorMessage?.Count != 0 && errorMessage is not null)
+        {
+            <div class="alert alert-danger mb-2 py-1">
+                <ul class="list-group list-group-flush">
+                    @foreach (var error in errorMessage)
+                    {
+                        <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
+                    }
+                </ul>
+            </div>
+        }
         <EditForm Model="userInfo" OnValidSubmit="HandleRegister">
             <DataAnnotationsValidator />
             <div class="mb-3">
@@ -76,22 +76,27 @@
             if (userInfo is null)
                 throw new ArgumentException($"Input cannot be null.");
 
-            await AuthService.Register(userInfo);
+            APIResponse<UserDTO> response = await AuthService.Register(userInfo);
 
-            Navigation.NavigateTo("/Login");
+            if (response.Success)
+                Navigation.NavigateTo("/Login");
+
+            else
+            {
+                if (response.ErrorType == ErrorType.ValidationException)
+                {
+                    errorMessage = response.Errors;
+                }
+                else
+                {
+                    errorMessage = new() { response.ErrorMessage };
+                }
+            }
         }
 
         catch (Exception ex)
         {
-            try
-            {
-                errorMessage = JsonSerializer.Deserialize<List<string>>(ex.Message)!;
-            }
-            catch (JsonException)
-            {
-                // this means the error wasn't a list and it was a single string.
-                errorMessage = new() { ex.Message };
-            }
+            errorMessage = new() { ex.Message };
         }
     }
 }

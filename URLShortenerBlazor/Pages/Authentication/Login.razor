@@ -50,34 +50,36 @@
 
 
 @code {
-    private UserLoginDTO? loginDTO = new();
+    private UserLoginDTO loginDTO = new();
     private List<string>? errorMessage;
 
     private async Task HandleLogin()
     {
         try
         {
-            if (loginDTO is null)
-                throw new ArgumentException($"Input is Null");
+            APIResponse<UserDTO> response = await AuthService.Login(loginDTO);
 
-            await AuthService.Login(loginDTO);
-
-            StateHasChanged();
-            Navigation.NavigateTo("/", true);
+            if (response.Success)
+            {
+                StateHasChanged();
+                Navigation.NavigateTo("/", true);
+            }
+            else
+            {
+                if (response.ErrorType == ErrorType.ValidationException)
+                {
+                    errorMessage = response.Errors;
+                }
+                else
+                {
+                    errorMessage = new() { response.ErrorMessage };
+                }
+            }
         }
 
         catch (Exception ex)
         {
-            try
-            {
-                errorMessage = JsonSerializer.Deserialize<List<string>>(ex.Message)!;
-            }
-            catch (JsonException)
-            {
-                // this means the error wasn't a list and it was a single string.
-                errorMessage = new() { ex.Message };
-            }
+            errorMessage = new() { ex.Message };
         }
-
     }
 }
