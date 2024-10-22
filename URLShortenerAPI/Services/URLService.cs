@@ -143,7 +143,7 @@ namespace URLShortenerAPI.Services
             // If a category is specified, resolve or create it.
             if (!string.IsNullOrEmpty(url.Categories))
             {
-                var categories = await ResolveOrCreateCategory(url.Categories, user);
+                List<URLCategoryModel> categories = await ResolveOrCreateCategory(url.Categories, user);
                 newRecord.Categories = categories;
             }
             return newRecord;
@@ -259,7 +259,7 @@ namespace URLShortenerAPI.Services
         private async Task<List<URLModel>> EnsureURLDoesNotExistAsync(HashSet<string> longURLs, int userID)
         {
             // Check if the URL already exists for this user.
-            List<URLModel> URLs = await _context.URLs.AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();
+            List<URLModel> URLs = await _context.URLs.Include(x => x.Categories).AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();
             return URLs;
         }
 
