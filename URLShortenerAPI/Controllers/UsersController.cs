@@ -49,25 +49,25 @@ namespace URLShortenerAPI.Controllers
                 if (result.Items.Count == 0)
                     throw new NotFoundException("No URLs found for the specified user.");
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
                 response = new()
-                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return Unauthorized(response);
             }
             catch (Exception e)
@@ -91,13 +91,13 @@ namespace URLShortenerAPI.Controllers
             {
                 UserDTO result = await _userService.GetUserByIDAsync(id);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (Exception e)
@@ -120,13 +120,13 @@ namespace URLShortenerAPI.Controllers
             {
                 UserDTO result = await _userService.GetUserByUsernameAsync(username);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (Exception e)
@@ -159,18 +159,18 @@ namespace URLShortenerAPI.Controllers
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
                 response = new()
-                { Result = result.User };
+                { Result = result.User, Success = true };
                 return Ok(response);
             }
 
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (ValidationException e)
@@ -181,7 +181,7 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
-                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
                 return BadRequest(response);
             }
@@ -207,17 +207,17 @@ namespace URLShortenerAPI.Controllers
 
                 UserDTO result = await _userService.RegisterUserAsync(userCreateDTO);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (ValidationException e)
@@ -228,7 +228,7 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
-                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
                 return BadRequest(response);
             }
@@ -252,17 +252,17 @@ namespace URLShortenerAPI.Controllers
             {
                 UserDTO result = await _userService.ResetPasswordAsync(identifier);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -294,17 +294,17 @@ namespace URLShortenerAPI.Controllers
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
                 response = new()
-                { Result = result.User };
+                { Result = result.User, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -332,17 +332,17 @@ namespace URLShortenerAPI.Controllers
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -381,17 +381,17 @@ namespace URLShortenerAPI.Controllers
                     Secure = true, // Ensure it's HTTPS only if needed
                     SameSite = SameSiteMode.Strict // You can set SameSite as per your requirements
                 });
-
-                return Ok();
+                response = new() { Success = true };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -422,17 +422,17 @@ namespace URLShortenerAPI.Controllers
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 response = new()
-                { Result = result };
+                { Result = result, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -458,17 +458,18 @@ namespace URLShortenerAPI.Controllers
                 UserDTO result = await _userService.UpdateUserInfoAsync(user, username!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
-
-                return Ok(result);
+                response = new()
+                { Success = true, Result = result };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 
@@ -491,16 +492,18 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 await _userService.DeleteUserAsync(id);
-                return Ok();
+                response = new()
+                { Success = true };
+                return Ok(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 

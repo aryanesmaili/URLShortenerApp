@@ -30,21 +30,20 @@ namespace URLShortenerAPI.Controllers
                 string result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
 
                 response = new()
-                { Result = result };
-
+                { Success = true, Result = result };
                 return Ok(response);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message, };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message, };
 
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
                 response = new()
-                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
 
                 return BadRequest(response);
             }

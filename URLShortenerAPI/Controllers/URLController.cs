@@ -31,13 +31,13 @@ namespace URLShortenerAPI.Controllers
             {
                 URLDTO result = await _urlService.GetURL(id);
                 response = new()
-                { Result = result };
+                { Success = true, Result = result };
                 return Ok(result);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (Exception e)
@@ -60,7 +60,7 @@ namespace URLShortenerAPI.Controllers
 
                 URLDTO result = await _urlService.AddURL(createDTO, username!);
                 response = new()
-                { Result = result };
+                { Success = true, Result = result };
                 return Ok(response);
             }
 
@@ -72,23 +72,23 @@ namespace URLShortenerAPI.Controllers
                 {
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
-                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
                 return BadRequest(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
-                response = new() { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return Unauthorized(response);
             }
             catch (Exception e)
@@ -103,15 +103,15 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("AddBatchURL")]
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
-            APIResponse<BatchURLAdditionResponse> response;
+            APIResponse<List<BatchURLResponse>> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _listValidator.ValidateAndThrowAsync(createDTO);
 
-                BatchURLAdditionResponse result = await _urlService.AddBatchURL(createDTO, username!);
+                List<BatchURLResponse> result = await _urlService.AddBatchURL(createDTO, username!);
                 response = new()
-                { Result = result };
+                { Success = true, Result = result };
                 return Ok(result);
             }
             catch (ValidationException e)
@@ -123,22 +123,22 @@ namespace URLShortenerAPI.Controllers
                     errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
                 }
 
-                response = new() { ErrorType = ErrorType.ValidationException, Message = e.Message, Errors = errors };
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
                 return BadRequest(response);
             }
             catch (NotFoundException e)
             {
-                response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (ArgumentNullException e)
             {
-                response = new() { ErrorType = ErrorType.ArgumentNullException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.ArgumentNullException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (NotAuthorizedException e)
             {
-                response = new() { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                response = new() { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return Unauthorized(response);
             }
             catch (Exception e)
@@ -158,24 +158,26 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 await _urlService.ToggleActivation(id, username!);
-                return Ok();
+                response = new()
+                { Success = true, };
+                return Ok(response);
             }
             catch (ArgumentException e)
             {
                 response = new()
-                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
             catch (NotAuthorizedException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return Unauthorized(response);
             }
             catch (Exception e)
@@ -195,26 +197,28 @@ namespace URLShortenerAPI.Controllers
             try
             {
                 await _urlService.DeleteURL(id, username!);
-                return Ok();
+                response = new()
+                { Success = true };
+                return Ok(response);
             }
 
             catch (NotFoundException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotFound, Message = e.Message };
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
             }
 
             catch (NotAuthorizedException e)
             {
                 response = new()
-                { ErrorType = ErrorType.NotAuthorizedException, Message = e.Message };
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return Unauthorized(response);
             }
             catch (ArgumentException e)
             {
                 response = new()
-                { ErrorType = ErrorType.ArgumentException, Message = e.Message };
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(e.Message);
             }
             catch (Exception e)
