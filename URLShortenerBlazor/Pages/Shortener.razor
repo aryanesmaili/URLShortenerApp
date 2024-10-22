@@ -1,7 +1,10 @@
 ﻿@page "/URLShortener/{url?}"
+@using System.Text.Json
 @inject IAuthenticationService AuthService
 @inject IShortenerService ShortenerService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject Blazored.Toast.Services.IToastService ToastClient
 
 <body class="bg-light pt-5">
     <div class="container py-5">
@@ -24,6 +27,17 @@
                 </div>
             </div>
             <div class="card-body">
+                @if (errorMessage?.Count != 0 && errorMessage is not null)
+                {
+                    <div class="alert alert-danger mt-1 mb-2 py-1">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var error in errorMessage)
+                            {
+                                <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
+                            }
+                        </ul>
+                    </div>
+                }
                 @if (!isBatchMode)
                 {
                     <div id="singleMode">
@@ -31,7 +45,7 @@
                             <DataAnnotationsValidator />
                             <div class="mb-3">
                                 <label for="longUrl" class="form-label">Long URL <span style="color:red;">*</span></label>
-                                <InputText @bind-Value="urlCreate.LongURL" type="url" class="form-control" id="longUrl"
+                                <InputText @bind-Value="urlCreate.LongURL" type="text" class="form-control" id="longUrl"
                                            placeholder="https://www.example.com" required />
                                 <ValidationMessage For="() => urlCreate.LongURL" />
                             </div>
@@ -48,7 +62,7 @@
                                 <ValidationMessage For="() => urlCreate.Description" />
                             </div>
                             <div class="mb-3 form-check">
-                                <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="active"/>
+                                <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="active" />
                                 <label class="form-check-label" for="active">Active</label>
                             </div>
                             <button type="submit" class="btn btn-purple">Shorten!</button>
@@ -89,7 +103,7 @@
         <div class="mt-5">
             <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table class="table table-hover">
                     <thead class="table-purple">
                         <tr>
                             <th>ID</th>
@@ -104,7 +118,7 @@
                     <tbody>
                         @foreach (var item in TableURLs)
                         {
-                            <tr>
+                            <tr class="@GetRowClass(item)">
                                 <td>@item.Index</td>
                                 <td>@item.URL.Description</td>
                                 <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
@@ -113,8 +127,7 @@
                                     @if (item.URL.Categories?.Count > 0)
                                         @foreach (var category in item.URL.Categories)
                                         {
-                                            <span class="badge bg-purple">@category.Title</span>
-
+                                            <span class="@GetSpanClass(category.Title)">@category.Title</span>
                                         }
                                 </td>
                                 <td>
@@ -128,7 +141,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <button class="btn btn-icon" title="Copy URL">
+                                    <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
                                         <Icon Name="IconName.Copy"></Icon>
                                     </button>
                                 </td>
@@ -146,6 +159,14 @@
             </p>
         </div>
     </div>
+    <script>
+        window.copyToClipboard = function (text) {
+            navigator.clipboard.writeText(text)
+                .catch(function (err) {
+                    console.error('Could not copy text: ', err);
+                });
+        }
+    </script>
 </body>
 
 @code {
@@ -158,11 +179,21 @@
             UserID = 0,
         };
 
-    private List<TRow> TableURLs = new();
     private int index = 1;
     private int userID;
     private string URLs = string.Empty;
     private bool isBatchMode = false;
+
+    private List<TRow> TableURLs = new();
+    private List<string> errorMessage = new();
+    private readonly List<string> badges = new()
+    {
+        "badge bg-primary",
+        "badge bg-secondary",
+        "badge bg-success",
+        "badge bg-danger",
+        "badge bg-info",
+    };
 
     private bool IsBatchMode
     {
@@ -182,6 +213,7 @@
         public required URLDTO URL { get; set; }
         public bool isNew { get; set; }
     }
+
     protected override async Task OnInitializedAsync()
     {
         userID = await AuthService.GetUserID();
@@ -207,33 +239,52 @@
     {
         try
         {
-            URLDTO response = await ShortenerService.ShortenSingle(urlCreate);
-            TableURLs.Add(new TRow() { URL = response, isNew = true, Index = index });
-            index++;
-            StateHasChanged();
-            ClearFields();
+            APIResponse<URLDTO> response = await ShortenerService.ShortenSingle(urlCreate);
+
+            if (response.Success)
+            {
+                TableURLs.Add(new TRow() { URL = response.Result!, isNew = true, Index = index });
+                index++;
+                StateHasChanged();
+                ClearFields();
+            }
+
+            else
+            {
+                if (response.ErrorType == ErrorType.ValidationException)
+                {
+                    errorMessage = response.Errors;
+                }
+
+                else if (response.ErrorType == ErrorType.NotAuthorizedException)
+                {
+                    ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+                    await Task.Delay(2000);
+                    Navigation.NavigateTo("/Login");
+                }
+
+                else
+                {
+                    errorMessage = new List<string>() { response.ErrorMessage };
+                }
+            }
         }
 
-        // catch (NotAuthorizedException e)
-        // {
-        //     Display some kind of error here.
-
-        //     Navigation.NavigateTo("/Login", true);
-        // }
-        catch (Exception)
+        catch (Exception e)
         {
-
-            throw;
+            errorMessage = new List<string>() { e.Message };
+            string x = string.Empty;
         }
     }
 
     private async Task HandleBatchSubmit()
     {
-        string[] LongURLs = URLs.Split('\n');
+        string[] LongURLs = URLs.Split(new[] { '\n', ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
         List<URLCreateDTO> createDTOs = new();
         try
         {
-            foreach (var item in LongURLs)
+            foreach (string item in LongURLs)
             {
                 URLCreateDTO createDTO = new()
                     {
@@ -245,19 +296,69 @@
                     };
                 createDTOs.Add(createDTO);
             }
-            List<BatchURLAdditionResponse> response = await ShortenerService.ShortenBatch(createDTOs);
 
+            APIResponse<List<BatchURLResponse>> response = await ShortenerService.ShortenBatch(createDTOs);
+
+            if (response.Success)
+            {
+
+                // Step 1: Create a dictionary to map the input to its index
+                Dictionary<string, int> inputOrder = LongURLs
+                    .Select((url, index) => new { url, index })  // Create anonymous objects with URL and its index
+                    .ToDictionary(x => x.url, x => x.index);     // Create a dictionary mapping URL to its index
+
+                // Step 2: Sort the list based on the user's input order
+                List<BatchURLResponse> sortedList = response.Result!
+                    .OrderBy(batchURL => inputOrder[batchURL.URL.LongURL!])  // Sort by the index from the dictionary
+                    .ToList();
+
+                foreach (var item in sortedList)
+                {
+                    TableURLs.Add(new TRow { URL = item.URL, Index = index, isNew = item.IsNew });
+                    index++;
+                }
+                StateHasChanged();
+                ClearFields();
+            }
+            else
+            {
+                if (response.ErrorType == ErrorType.ValidationException)
+                {
+                    errorMessage = response.Errors;
+                }
+                else if (response.ErrorType == ErrorType.NotAuthorizedException)
+                {
+                    Navigation.NavigateTo("/Login");
+                }
+                else
+                {
+                    errorMessage = new List<string>() { response.ErrorMessage };
+                }
+            }
         }
-        // catch (NotAuthorizedException e)
-        // {
-        //     Display some kind of error here.
-
-        //     Navigation.NavigateTo("/Login", true);
-        // }
-        catch (Exception)
+        catch (Exception e)
         {
+            errorMessage = new List<string>() { e.Message };
+        }
+    }
 
-            throw;
+    private string GetRowClass(TRow row)
+    {
+        return row.isNew ? "" : "table-secondary";
+    }
+    private string GetSpanClass(string category)
+    {
+        int index = Math.Abs(category.GetHashCode()) % badges.Count;
+        return badges[index];
+    }
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (!string.IsNullOrEmpty(textToCopy))
+        {
+            textToCopy = "https://Pexita.click/" + textToCopy;
+            ToastClient.ShowSuccess("Text Copied to Clipboard", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
         }
     }
 }

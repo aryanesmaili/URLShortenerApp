@@ -240,3 +240,24 @@ body {
     border-color: #6f42c1;
     box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
 }
+
+.alert {
+    padding: 0 !important;
+}
+
+.list-group-item {
+    border: none !important;
+    padding: 0 !important;
+}
+
+.btn-icon:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.btn-icon:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
