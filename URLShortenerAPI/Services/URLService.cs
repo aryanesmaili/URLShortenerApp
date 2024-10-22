@@ -17,7 +17,12 @@ namespace URLShortenerAPI.Services
         private readonly IAuthService _authService;
         private readonly IShortenerService _shortenerService;
         private readonly ICacheService _cacheService;
-        public URLService(AppDbContext context, IMapper mapper, IAuthService authService, IShortenerService shortenerService, ICacheService cacheService)
+
+        public URLService(AppDbContext context,
+            IMapper mapper,
+            IAuthService authService,
+            IShortenerService shortenerService,
+            ICacheService cacheService)
         {
             _context = context;
             _mapper = mapper;
@@ -81,11 +86,17 @@ namespace URLShortenerAPI.Services
             // Filter unique URLs in batchURL that are not already existing
             List<URLCreateDTO> uniqueItems = batchURL.Where(unique => !alreadyExistingURLs.Contains(unique.LongURL)).ToList();
 
-            // creating a list of tasks do be done. this benefits from concurrency.
-            List<Task<URLModel>> tasks = uniqueItems.Select(async x => await CreateNewURLRecord(x, user)).ToList();
+            if (uniqueItems.Count == 0)
+            {
+                return conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new BatchURLResponse() { URL = x, IsNew = false }).ToList();
+            }
 
-            // executing the tasks
-            List<URLModel> newRecords = (await Task.WhenAll(tasks)).ToList();
+            List<URLModel> newRecords = [];
+            foreach (var item in uniqueItems)
+            {
+                var record = await CreateNewURLRecord(item, user);
+                newRecords.Add(record);
+            }
 
             // we save the new URLs in a transaction to ensure Atomicity(all done or nothing done).
             await SaveURLRecordWithTransaction(newRecords);
@@ -106,19 +117,6 @@ namespace URLShortenerAPI.Services
                 .ToList();
 
             return response;
-        }
-
-        /// <summary>
-        /// Checks the database to see if certain URLs exist.
-        /// </summary>
-        /// <param name="longURLs">the HashSet of URLs to be checked.</param>
-        /// <param name="userID">ID of the owner.</param>
-        /// <returns></returns>
-        private async Task<List<URLModel>> EnsureURLDoesNotExistAsync(HashSet<string> longURLs, int userID)
-        {
-            // Check if the URL already exists for this user.
-            List<URLModel> URLs = await _context.URLs.AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();
-            return URLs;
         }
 
         /// <summary>
@@ -246,6 +244,19 @@ namespace URLShortenerAPI.Services
                 return;
             else if (url.UserID == userID)
                 throw new ArgumentException("URL Already Exists.");
+        }
+
+        /// <summary>
+        /// Checks the database to see if certain URLs exist.
+        /// </summary>
+        /// <param name="longURLs">the HashSet of URLs to be checked.</param>
+        /// <param name="userID">ID of the owner.</param>
+        /// <returns></returns>
+        private async Task<List<URLModel>> EnsureURLDoesNotExistAsync(HashSet<string> longURLs, int userID)
+        {
+            // Check if the URL already exists for this user.
+            List<URLModel> URLs = await _context.URLs.AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();
+            return URLs;
         }
 
         /// <summary>

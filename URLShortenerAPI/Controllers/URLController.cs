@@ -112,7 +112,7 @@ namespace URLShortenerAPI.Controllers
                 List<BatchURLResponse> result = await _urlService.AddBatchURL(createDTO, username!);
                 response = new()
                 { Success = true, Result = result };
-                return Ok(result);
+                return Ok(response);
             }
             catch (ValidationException e)
             {
