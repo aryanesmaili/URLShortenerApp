@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using Blazored.Toast;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
@@ -7,8 +8,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using URLShortenerBlazor;
 using URLShortenerBlazor.Services;
 using URLShortenerBlazor.Services.Interfaces;
-using Blazorise.Components;
-using Blazored.Toast;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddBlazoredLocalStorage();

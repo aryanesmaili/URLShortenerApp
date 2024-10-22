@@ -74,12 +74,12 @@ namespace URLShortenerBlazor.Services
                 result = new() { ErrorType = ErrorType.NotAuthorizedException };
 
             else
-                result = await JsonSerializer.DeserializeAsync<APIResponse<List<BatchURLResponse>>>(await response.Content.ReadAsStreamAsync()!, _jsonSerializerOptions)! 
+                result = await JsonSerializer.DeserializeAsync<APIResponse<List<BatchURLResponse>>>(await response.Content.ReadAsStreamAsync()!, _jsonSerializerOptions)!
                     ?? new APIResponse<List<BatchURLResponse>>
-                        {
-                            Success = false,
-                            ErrorMessage = "Failed to deserialize response."
-                        }; ;
+                    {
+                        Success = false,
+                        ErrorMessage = "Failed to deserialize response."
+                    }; ;
 
             return result;
         }
