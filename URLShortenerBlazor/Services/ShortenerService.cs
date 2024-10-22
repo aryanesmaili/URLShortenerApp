@@ -84,6 +84,21 @@ namespace URLShortenerBlazor.Services
             return result;
         }
 
+
+        public async Task<APIResponse<string>> DeleteURL(int urlID)
+        {
+            HttpRequestMessage req = new(HttpMethod.Delete, $"/api/URL/Delete/{urlID}");
+
+            HttpResponseMessage response = await _authClient.SendAsync(req);
+            APIResponse<string>? result;
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                result = new() { ErrorType = ErrorType.NotAuthorizedException };
+            else
+                result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return result!;
+        }
+
         /// <summary>
         /// Generates a shortened-alike string to be shown on home screen.
         /// </summary>

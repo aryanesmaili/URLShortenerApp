@@ -112,7 +112,18 @@
                             <th>Long URL</th>
                             <th>Category</th>
                             <th>Status</th>
-                            <th></th>
+                            @if (TableURLs.Count > 1)
+                            {
+                                <th>
+                                    <button class="btn btn-icon" title="Copy ALl Shortened URLs at Once!" @onclick="() => CopyAllToClipboard()">
+                                        <Icon Name="IconName.Copy" IconSize="IconSize.Large" Style="color:White;"></Icon>
+                                    </button>
+                                </th>
+                            }
+                            else
+                            {
+                                <th></th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -144,19 +155,23 @@
                                     <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
                                         <Icon Name="IconName.Copy"></Icon>
                                     </button>
+                                    <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                                        <Icon Name="IconName.Delete"></Icon>
+                                    </button>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-
-            <p class="text-muted">
-                <small>
-                    ** The ShortCodes specified are estimates, may be different after the real
-                    shortening!
-                </small>
-            </p>
+            @if (TableURLs.Count > 0)
+            {
+                <p class="text-dark">
+                    <small>
+                        ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
+                    </small>
+                </p>
+            }
         </div>
     </div>
     <script>
@@ -183,7 +198,7 @@
     private int userID;
     private string URLs = string.Empty;
     private bool isBatchMode = false;
-    
+
     private List<TRow> TableURLs = new();
     private List<string> errorMessage = new();
     private readonly List<string> badges = new()
@@ -278,10 +293,10 @@
     }
 
     private async Task HandleBatchSubmit()
-    {    
+    {
         List<string> LongURLs = URLs.Split(new[] { '\n', ',', ';' },
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();  
+            .ToList();
 
         List<URLCreateDTO> createDTOs = new();
         try
@@ -350,6 +365,7 @@
     {
         return row.isNew ? "" : "table-secondary";
     }
+
     private string GetSpanClass(string category)
     {
         int index = Math.Abs(category.GetHashCode()) % badges.Count;
@@ -361,8 +377,27 @@
         if (!string.IsNullOrEmpty(textToCopy))
         {
             textToCopy = "https://Pexita.click/" + textToCopy;
-            ToastClient.ShowSuccess("Text Copied to Clipboard", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            ToastClient.ShowSuccess("Text Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
             await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
         }
+    }
+
+    private async Task CopyAllToClipboard()
+    {
+        string textToCopy = string.Join('\n', TableURLs.Select(x => $"https://Pexita.click/{x.URL.ShortCode}"));
+        ToastClient.ShowSuccess("All Shortened Links were Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+
+    private async Task DeleteURL(int urlID)
+    {
+        APIResponse<string> response = await ShortenerService.DeleteURL(urlID);
+        if (response.Success)
+        {
+            ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            TableURLs.Remove(TableURLs.First(x => x.URL.ID == urlID));
+        }
+        else
+            ToastClient.ShowError("Something went wrong while deleting the URL", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
     }
 }
