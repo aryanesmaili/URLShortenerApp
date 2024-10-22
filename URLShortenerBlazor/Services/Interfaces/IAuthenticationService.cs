@@ -1,4 +1,5 @@
 ﻿using SharedDataModels.DTOs;
+using SharedDataModels.Responses;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
@@ -6,8 +7,8 @@ namespace URLShortenerBlazor.Services.Interfaces
     {
         public Task<bool> IsLoggedInAsync();
         public Task LogOut();
-        public Task Login(UserLoginDTO userLogin);
-        public Task Register(UserCreateDTO userCreateDTO);
-        Task<int> GetUserID();
+        public Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo);
+        public Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO);
+        public Task<int> GetUserID();
     }
 }

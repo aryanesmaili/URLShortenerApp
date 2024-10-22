@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using SharedDataModels.DTOs;
+using SharedDataModels.Responses;
 using System.Net.Http.Json;
 using URLShortenerBlazor.Services.Interfaces;
 
@@ -24,18 +25,17 @@ namespace URLShortenerBlazor.Services
             return !string.IsNullOrEmpty(authToken);
         }
 
-        public async Task Login(UserLoginDTO loginInfo)
+        public async Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo)
         {
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Users/Login", loginInfo);
 
-            if (response.IsSuccessStatusCode)
+            APIResponse<UserDTO>? result = await response.Content.ReadFromJsonAsync<APIResponse<UserDTO>>();
+            if (result!.Success)
             {
-                UserDTO? result = await response.Content.ReadFromJsonAsync<UserDTO>();
-                await _localStorage.SetItemAsync("authToken", result!.JWToken!);
-                await _localStorage.SetItemAsync("user", result);
-                return;
+                await _localStorage.SetItemAsync("authToken", result!.Result!.JWToken!);
+                await _localStorage.SetItemAsync("user", result.Result);
             }
-            throw new Exception(await response.Content.ReadAsStringAsync());
+            return result;
         }
 
         public async Task LogOut()
@@ -45,18 +45,18 @@ namespace URLShortenerBlazor.Services
             await client.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
 
             await _localStorage.RemoveItemAsync("authToken"); // Remove local token 
-
+            await _localStorage.RemoveItemAsync("user");
         }
 
-        public async Task Register(UserCreateDTO userCreateDTO)
+        public async Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO)
         {
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Users/Register", userCreateDTO);
 
-            if (response.IsSuccessStatusCode)
-                return;
+            APIResponse<UserDTO>? result = await response.Content.ReadFromJsonAsync<APIResponse<UserDTO>>();
 
-            throw new Exception(await response.Content.ReadAsStringAsync());
+            return result!;
         }
+
         public async Task<int> GetUserID()
         {
             return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;

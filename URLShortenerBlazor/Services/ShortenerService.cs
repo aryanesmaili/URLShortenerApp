@@ -1,4 +1,5 @@
 ﻿using SharedDataModels.DTOs;
+using SharedDataModels.Responses;
 using Standart.Hash.xxHash;
 using System.Net;
 using System.Text;
@@ -11,10 +12,18 @@ namespace URLShortenerBlazor.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _authClient;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
         public ShortenerService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
             _authClient = _httpClientFactory.CreateClient("Auth");
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,  // Make property name matching case-insensitive
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
+            };
         }
 
         /// <summary>
@@ -22,9 +31,8 @@ namespace URLShortenerBlazor.Services
         /// </summary>
         /// <param name="createDTO">the <see cref="URLCreateDTO"/> object containing info about the URL to be shortened.</param>
         /// <returns>a <see cref="URLDTO"/> object showing the URL that was just added.</returns>
-        /// <exception cref="NotAuthorizedException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<URLDTO> ShortenSingle(URLCreateDTO createDTO)
+        public async Task<APIResponse<URLDTO>> ShortenSingle(URLCreateDTO createDTO)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "/api/URL/AddURL")
             {
@@ -33,52 +41,47 @@ namespace URLShortenerBlazor.Services
 
             HttpResponseMessage response = await _authClient.SendAsync(req);
 
-            if (response.IsSuccessStatusCode)
-            {
-                string content = await response.Content.ReadAsStringAsync();
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,  // Make property name matching case-insensitive
-                    WriteIndented = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
-                };
-                return JsonSerializer.Deserialize<URLDTO>(content, options)!;
-            }
+            APIResponse<URLDTO>? responseContent;
+            string x = string.Empty;
 
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                //throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
-            }
-            throw new Exception(await response.Content.ReadAsStringAsync());
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                responseContent = new() { ErrorType = ErrorType.NotAuthorizedException };
+
+            else
+                responseContent = await JsonSerializer.DeserializeAsync<APIResponse<URLDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return responseContent!;
         }
 
         /// <summary>
         /// Sends the request to backend to shorten a batch of URLs.
         /// </summary>
         /// <param name="createDTO">List of URLs to be shortened.</param>
-        /// <returns>a <see cref="BatchURLAdditionResponse"/> object containing two lists: the URLs that already existed and those that are shortened now.</returns>
-        /// <exception cref="NotAuthorizedException"></exception>
+        /// <returns>a <see cref="BatchURLResponse"/> object containing shortened URls and an indicator if they're new or old.</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<BatchURLAdditionResponse>> ShortenBatch(List<URLCreateDTO> createDTO)
+        public async Task<APIResponse<List<BatchURLResponse>>> ShortenBatch(List<URLCreateDTO> createDTO)
         {
             HttpRequestMessage request = new(HttpMethod.Post, "/api/URL/AddBatchURL")
             {
                 Content = new StringContent(JsonSerializer.Serialize(createDTO), Encoding.UTF8, "application/json"),
             };
+            HttpResponseMessage? response = await _authClient.SendAsync(request);
+            APIResponse<List<BatchURLResponse>> result;
 
-            HttpResponseMessage response = await _authClient.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                result = new() { ErrorType = ErrorType.NotAuthorizedException };
 
-            if (response.IsSuccessStatusCode)
-            {
-                return JsonSerializer.Deserialize<List<BatchURLAdditionResponse>>(await response.Content.ReadAsStreamAsync())!;
-            }
+            else
+                result = await JsonSerializer.DeserializeAsync<APIResponse<List<BatchURLResponse>>>(await response.Content.ReadAsStreamAsync()!, _jsonSerializerOptions)! 
+                    ?? new APIResponse<List<BatchURLResponse>>
+                        {
+                            Success = false,
+                            ErrorMessage = "Failed to deserialize response."
+                        }; ;
 
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                //throw new NotAuthorizedException(await response.Content.ReadAsStringAsync());
-            }
-            throw new Exception(await response.Content.ReadAsStringAsync());
+            return result;
         }
+
         /// <summary>
         /// Generates a shortened-alike string to be shown on home screen.
         /// </summary>
