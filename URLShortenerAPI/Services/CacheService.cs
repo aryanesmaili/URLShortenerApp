@@ -32,21 +32,27 @@ namespace URLShortenerAPI.Services
         public async Task SetRange<T>(List<T> items, string propertyNameForKey)
         {
             var batch = _batchRedis.CreateBatch();
-
+            List<Task> tasks = [];
             foreach (var item in items)
             {
-                var propertyInfo = typeof(T).GetProperty(propertyNameForKey) ?? throw new ArgumentException($"Property '{propertyNameForKey}' does not exist on type '{typeof(T).Name}'.");
+                var propertyInfo = typeof(T).GetProperty(propertyNameForKey)
+                    ?? throw new ArgumentException($"Property '{propertyNameForKey}' does not exist on type '{typeof(T).Name}'.");
 
                 var key = typeof(T).Name.ToLower() + "_" + propertyInfo.GetValue(item)?.ToString();
 
                 if (key != null)
                 {
                     string content = JsonSerializer.Serialize(item, _serializerOptions);
-                    // Set the value in Redis with the property in the key.
-                    await batch.StringSetAsync(key, content, TimeSpan.FromDays(3), When.NotExists);
+                    // Add the task to our collection instead of awaiting it
+                    tasks.Add(batch.StringSetAsync(key, content, TimeSpan.FromDays(3), When.NotExists));
                 }
             }
+
+            // Execute the batch
             batch.Execute();
+
+            // Now wait for all tasks to complete
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>

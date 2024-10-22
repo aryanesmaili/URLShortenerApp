@@ -65,7 +65,9 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(createDTO), Encoding.UTF8, "application/json"),
             };
+
             HttpResponseMessage? response = await _authClient.SendAsync(request);
+
             APIResponse<List<BatchURLResponse>> result;
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)

@@ -86,12 +86,16 @@ namespace URLShortenerAPI.Services
             // Filter unique URLs in batchURL that are not already existing
             List<URLCreateDTO> uniqueItems = batchURL.Where(unique => !alreadyExistingURLs.Contains(unique.LongURL)).ToList();
 
+            // if there are no new URLs, we just return and cache the existing ones.
             if (uniqueItems.Count == 0)
             {
-                return conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new BatchURLResponse() { URL = x, IsNew = false }).ToList();
+                List<BatchURLResponse> result = conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new BatchURLResponse() { URL = x, IsNew = false }).ToList();
+                await _cacheService.SetRange(conflictURLs.ToList(), "ShortCode");
+                return result;
             }
 
             List<URLModel> newRecords = [];
+            // using a loop because concurrency made problems with dbcontext not being thread safe.
             foreach (var item in uniqueItems)
             {
                 var record = await CreateNewURLRecord(item, user);

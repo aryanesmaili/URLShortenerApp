@@ -183,7 +183,7 @@
     private int userID;
     private string URLs = string.Empty;
     private bool isBatchMode = false;
-
+    
     private List<TRow> TableURLs = new();
     private List<string> errorMessage = new();
     private readonly List<string> badges = new()
@@ -278,8 +278,10 @@
     }
 
     private async Task HandleBatchSubmit()
-    {
-        string[] LongURLs = URLs.Split(new[] { '\n', ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    {    
+        List<string> LongURLs = URLs.Split(new[] { '\n', ',', ';' },
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();  
 
         List<URLCreateDTO> createDTOs = new();
         try
@@ -302,21 +304,23 @@
             if (response.Success)
             {
 
-                // Step 1: Create a dictionary to map the input to its index
+                // Create dictionary from original order
                 Dictionary<string, int> inputOrder = LongURLs
-                    .Select((url, index) => new { url, index })  // Create anonymous objects with URL and its index
-                    .ToDictionary(x => x.url, x => x.index);     // Create a dictionary mapping URL to its index
+                    .Select((url, index) => new { url, index })
+                    .ToDictionary(x => x.url, x => x.index);
 
-                // Step 2: Sort the list based on the user's input order
                 List<BatchURLResponse> sortedList = response.Result!
-                    .OrderBy(batchURL => inputOrder[batchURL.URL.LongURL!])  // Sort by the index from the dictionary
+                    .OrderBy(batchURL => inputOrder[batchURL.URL.LongURL!])
                     .ToList();
 
+                inputOrder.Clear(); // since we already have them in table
+                HashSet<TRow> uniqueItems = new HashSet<TRow>(TableURLs);
                 foreach (var item in sortedList)
                 {
-                    TableURLs.Add(new TRow { URL = item.URL, Index = index, isNew = item.IsNew });
+                    uniqueItems.Add(new TRow { URL = item.URL, Index = index, isNew = item.IsNew });
                     index++;
                 }
+                TableURLs = uniqueItems.OrderBy(x => x.Index).ToList();
                 StateHasChanged();
                 ClearFields();
             }
