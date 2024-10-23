@@ -121,6 +121,6 @@
     private Input input = new();
     private void HandleClick()
     {
-        Navigation.NavigateTo($"/URLShortener/{input.url}");
+        Navigation.NavigateTo($"/URLShortener?url={input.url}");
     }
 }
