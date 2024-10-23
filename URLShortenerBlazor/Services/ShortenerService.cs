@@ -84,7 +84,11 @@ namespace URLShortenerBlazor.Services
             return result;
         }
 
-
+        /// <summary>
+        /// Deletes a URL from Database
+        /// </summary>
+        /// <param name="urlID">ID of the URL to be deleted.</param>
+        /// <returns>response about the operation.</returns>
         public async Task<APIResponse<string>> DeleteURL(int urlID)
         {
             HttpRequestMessage req = new(HttpMethod.Delete, $"/api/URL/Delete/{urlID}");

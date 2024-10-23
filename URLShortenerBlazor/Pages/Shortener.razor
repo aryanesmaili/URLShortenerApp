@@ -265,6 +265,10 @@
                     index++;
                     StateHasChanged();
                 }
+                else
+                {
+                    ToastClient.ShowInfo("URL was already shortened", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+                }
                 ClearFields();
                 return;
             }
