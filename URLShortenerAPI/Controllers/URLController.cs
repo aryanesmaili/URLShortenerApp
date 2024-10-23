@@ -52,13 +52,13 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("AddURL")]
         public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
-            APIResponse<URLDTO> response;
+            APIResponse<URLShortenResponse> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
 
-                URLDTO result = await _urlService.AddURL(createDTO, username!);
+                URLShortenResponse result = await _urlService.AddURL(createDTO, username!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
@@ -103,13 +103,13 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("AddBatchURL")]
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
-            APIResponse<List<BatchURLResponse>> response;
+            APIResponse<List<URLShortenResponse>> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 await _listValidator.ValidateAndThrowAsync(createDTO);
 
-                List<BatchURLResponse> result = await _urlService.AddBatchURL(createDTO, username!);
+                List<URLShortenResponse> result = await _urlService.AddBatchURL(createDTO, username!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);

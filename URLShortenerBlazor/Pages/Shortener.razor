@@ -1,5 +1,4 @@
 ﻿@page "/URLShortener/{url?}"
-@using System.Text.Json
 @inject IAuthenticationService AuthService
 @inject IShortenerService ShortenerService
 @inject NavigationManager Navigation
@@ -75,7 +74,7 @@
                         <EditForm Model="urlCreate" OnValidSubmit="HandleBatchSubmit">
                             <div class="mb-3">
                                 <label for="batchURLs" class="form-label">
-                                    List of URLs (one per line) <span style="color:red;">*</span>
+                                    List of URLs<span style="color:red;">*</span>
                                 </label>
                                 <InputTextArea @bind-Value="URLs" class="form-control batch-url-area" id="batchURLs"
                                                rows="5" required />
@@ -222,6 +221,7 @@
             }
         }
     }
+
     private class TRow
     {
         public int Index { get; set; }
@@ -254,14 +254,19 @@
     {
         try
         {
-            APIResponse<URLDTO> response = await ShortenerService.ShortenSingle(urlCreate);
+            errorMessage.Clear();
+            APIResponse<URLShortenResponse> response = await ShortenerService.ShortenSingle(urlCreate);
 
             if (response.Success)
             {
-                TableURLs.Add(new TRow() { URL = response.Result!, isNew = true, Index = index });
-                index++;
-                StateHasChanged();
+                if (!TableURLs.Any(x => x.URL.LongURL == response.Result!.URL.LongURL))
+                {
+                    TableURLs.Add(new TRow() { URL = response.Result!.URL, isNew = response.Result.IsNew, Index = index });
+                    index++;
+                    StateHasChanged();
+                }
                 ClearFields();
+                return;
             }
 
             else
@@ -294,6 +299,7 @@
 
     private async Task HandleBatchSubmit()
     {
+        errorMessage.Clear();
         List<string> LongURLs = URLs.Split(new[] { '\n', ',', ';' },
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
@@ -314,7 +320,7 @@
                 createDTOs.Add(createDTO);
             }
 
-            APIResponse<List<BatchURLResponse>> response = await ShortenerService.ShortenBatch(createDTOs);
+            APIResponse<List<URLShortenResponse>> response = await ShortenerService.ShortenBatch(createDTOs);
 
             if (response.Success)
             {
@@ -324,7 +330,7 @@
                     .Select((url, index) => new { url, index })
                     .ToDictionary(x => x.url, x => x.index);
 
-                List<BatchURLResponse> sortedList = response.Result!
+                List<URLShortenResponse> sortedList = response.Result!
                     .OrderBy(batchURL => inputOrder[batchURL.URL.LongURL!])
                     .ToList();
 

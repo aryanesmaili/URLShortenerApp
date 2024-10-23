@@ -32,7 +32,7 @@ namespace URLShortenerBlazor.Services
         /// <param name="createDTO">the <see cref="URLCreateDTO"/> object containing info about the URL to be shortened.</param>
         /// <returns>a <see cref="URLDTO"/> object showing the URL that was just added.</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<APIResponse<URLDTO>> ShortenSingle(URLCreateDTO createDTO)
+        public async Task<APIResponse<URLShortenResponse>> ShortenSingle(URLCreateDTO createDTO)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "/api/URL/AddURL")
             {
@@ -41,14 +41,14 @@ namespace URLShortenerBlazor.Services
 
             HttpResponseMessage response = await _authClient.SendAsync(req);
 
-            APIResponse<URLDTO>? responseContent;
+            APIResponse<URLShortenResponse>? responseContent;
             string x = string.Empty;
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 responseContent = new() { ErrorType = ErrorType.NotAuthorizedException };
 
             else
-                responseContent = await JsonSerializer.DeserializeAsync<APIResponse<URLDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+                responseContent = await JsonSerializer.DeserializeAsync<APIResponse<URLShortenResponse>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
 
             return responseContent!;
         }
@@ -57,9 +57,9 @@ namespace URLShortenerBlazor.Services
         /// Sends the request to backend to shorten a batch of URLs.
         /// </summary>
         /// <param name="createDTO">List of URLs to be shortened.</param>
-        /// <returns>a <see cref="BatchURLResponse"/> object containing shortened URls and an indicator if they're new or old.</returns>
+        /// <returns>a <see cref="URLShortenResponse"/> object containing shortened URls and an indicator if they're new or old.</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<APIResponse<List<BatchURLResponse>>> ShortenBatch(List<URLCreateDTO> createDTO)
+        public async Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO)
         {
             HttpRequestMessage request = new(HttpMethod.Post, "/api/URL/AddBatchURL")
             {
@@ -68,14 +68,14 @@ namespace URLShortenerBlazor.Services
 
             HttpResponseMessage? response = await _authClient.SendAsync(request);
 
-            APIResponse<List<BatchURLResponse>> result;
+            APIResponse<List<URLShortenResponse>> result;
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 result = new() { ErrorType = ErrorType.NotAuthorizedException };
 
             else
-                result = await JsonSerializer.DeserializeAsync<APIResponse<List<BatchURLResponse>>>(await response.Content.ReadAsStreamAsync()!, _jsonSerializerOptions)!
-                    ?? new APIResponse<List<BatchURLResponse>>
+                result = await JsonSerializer.DeserializeAsync<APIResponse<List<URLShortenResponse>>>(await response.Content.ReadAsStreamAsync()!, _jsonSerializerOptions)!
+                    ?? new APIResponse<List<URLShortenResponse>>
                     {
                         Success = false,
                         ErrorMessage = "Failed to deserialize response."

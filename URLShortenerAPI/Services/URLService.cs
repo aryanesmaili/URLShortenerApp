@@ -40,13 +40,21 @@ namespace URLShortenerAPI.Services
         /// <exception cref="NotAuthorizedException">Thrown when the user is not authorized.</exception>
         /// <exception cref="ArgumentException">Thrown when the URL already exists for the user.</exception>
         /// <exception cref="Exception">Thrown when there's an error saving the URL record.</exception>
-        public async Task<URLDTO> AddURL(URLCreateDTO createDTO, string username)
+        public async Task<URLShortenResponse> AddURL(URLCreateDTO createDTO, string username)
         {
             // Authorize user access. This throws an exception if the user is not authorized.
             UserModel user = await _authService.AuthorizeUserAccessAsync(createDTO.UserID, username);
 
-            // Check if the user has already shortened this URL. Throws an exception if it exists.
-            await EnsureURLDoesNotExistAsync(createDTO.LongURL, createDTO.UserID);
+            // Check if the user has already shortened this URL. returns answer if yes.
+            URLModel? url = await IsURLAlreadyAsync(createDTO.LongURL, createDTO.UserID);
+
+            URLShortenResponse shortenResponse; // the object that will hold the answer.
+
+            if (url != null) // means we already have this URL.
+            {
+                shortenResponse = new URLShortenResponse() { URL = URLModelToDTO(url), IsNew = false };
+                return shortenResponse;
+            }
 
             // Create a new URLModel object to be added to the database.
             URLModel newRecord = await CreateNewURLRecord(createDTO, user);
@@ -57,7 +65,10 @@ namespace URLShortenerAPI.Services
             // We immediately cache it in Redis.
             await _cacheService.SetAsync(newRecord.ShortCode, newRecord);
 
-            return URLModelToDTO(newRecord);
+            shortenResponse = new()
+            { URL = URLModelToDTO(newRecord), IsNew = true };
+
+            return shortenResponse;
         }
 
         /// <summary>
@@ -66,7 +77,7 @@ namespace URLShortenerAPI.Services
         /// <param name="batchURL">the batch of URLs to be added.</param>
         /// <param name="username">username of the user requesting the Addition.</param>
         /// <returns>a response containing two lists, one for the new URLs that have been added, another for URLs that already existed.</returns>
-        public async Task<List<BatchURLResponse>> AddBatchURL(List<URLCreateDTO> batchURL, string username)
+        public async Task<List<URLShortenResponse>> AddBatchURL(List<URLCreateDTO> batchURL, string username)
         {
             // get userID of the user asking the addition.
             int userID = batchURL[0].UserID;
@@ -78,7 +89,7 @@ namespace URLShortenerAPI.Services
             HashSet<string> AllNewURLs = batchURL.Select(x => x.LongURL).ToHashSet();
 
             // Check if the user has already shortened any of these URLs. returns the list of already existing URLs.
-            HashSet<URLModel> conflictURLs = (await EnsureURLDoesNotExistAsync(AllNewURLs, userID)).ToHashSet();
+            HashSet<URLModel> conflictURLs = (await IsURLAlreadyAsync(AllNewURLs, userID)).ToHashSet();
 
             // getting the HashSet of LongURLs that already exist in our URL. HashSet helps with avoiding duplicates and has faster search time.
             HashSet<string> alreadyExistingURLs = conflictURLs.Select(x => x.LongURL).ToHashSet();
@@ -89,7 +100,7 @@ namespace URLShortenerAPI.Services
             // if there are no new URLs, we just return and cache the existing ones.
             if (uniqueItems.Count == 0)
             {
-                List<BatchURLResponse> result = conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new BatchURLResponse() { URL = x, IsNew = false }).ToList();
+                List<URLShortenResponse> result = conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new URLShortenResponse() { URL = x, IsNew = false }).ToList();
                 await _cacheService.SetRange(conflictURLs.ToList(), "ShortCode");
                 return result;
             }
@@ -115,9 +126,9 @@ namespace URLShortenerAPI.Services
             List<URLDTO> conflicts = conflictURLs.Select(_mapper.Map<URLDTO>).ToList();
 
             // Combine the new and existing URLs into a single response list
-            List<BatchURLResponse> response = newURLs
-                .Select(url => new BatchURLResponse { URL = url, IsNew = true })
-                .Concat(conflicts.Select(url => new BatchURLResponse { URL = url, IsNew = false }))
+            List<URLShortenResponse> response = newURLs
+                .Select(url => new URLShortenResponse { URL = url, IsNew = true })
+                .Concat(conflicts.Select(url => new URLShortenResponse { URL = url, IsNew = false }))
                 .ToList();
 
             return response;
@@ -240,14 +251,11 @@ namespace URLShortenerAPI.Services
         /// <param name="longURL">The long URL to check.</param>
         /// <param name="userID">The ID of the owner.</param>
         /// <exception cref="ArgumentException">Thrown when the URL already exists for the user.</exception>
-        private async Task EnsureURLDoesNotExistAsync(string longURL, int userID)
+        private async Task<URLModel?> IsURLAlreadyAsync(string longURL, int userID)
         {
             // Check if the URL already exists for this user.
-            URLModel? url = await _context.URLs.FirstOrDefaultAsync(x => x.LongURL == longURL);
-            if (url == null)
-                return;
-            else if (url.UserID == userID)
-                throw new ArgumentException("URL Already Exists.");
+            URLModel? url = await _context.URLs.Include(x => x.Categories).FirstOrDefaultAsync(x => x.LongURL == longURL && x.UserID == userID);
+            return url;
         }
 
         /// <summary>
@@ -256,7 +264,7 @@ namespace URLShortenerAPI.Services
         /// <param name="longURLs">the HashSet of URLs to be checked.</param>
         /// <param name="userID">ID of the owner.</param>
         /// <returns></returns>
-        private async Task<List<URLModel>> EnsureURLDoesNotExistAsync(HashSet<string> longURLs, int userID)
+        private async Task<List<URLModel>> IsURLAlreadyAsync(HashSet<string> longURLs, int userID)
         {
             // Check if the URL already exists for this user.
             List<URLModel> URLs = await _context.URLs.Include(x => x.Categories).AsNoTracking().Where(x => longURLs.Contains(x.LongURL) && x.UserID == userID).ToListAsync();

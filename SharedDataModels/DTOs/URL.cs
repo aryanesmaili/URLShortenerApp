@@ -27,7 +27,7 @@ namespace SharedDataModels.DTOs
         public required int UserID { get; set; }
     }
 
-    public class BatchURLResponse
+    public class URLShortenResponse
     {
         public required URLDTO URL { get; set; }
         public bool IsNew { get; set; }
