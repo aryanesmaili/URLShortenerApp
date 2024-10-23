@@ -104,6 +104,25 @@ namespace URLShortenerBlazor.Services
         }
 
         /// <summary>
+        /// Activate or Deactivates a URL's condition based on it's current situation.
+        /// </summary>
+        /// <param name="urlID">ID Of the URL to be toggled.</param>
+        /// <returns></returns>
+        public async Task<APIResponse<string>> ToggleActivation(int urlID)
+        {
+            HttpRequestMessage req = new(HttpMethod.Post, $"/api/URL/ToggleActivation/{urlID}");
+
+            HttpResponseMessage response = await _authClient.SendAsync(req);
+            APIResponse<string>? result;
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                result = new() { ErrorType=ErrorType.NotAuthorizedException };
+            else
+                result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return result!;
+        }
+
+        /// <summary>
         /// Generates a shortened-alike string to be shown on home screen.
         /// </summary>
         /// <param name="longURL">the url to be shortened.</param>

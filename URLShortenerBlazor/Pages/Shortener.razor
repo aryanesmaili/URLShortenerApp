@@ -133,22 +133,19 @@
                                 <td>@item.URL.Description</td>
                                 <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
                                 <td class="text-truncate">@item.URL.LongURL</td>
-                                <td>
+                                <td class="p-1">
                                     @if (item.URL.Categories?.Count > 0)
                                         @foreach (var category in item.URL.Categories)
                                         {
-                                            <span class="@GetSpanClass(category.Title)">@category.Title</span>
+                                            <span class="@GetCategorySpanClass(category.Title)">@category.Title</span>
                                         }
                                 </td>
                                 <td>
-                                    @if (item.URL.IsActive)
-                                    {
-                                        <span class="badge bg-success">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">InActive</span>
-                                    }
+                                    <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
+                                        <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
+                                            @(item.URL.IsActive ? "Active" : "InActive")
+                                        </span>
+                                    </button>
                                 </td>
                                 <td>
                                     <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
@@ -373,7 +370,7 @@
         return row.isNew ? "" : "table-secondary";
     }
 
-    private string GetSpanClass(string category)
+    private string GetCategorySpanClass(string category)
     {
         int index = Math.Abs(category.GetHashCode()) % badges.Count;
         return badges[index];
@@ -401,10 +398,46 @@
         APIResponse<string> response = await ShortenerService.DeleteURL(urlID);
         if (response.Success)
         {
+            var urlindex = TableURLs.IndexOf(TableURLs.First(x => x.URL.ID == urlID));
+            TableURLs.RemoveAt(urlindex);           
+            for (int i = urlindex + 1; i < TableURLs.Count; i++)
+            {
+                TableURLs[i].Index -= 1;
+            }
+            StateHasChanged();
             ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
-            TableURLs.Remove(TableURLs.First(x => x.URL.ID == urlID));
         }
         else
             ToastClient.ShowError("Something went wrong while deleting the URL", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
     }
+
+    private string GetActivationSpanClass(bool isActive)
+    {
+        return isActive ? "badge bg-success" : "badge bg-secondary";
+    }
+
+    private async Task ToggleActivation(int urlID, bool isActive)
+    {
+        APIResponse<string> response = await ShortenerService.ToggleActivation(urlID);
+
+        if (response.Success)
+        {
+            // Update the URL status in the TableURLs collection
+            var url = TableURLs.First(x => x.URL.ID == urlID);
+            url.URL.IsActive = !isActive;  // Toggle the status
+
+            string newState = isActive ? "InActivated" : "Activated";
+            StateHasChanged();
+            ToastClient.ShowInfo($"{newState}", settings =>
+            {
+                settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter;
+                settings.Timeout = 2;
+            });
+        }
+        else
+        {
+            ToastClient.ShowError($"There was an error processing your request:\n{response.ErrorMessage}");
+        }
+    }
+
 }

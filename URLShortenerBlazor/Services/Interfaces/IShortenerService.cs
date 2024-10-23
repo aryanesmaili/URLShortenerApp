@@ -9,5 +9,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public string FakeShortener(string longURL);
         public Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO);
         public Task<APIResponse<URLShortenResponse>> ShortenSingle(URLCreateDTO createDTO);
+        Task<APIResponse<string>> ToggleActivation(int urlID);
     }
 }
