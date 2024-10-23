@@ -8,7 +8,7 @@ using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    public class ShortenerService : IShortenerService
+    internal class ShortenerService : IShortenerService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _authClient;

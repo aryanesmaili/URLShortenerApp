@@ -1,4 +1,7 @@
 ﻿@page "/Profile"
+@inject ToastService ToastClient
+@inject JSRuntime JSRuntime
+@inject IShortenerService Shortener
 
 <main class="container vh-100">
     <div class="card">
@@ -6,62 +9,133 @@
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
                     <Icon Name="IconName.UserCircle" IconSize="IconSize.x4" Class="mb-2"></Icon>
-                    <h1 class="my-2">Aryan</h1>
+                    <h1 class="my-2">@userinfo.Name</h1>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> aryan@gmail.com</p>
-                    <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: 2</p>
+                    <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
+                    <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: @urlCount</p>
                 </div>
             </div>
         </div>
-        <div class="card-body">
-            <h2 class="mb-4">Your URLs</h2>
+        <div class="mt-5">
+            <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <thead>
+                    <thead class="table-purple">
                         <tr>
                             <th>ID</th>
                             <th>Description</th>
                             <th>Short Code</th>
-                            <th>Clicks</th>
-                            <th>Created At</th>
+                            <th>Long URL</th>
                             <th>Category</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>My First URL</td>
-                            <td><a href="#" class="text-decoration-none">abcd12</a></td>
-                            <td>10</td>
-                            <td>2024-10-01</td>
-                            <td>
-                                <span class="badge bg-primary">Category 1</span>
-                                <span class="badge bg-secondary">Category 2</span>
-                                <span class="badge bg-info">Category 3</span>
-                            </td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td><button class="btn btn-sm btn-analytics">View</button></td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>My Second URL</td>
-                            <td><a href="#" class="text-decoration-none">efgh34</a></td>
-                            <td>5</td>
-                            <td>2024-10-02</td>
-                            <td>
-                                <span class="badge bg-warning">Category 4</span>
-                                <span class="badge bg-danger">Category 5</span>
-                            </td>
-                            <td><span class="badge bg-secondary">Inactive</span></td>
-                            <td><button class="btn btn-sm btn-analytics">View</button></td>
-                        </tr>
+                        @foreach (var item in TableURLs)
+                        {
+                            <tr>
+                                <td>@item.Index</td>
+                                <td>@item.URL.Description</td>
+                                <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
+                                <td class="text-truncate">@item.URL.LongURL</td>
+                                <td>
+                                    @if (item.URL.Categories?.Count > 0)
+                                        @foreach (var category in item.URL.Categories)
+                                        {
+                                            <span class="@GetSpanClass(category.Title)">@category.Title</span>
+                                        }
+                                </td>
+                                <td>
+                                    @if (item.URL.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">InActive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
+                                        <Icon Name="IconName.Copy"></Icon>
+                                    </button>
+                                    <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                                        <Icon Name="IconName.Delete"></Icon>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
+            @if (TableURLs.Count > 0)
+            {
+                <p class="text-dark">
+                    <small>
+                        ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
+                    </small>
+                </p>
+            }
         </div>
+
     </div>
 </main>
+@code {
+    UserDTO userinfo;
+    private int urlCount = 0;
+    private List<TRow> TableURLs;
+    private List<string> errorMessage = new();
+    private readonly List<string> badges = new()
+    {
+        "badge bg-primary",
+        "badge bg-secondary",
+        "badge bg-success",
+        "badge bg-danger",
+        "badge bg-info",
+    };
 
+
+
+
+    private string GetRowClass(TRow row)
+    {
+        return row.isNew ? "" : "table-secondary";
+    }
+
+    private string GetSpanClass(string category)
+    {
+        int index = Math.Abs(category.GetHashCode()) % badges.Count;
+        return badges[index];
+    }
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (!string.IsNullOrEmpty(textToCopy))
+        {
+            textToCopy = "https://Pexita.click/" + textToCopy;
+            ToastClient.ShowSuccess("Text Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+        }
+    }
+
+    private async Task CopyAllToClipboard()
+    {
+        string textToCopy = string.Join('\n', TableURLs.Select(x => $"https://Pexita.click/{x.URL.ShortCode}"));
+        ToastClient.ShowSuccess("All Shortened Links were Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+
+    private async Task DeleteURL(int urlID)
+    {
+        APIResponse<string> response = await Shortener.DeleteURL(urlID);
+        if (response.Success)
+        {
+            ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            TableURLs.Remove(TableURLs.First(x => x.URL.ID == urlID));
+        }
+        else
+            ToastClient.ShowError("Something went wrong while deleting the URL", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+    }
+}
