@@ -61,5 +61,24 @@ namespace URLShortenerBlazor.Services
         {
             return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;
         }
+
+        public async Task<string?> RefreshTokenAsync()
+        {
+            // Make a request to your refresh token endpoint
+            var response = await _httpClient.PostAsync("api/Users/RefreshToken", null); // Adjust endpoint as necessary
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<APIResponse<string>>(); // Assume TokenResponse has a property for JWT
+                if (result != null && !string.IsNullOrEmpty(result.Result))
+                {
+                    // Store the new JWT token in local storage
+                    await _localStorage.SetItemAsync("authToken", result.Result);
+                    return result.Result;
+                }
+            }
+
+            return null; // Return null if refreshing failed
+        }
     }
 }

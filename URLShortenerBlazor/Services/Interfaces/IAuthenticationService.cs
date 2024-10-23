@@ -10,5 +10,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo);
         public Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO);
         public Task<int> GetUserID();
+        Task<string?> RefreshTokenAsync();
     }
 }
