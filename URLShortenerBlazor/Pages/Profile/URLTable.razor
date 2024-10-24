@@ -6,7 +6,7 @@
 @inject IProfileServices ProfileService
 
 
-<div class="mt-5">
+<div class="mt-5 mb-5">
     <h2 class="h4 px-3">Preview of Shortened URLs</h2>
     <div class="">
         <table class="table-responsive table table-hover">
@@ -58,7 +58,7 @@
         <div class="d-flex flex-column align-items-center mt-5">
             <nav aria-label="Table pagination">
                 <ul class="pagination mb-0">
-                    <li class="page-item @(() => currentpageNumber - 1 > 0 ? "": "disabled")">
+                    <li class="page-item @(currentpageNumber <= 1 ? "disabled" : "")">
                         <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber - 1)" tabindex="-1">Previous</button>
                     </li>
                     <li class="page-item active" aria-current="page">
@@ -76,24 +76,16 @@
                     <li class="page-item">
                         <a class="page-link" href="#">400</a>
                     </li>
-                    <li class="page-item">
+                    <li class="page-item @(currentpageNumber == TotalPages ? "disabled": "")">
                         <button Type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">Next</button>
                     </li>
                 </ul>
             </nav>
             <div class="pagination-info mt-3">
-                Showing <span class="fw-bold">1-@pageSize</span> of <span class="fw-bold">@TotalCount</span> items
+                Showing <span class="fw-bold">@(Index - pageSize)-@Index</span> of <span class="fw-bold">@TotalCount</span> items
             </div>
         </div>
     </div>
-    @if (TableURLs.Count > 0)
-    {
-        <p class="text-dark">
-            <small>
-                ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
-            </small>
-        </p>
-    }
 </div>
 <script>
     window.copyToClipboard = function (text) {
@@ -159,8 +151,8 @@
     {
         if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == currentpageNumber)
             return;
-        if (pageNumber < currentpageNumber)
-            Index -= (2 * pageSize);
+
+        Index = ((pageNumber - 1) * pageSize) + 1;
         TableURLs.Clear();
         await GetTableURLs(userID, pageNumber);
         StateHasChanged();

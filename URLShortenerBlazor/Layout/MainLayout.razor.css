@@ -1,5 +1,13 @@
 .content {
     padding-top: 0 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+}
+
+.main {
+    flex: 1 0 auto; /* This will make the main content expand to push footer down */
+    padding-bottom: 2rem; /* Add some space above footer */
 }
 
 .navigationbar {
@@ -27,13 +35,10 @@ img {
 }
 
 footer {
-    position: relative;
-    left: 0;
-    bottom: 0;
+    flex-shrink: 0; 
     width: 100%;
     padding: 1rem;
     background-color: #6f42c1;
-    /* Dark background for footer */
     text-align: center;
     color: white;
 }
