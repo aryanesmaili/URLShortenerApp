@@ -1,38 +1,46 @@
 ﻿@page "/Profile"
-@inject ToastService ToastClient
-@inject JSRuntime JSRuntime
+@inject Blazored.Toast.Services.IToastService ToastClient
+@inject IJSRuntime JSRuntime
 @inject IShortenerService ShortenerService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject IProfileServices ProfileService
-<main class="container vh-100">
-    <div class="card">
-        <div class="card-header">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <Icon Name="IconName.UserCircle" IconSize="IconSize.x4" Class="mb-2"></Icon>
-                    <h1 class="my-2">@userinfo.Name</h1>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
-                    <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: @urlCount</p>
+
+<main>
+    <div class="container vh-100">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <Icon Name="IconName.UserCircle" IconSize="IconSize.x4" Class="mb-2"></Icon>
+                        <h1 class="my-2">@userinfo.Name</h1>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
+                        <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: @urlCount</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <URLTable/>
+        <URLTable />
     </div>
+
+
 </main>
+
 @code {
-    UserDTO userinfo = new()
-        {
-            Name = string.Empty,
-            Email = string.Empty,
-            Username = string.Empty
-        };
+    UserDTO userinfo;
+
     private int urlCount = 0; // TODO: Fix this
 
     protected override async Task OnInitializedAsync()
     {
+        userinfo = new()
+            {
+                Name = string.Empty,
+                Email = string.Empty,
+                Username = string.Empty
+            };
         try
         {
             userinfo = await AuthService.GetUserInfo() ?? throw new Exception();
@@ -46,9 +54,4 @@
         }
 
     }
-
-
-
-
-
 }

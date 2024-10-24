@@ -34,3 +34,152 @@
     font-size: 48px;
     margin-bottom: 15px;
 }
+/* Pagination Styles */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    color: #6f42c1;
+    padding: 0.5rem 0.75rem;
+    border-color: #dee2e6;
+    background-color: #fff;
+    font-size: 0.875rem;
+}
+
+    .page-link:hover {
+        color: #fff;
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+    }
+
+.page-item.active .page-link {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Bootstrap overrides */
+
+.btn-icon {
+    background-color: transparent;
+    /* Transparent background */
+    border: none;
+    /* Remove border */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    padding: 5px;
+    /* Padding around icon */
+    transition: color 0.3s;
+    /* Transition for hover effect */
+    color: green;
+}
+
+    .btn-icon:hover {
+        color: #007bff;
+        /* Change color on hover */
+    }
+
+/* Button for Bootstrap switch */
+.btn-check:focus + .btn {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-check:checked + .btn {
+    background-color: #6f42c1;
+    color: white;
+    border-color: #6f42c1;
+}
+
+    .btn-check:checked + .btn:hover {
+        background-color: #5a30a2;
+        border-color: #5a30a2;
+    }
+
+.btn:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+}
+
+.alert {
+    padding: 0 !important;
+}
+
+.list-group-item {
+    border: none !important;
+    padding: 0 !important;
+}
+
+.btn-icon:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.btn-icon:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+
+.status-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+    .status-toggle:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+    .status-badge.active {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .status-badge.inactive {
+        background-color: #6c757d;
+        color: white;
+    }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .pagination .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+
+    /* Hide some page numbers on mobile */
+    .pagination li:not(.active):not(:first-child):not(:last-child):not(:nth-last-child(2)):not(:nth-child(2)) {
+        display: none;
+    }
+}

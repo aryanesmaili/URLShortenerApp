@@ -1,5 +1,5 @@
-﻿@inject ToastService ToastClient
-@inject JSRuntime JSRuntime
+﻿@inject Blazored.Toast.Services.IToastService ToastClient
+@inject IJSRuntime JSRuntime
 @inject IShortenerService ShortenerService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
@@ -7,9 +7,9 @@
 
 
 <div class="mt-5">
-    <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
-    <div class="table-responsive">
-        <table class="table table-hover">
+    <h2 class="h4 px-3">Preview of Shortened URLs</h2>
+    <div class="">
+        <table class="table-responsive table table-hover">
             <thead class="table-purple">
                 <tr>
                     <th>ID</th>
@@ -29,7 +29,7 @@
                         <td>@item.URL.Description</td>
                         <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
                         <td class="text-truncate">@item.URL.LongURL</td>
-                        <td>
+                        <td class="p-1">
                             @if (item.URL.Categories?.Count > 0)
                                 @foreach (var category in item.URL.Categories)
                                 {
@@ -55,6 +55,36 @@
                 }
             </tbody>
         </table>
+        <div class="d-flex flex-column align-items-center mt-5">
+            <nav aria-label="Table pagination">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(() => currentpageNumber - 1 > 0 ? "": "disabled")">
+                        <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber - 1)" tabindex="-1">Previous</button>
+                    </li>
+                    <li class="page-item active" aria-current="page">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-link">...</span>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">400</a>
+                    </li>
+                    <li class="page-item">
+                        <button Type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="pagination-info mt-3">
+                Showing <span class="fw-bold">1-@pageSize</span> of <span class="fw-bold">@TotalCount</span> items
+            </div>
+        </div>
     </div>
     @if (TableURLs.Count > 0)
     {
@@ -65,8 +95,17 @@
         </p>
     }
 </div>
-
+<script>
+    window.copyToClipboard = function (text) {
+        navigator.clipboard.writeText(text)
+            .catch(function (err) {
+                console.error('Could not copy text: ', err);
+            });
+    }
+</script>
 @code {
+    private int userID = 1;
+
     private int urlCount = 0;
     private List<TRow> TableURLs = new();
     private List<string> errorMessage = new();
@@ -78,7 +117,6 @@
         "badge bg-danger",
         "badge bg-info",
     };
-    private int userID = 0;
     private List<TRow> rows = new();
     private int pageSize = 10;
     private int currentpageNumber = 1;
@@ -88,11 +126,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        TableURLs = await GetTableURLs(userID);
+        await GetTableURLs(userID);
         await base.OnInitializedAsync();
     }
 
-    private async Task<List<TRow>> GetTableURLs(int userID, int pageNumber = 1, int pageSize = 10)
+    private async Task GetTableURLs(int userID, int pageNumber = 1, int pageSize = 10)
     {
         APIResponse<PagedResult<URLDTO>> response = await ProfileService.GetProfileURLList(userID, pageNumber, pageSize);
         try
@@ -103,22 +141,31 @@
             currentpageNumber = response.Result!.PageNumber;
             TotalPages = response.Result.TotalPages;
             TotalCount = response.Result.TotalCount;
-            List<TRow> result = [];
 
             foreach (var item in response.Result.Items)
             {
-                TRow x = new TRow() { URL = item, Index = Index, IsNew = true };
-                result.Add(x);
+                TRow row = new TRow() { URL = item, Index = Index, IsNew = true };
+                TableURLs.Add(row);
                 Index++;
             }
-            return result;
         }
         catch (Exception)
         {
             errorMessage = new List<string>() { response.ErrorMessage };
-            throw;
         }
     }
+
+    private async Task ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == currentpageNumber)
+            return;
+        if (pageNumber < currentpageNumber)
+            Index -= (2 * pageSize);
+        TableURLs.Clear();
+        await GetTableURLs(userID, pageNumber);
+        StateHasChanged();
+    }
+
     private string GetRowClass(TRow row)
     {
         return row.IsNew ? "" : "table-secondary";
