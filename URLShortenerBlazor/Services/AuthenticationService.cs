@@ -62,6 +62,10 @@ namespace URLShortenerBlazor.Services
             return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;
         }
 
+        public async Task<UserDTO?> GetUserInfo()
+        {
+            return await _localStorage.GetItemAsync<UserDTO>("user");
+        }
         public async Task<string?> RefreshTokenAsync()
         {
             // Make a request to your refresh token endpoint

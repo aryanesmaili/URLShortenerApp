@@ -1,0 +1,190 @@
+﻿@inject ToastService ToastClient
+@inject JSRuntime JSRuntime
+@inject IShortenerService ShortenerService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject IProfileServices ProfileService
+
+
+<div class="mt-5">
+    <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-purple">
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Short Code</th>
+                    <th>Long URL</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in TableURLs)
+                {
+                    <tr>
+                        <td>@item.Index</td>
+                        <td>@item.URL.Description</td>
+                        <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
+                        <td class="text-truncate">@item.URL.LongURL</td>
+                        <td>
+                            @if (item.URL.Categories?.Count > 0)
+                                @foreach (var category in item.URL.Categories)
+                                {
+                                    <span class="@GetCategorySpanClass(category.Title)">@category.Title</span>
+                                }
+                        </td>
+                        <td>
+                            <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
+                                <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
+                                    @(item.URL.IsActive ? "Active" : "InActive")
+                                </span>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
+                                <Icon Name="IconName.Copy"></Icon>
+                            </button>
+                            <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                                <Icon Name="IconName.Delete"></Icon>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (TableURLs.Count > 0)
+    {
+        <p class="text-dark">
+            <small>
+                ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
+            </small>
+        </p>
+    }
+</div>
+
+@code {
+    private int urlCount = 0;
+    private List<TRow> TableURLs = new();
+    private List<string> errorMessage = new();
+    private readonly List<string> badges = new()
+    {
+        "badge bg-primary",
+        "badge bg-secondary",
+        "badge bg-success",
+        "badge bg-danger",
+        "badge bg-info",
+    };
+    private int userID = 0;
+    private List<TRow> rows = new();
+    private int pageSize = 10;
+    private int currentpageNumber = 1;
+    private int TotalPages = 0;
+    private int TotalCount = 0;
+    private int Index = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        TableURLs = await GetTableURLs(userID);
+        await base.OnInitializedAsync();
+    }
+
+    private async Task<List<TRow>> GetTableURLs(int userID, int pageNumber = 1, int pageSize = 10)
+    {
+        APIResponse<PagedResult<URLDTO>> response = await ProfileService.GetProfileURLList(userID, pageNumber, pageSize);
+        try
+        {
+            if (!response.Success)
+                throw new Exception();
+
+            currentpageNumber = response.Result!.PageNumber;
+            TotalPages = response.Result.TotalPages;
+            TotalCount = response.Result.TotalCount;
+            List<TRow> result = [];
+
+            foreach (var item in response.Result.Items)
+            {
+                TRow x = new TRow() { URL = item, Index = Index, IsNew = true };
+                result.Add(x);
+                Index++;
+            }
+            return result;
+        }
+        catch (Exception)
+        {
+            errorMessage = new List<string>() { response.ErrorMessage };
+            throw;
+        }
+    }
+    private string GetRowClass(TRow row)
+    {
+        return row.IsNew ? "" : "table-secondary";
+    }
+
+    private string GetCategorySpanClass(string category)
+    {
+        int index = Math.Abs(category.GetHashCode()) % badges.Count;
+        return badges[index];
+    }
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (!string.IsNullOrEmpty(textToCopy))
+        {
+            textToCopy = "https://Pexita.click/" + textToCopy;
+            ToastClient.ShowSuccess("Text Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+        }
+    }
+
+    private async Task CopyAllToClipboard()
+    {
+        string textToCopy = string.Join('\n', TableURLs.Select(x => $"https://Pexita.click/{x.URL.ShortCode}"));
+        ToastClient.ShowSuccess("All Shortened Links were Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+
+    private async Task DeleteURL(int urlID)
+    {
+        APIResponse<string> response = await ShortenerService.DeleteURL(urlID);
+        if (response.Success)
+        {
+            var urlindex = TableURLs.IndexOf(TableURLs.First(x => x.URL.ID == urlID));
+            TableURLs.RemoveAt(urlindex);
+            for (int i = urlindex + 1; i < TableURLs.Count; i++)
+            {
+                TableURLs[i].Index -= 1;
+            }
+            StateHasChanged();
+            ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+        }
+        else
+            ToastClient.ShowError("Something went wrong while deleting the URL", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+    }
+
+    private async Task ToggleActivation(int urlID, bool isActive)
+    {
+        APIResponse<string> response = await ShortenerService.ToggleActivation(urlID);
+
+        if (response.Success)
+        {
+            var url = TableURLs.First(x => x.URL.ID == urlID);
+            url.URL.IsActive = !isActive;
+
+            string newState = isActive ? "InActivated" : "Activated";
+            StateHasChanged();
+            ToastClient.ShowInfo($"{newState}", settings =>
+            {
+                settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter;
+                settings.Timeout = 2;
+            });
+        }
+        else
+        {
+            ToastClient.ShowError($"There was an error processing your request:\n{response.ErrorMessage}");
+        }
+    }
+}

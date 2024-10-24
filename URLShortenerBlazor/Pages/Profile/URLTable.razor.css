@@ -1,0 +1,36 @@
+﻿.table {
+    margin-top: 30px;
+}
+
+    .table th {
+        background-color: #6f42c1;
+        color: white;
+        font-weight: 500;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+.btn-analytics {
+    background-color: #28a745;
+    color: white;
+}
+
+    .btn-analytics:hover {
+        background-color: #218838;
+    }
+
+.badge {
+    font-size: 0.8em;
+    margin-right: 5px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.user-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}

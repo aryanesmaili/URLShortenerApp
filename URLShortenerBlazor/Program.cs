@@ -18,6 +18,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
+builder.Services.AddTransient<IProfileServices, ProfileServices>();
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)

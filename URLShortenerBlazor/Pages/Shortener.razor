@@ -255,7 +255,7 @@
             {
                 if (!TableURLs.Any(x => x.URL.LongURL == response.Result!.URL.LongURL))
                 {
-                    TableURLs.Add(new TRow() { URL = response.Result!.URL, isNew = response.Result.IsNew, Index = index });
+                    TableURLs.Add(new TRow() { URL = response.Result!.URL, IsNew = response.Result.IsNew, Index = index });
                     index++;
                     StateHasChanged();
                 }
@@ -336,7 +336,7 @@
                 HashSet<TRow> uniqueItems = new HashSet<TRow>(TableURLs);
                 foreach (var item in sortedList)
                 {
-                    uniqueItems.Add(new TRow { URL = item.URL, Index = index, isNew = item.IsNew });
+                    uniqueItems.Add(new TRow { URL = item.URL, Index = index, IsNew = item.IsNew });
                     index++;
                 }
                 TableURLs = uniqueItems.OrderBy(x => x.Index).ToList();
@@ -367,7 +367,7 @@
 
     private string GetRowClass(TRow row)
     {
-        return row.isNew ? "" : "table-secondary";
+        return row.IsNew ? "" : "table-secondary";
     }
 
     private string GetCategorySpanClass(string category)
