@@ -5,7 +5,17 @@
 @inject NavigationManager Navigation
 @inject IProfileServices ProfileService
 
-
+@if (errorMessage?.Count != 0 && errorMessage is not null)
+{
+    <div class="alert alert-danger mt-1 mb-2 py-1">
+        <ul class="list-group list-group-flush">
+            @foreach (var error in errorMessage)
+            {
+                <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
+            }
+        </ul>
+    </div>
+}
 <div class="mt-5 mb-5">
     <h2 class="h4 px-3 mb-3">Your Links</h2>
 
@@ -22,7 +32,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in TableURLs)
+            @foreach (var item in currentPageRows)
             {
                 <tr class="bg-light">
                     <td>@item.Index</td>
@@ -141,10 +151,14 @@
 
 @code {
     private int userID = 1;
-
-    private int urlCount = 0;
-    private List<TRow> TableURLs = new();
     private List<string> errorMessage = new();
+    private List<TRow> currentPageRows = new();
+    private Dictionary<int, List<TRow>> rows = new();
+    private int pageSize = 10;
+    private int currentpageNumber = 1;
+    private int TotalPages = 0;
+    private int TotalCount = 0;
+    private int Index = 1;
     private readonly List<string> badges = new()
     {
         "badge bg-primary",
@@ -153,17 +167,28 @@
         "badge bg-danger",
         "badge bg-info",
     };
-    private List<TRow> rows = new();
-    private int pageSize = 10;
-    private int currentpageNumber = 1;
-    private int TotalPages = 0;
-    private int TotalCount = 0;
-    private int Index = 1;
+
 
     protected override async Task OnInitializedAsync()
     {
-        await GetTableURLs(userID);
+        await GetTableRowsAsync();
         await base.OnInitializedAsync();
+    }
+
+    private async Task GetTableRowsAsync(int pageNumber = 1)
+    {
+        if (rows.TryGetValue(pageNumber, out List<TRow>? trows))
+        {
+            currentPageRows = trows;
+            currentpageNumber = pageNumber;
+
+        }
+        else
+        {
+            await GetTableURLs(userID, pageNumber);
+            currentPageRows = rows[pageNumber];
+        }
+        StateHasChanged();
     }
 
     private async Task GetTableURLs(int userID, int pageNumber = 1, int pageSize = 10)
@@ -171,6 +196,7 @@
         APIResponse<PagedResult<URLDTO>> response = await ProfileService.GetProfileURLList(userID, pageNumber, pageSize);
         try
         {
+            List<TRow> listToAdd = new();
             if (!response.Success)
                 throw new Exception();
 
@@ -181,9 +207,10 @@
             foreach (var item in response.Result.Items)
             {
                 TRow row = new TRow() { URL = item, Index = Index, IsNew = true };
-                TableURLs.Add(row);
+                listToAdd.Add(row);
                 Index++;
             }
+            rows[currentpageNumber] = listToAdd;
         }
         catch (Exception)
         {
@@ -197,9 +224,7 @@
             return;
 
         Index = ((pageNumber - 1) * pageSize) + 1;
-        TableURLs.Clear();
-        await GetTableURLs(userID, pageNumber);
-        StateHasChanged();
+        await GetTableRowsAsync(pageNumber);
     }
 
     private string GetRowClass(TRow row)
@@ -225,7 +250,7 @@
 
     private async Task CopyAllToClipboard()
     {
-        string textToCopy = string.Join('\n', TableURLs.Select(x => $"https://Pexita.click/{x.URL.ShortCode}"));
+        string textToCopy = string.Join('\n', rows[currentpageNumber].Select(x => $"https://Pexita.click/{x.URL.ShortCode}"));
         ToastClient.ShowSuccess("All Shortened Links were Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
         await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
     }
@@ -235,11 +260,11 @@
         APIResponse<string> response = await ShortenerService.DeleteURL(urlID);
         if (response.Success)
         {
-            var urlindex = TableURLs.IndexOf(TableURLs.First(x => x.URL.ID == urlID));
-            TableURLs.RemoveAt(urlindex);
-            for (int i = urlindex + 1; i < TableURLs.Count; i++)
+            var urlindex = rows[currentpageNumber].IndexOf(rows[currentpageNumber].First(x => x.URL.ID == urlID));
+            rows[currentpageNumber].RemoveAt(urlindex);
+            for (int i = urlindex + 1; i < rows[currentpageNumber].Count; i++)
             {
-                TableURLs[i].Index -= 1;
+                rows[currentpageNumber][i].Index -= 1;
             }
             StateHasChanged();
             ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
@@ -254,7 +279,7 @@
 
         if (response.Success)
         {
-            var url = TableURLs.First(x => x.URL.ID == urlID);
+            var url = rows[currentpageNumber].First(x => x.URL.ID == urlID);
             url.URL.IsActive = !isActive;
 
             string newState = isActive ? "DeActivated" : "Activated";
