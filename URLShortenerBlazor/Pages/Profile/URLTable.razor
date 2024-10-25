@@ -8,6 +8,7 @@
 
 <div class="mt-5 mb-5">
     <h2 class="h4 px-3 mb-3">Your Links</h2>
+
     <table class="table-responsive table table-hover">
         <thead>
             <tr>
@@ -54,6 +55,7 @@
             }
         </tbody>
     </table>
+
     <div class="d-flex flex-column align-items-center mt-5">
         <nav aria-label="Table pagination">
             <ul class="pagination">
@@ -112,7 +114,11 @@
                     </li>
                 }
                 <li class="page-item @(currentpageNumber == TotalPages ? "disabled" : "")">
-                    <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">Next</button>
+                    <button type="button" class="page-link @(currentpageNumber == TotalPages ? "disabled" : "")" @onclick="() => ChangePage(currentpageNumber + 1)"
+                            aria-label="Next"
+                            tabindex="0">
+                        <span aria-hidden="true">Next</span>
+                    </button>
                 </li>
             </ul>
 
@@ -132,6 +138,7 @@
             });
     }
 </script>
+
 @code {
     private int userID = 1;
 
@@ -250,7 +257,7 @@
             var url = TableURLs.First(x => x.URL.ID == urlID);
             url.URL.IsActive = !isActive;
 
-            string newState = isActive ? "InActivated" : "Activated";
+            string newState = isActive ? "DeActivated" : "Activated";
             StateHasChanged();
             ToastClient.ShowInfo($"{newState}", settings =>
             {

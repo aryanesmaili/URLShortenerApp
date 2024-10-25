@@ -5,7 +5,7 @@
 @inject IJSRuntime JSRuntime
 @inject Blazored.Toast.Services.IToastService ToastClient
 
-<body class="bg-light pt-5">
+<body class="pt-5 bg-light">
     <div class="container py-5">
         <header class="text-center mb-5">
             <h1 class="display-4 text-purple">URL Shortener</h1>
@@ -99,12 +99,12 @@
                 }
             </div>
         </div>
-
-        <div class="mt-5">
-            <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-purple">
+        @if (!(TableURLs.Count == 0))
+        {
+            <div class="mt-5">
+                <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
+                <table class="table-responsive table table-hover">
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Description</th>
@@ -129,12 +129,12 @@
                     <tbody>
                         @foreach (var item in TableURLs)
                         {
-                            <tr class="@GetRowClass(item)">
+                            <tr>
                                 <td>@item.Index</td>
                                 <td>@item.URL.Description</td>
                                 <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
-                                <td class="text-truncate">@item.URL.LongURL</td>
-                                <td class="p-1">
+                                <td>@item.URL.LongURL</td>
+                                <td class="px-2 py-3">
                                     @if (item.URL.Categories?.Count > 0)
                                         @foreach (var category in item.URL.Categories)
                                         {
@@ -160,21 +160,28 @@
                         }
                     </tbody>
                 </table>
+
+                @if (TableURLs.Count > 0)
+                {
+                    <p class="text-dark">
+                        <small>
+                            ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
+                        </small>
+                    </p>
+                }
             </div>
-            @if (TableURLs.Count > 0)
-            {
-                <p class="text-dark">
-                    <small>
-                        ** If a row is shown in <span style="color:gray">Gray Color</span> it means it has been shortened before by you.
-                    </small>
-                </p>
-            }
-        </div>
 
+        }
     </div>
-
 </body>
-
+<script>
+    window.copyToClipboard = function (text) {
+        navigator.clipboard.writeText(text)
+            .catch(function (err) {
+                console.error('Could not copy text: ', err);
+            });
+    }
+</script>
 @code {
     public string? url { get; set; }
 
@@ -393,7 +400,7 @@
         if (response.Success)
         {
             var urlindex = TableURLs.IndexOf(TableURLs.First(x => x.URL.ID == urlID));
-            TableURLs.RemoveAt(urlindex);           
+            TableURLs.RemoveAt(urlindex);
             for (int i = urlindex + 1; i < TableURLs.Count; i++)
             {
                 TableURLs[i].Index -= 1;

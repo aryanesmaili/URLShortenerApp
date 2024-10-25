@@ -1,3 +1,4 @@
+/* Base Styles */
 body {
     background-color: #e9ecef;
     /* Light background for the body */
@@ -5,24 +6,11 @@ body {
     /* Set a modern font */
 }
 
-.navigationbar {
-    background-color: #6f42c1;
-    /* Purple    background for the navigation bar */
-}
-
-    .navigationbar a {
-        color: white;
-    }
-
-        .navigationbar a:hover {
-            color: black;
-        }
-
 img {
     color: white;
 }
 
-
+/* Hero Section */
 .hero {
     background-color: #6f42c1;
     color: white;
@@ -35,6 +23,7 @@ img {
         margin-bottom: 2rem;
     }
 
+/* URL Input Section */
 .input-container {
     max-width: 600px;
     margin: 0 auto;
@@ -64,59 +53,38 @@ img {
             background-color: #218838;
         }
 
-
-#url-preview {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-}
-
-.main-bg {
-    background-color: #6f42c1;
-    /* Purple background for the main section */
-    color: white;
-    /* White text color */
-    border-radius: 10px;
-    /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    /* Subtle shadow */
-}
-
+/* Features Section */
 .features {
-    padding: 80px 0;
-    background-color: #fff;
+    padding: 80px 0; /* Space above and below the features section */
+    background-color: #fff; /* Background color for the section */
 }
 
 .feature-item {
-    text-align: center;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 100%;
-    transition: transform 0.3s;
+    text-align: center; /* Center-align text inside feature items */
+    padding: 30px; /* Space inside feature items */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    height: 100%; /* Full height */
+    transition: transform 0.3s, box-shadow 0.3s; /* Transition effects for transform and box-shadow */
 }
 
+    /* Hover effect for feature items */
     .feature-item:hover {
-        transform: translateY(-5px);
+        transform: scale(1.05); /* Scale effect on hover */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* More prominent shadow on hover */
     }
 
     .feature-item h3 {
-        color: #6f42c1;
-        margin-bottom: 1rem;
+        color: #6f42c1; /* Text color for headings */
+        margin-bottom: 1rem; /* Space below headings */
     }
 
-    .feature-item:hover {
-        transform: scale(1.05);
-        /* Scale effect on hover */
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        /* More prominent shadow on hover */
-    }
-
-
-
+/* How It Works Section */
 .how-it-works {
     background-color: #f8f9fa;
 }
 
+/* Timeline Component */
 .timeline {
     position: relative;
     max-width: 1200px;
@@ -209,6 +177,53 @@ img {
     object-fit: cover;
 }
 
+/* Call to Action Section */
+.cta {
+    margin: auto;
+    background-color: #6f42c1; /* Purple background for CTA section */
+    color: white; /* White text color */
+    max-width: 600px; /* Limit width for larger screens */
+    width: 90%; /* Full width on smaller screens */
+    border-radius: 25px;
+    padding: 20px; /* Add padding for better spacing */
+    text-align: center; /* Center text for better alignment */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+}
+
+    .cta h2 {
+        margin-bottom: 10px; /* Slightly increased margin for spacing */
+    }
+
+    .cta a {
+        display: inline-block; /* Ensure it behaves like a button */
+        background-color: #28a745; /* Green background for the link */
+        border-color: #28a745; /* Match border color with background */
+        color: white; /* Ensure text is readable */
+        padding: 10px 20px; /* Add padding for better button size */
+        border-radius: 5px; /* Slightly rounded corners for the button */
+        text-decoration: none; /* Remove underline */
+        transition: background-color 0.3s; /* Smooth transition for hover */
+    }
+
+        .cta a:hover {
+            background-color: #218838; /* Darker green on hover */
+            border-color: #218838; /* Match border color with background */
+        }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cta {
+        width: 90%; /* Full width on mobile screens */
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+
+        .cta h2 {
+            margin-bottom: 8px; /* Adjust margin for smaller screens */
+        }
+}
+
+
+/* Responsive Timeline */
 @media screen and (max-width: 600px) {
     .timeline::after {
         left: 31px;
@@ -236,70 +251,3 @@ img {
         left: -5px;
     }
 }
-
-.cta {
-    margin: auto;
-    background-color: #6f42c1;
-    /* Blue background for CTA section */
-    color: white;
-    /* White text color */
-    width: 40%;
-    border-radius: 25px;
-}
-
-    .cta h2 {
-        margin-bottom: 5px;
-    }
-
-    .cta a {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-
-footer {
-    position: relative;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    padding: 1rem;
-    background-color: #6f42c1;
-    /* Dark background for footer */
-    text-align: center;
-    color: white;
-}
-
-
-.footer-info {
-    display: flex;
-    flex-direction: column;
-    /* Stack items vertically */
-    align-items: center;
-    /* Center the column in the middle */
-}
-
-    .footer-info ul {
-        list-style-type: none;
-        /* Remove bullet points */
-        padding: 0;
-        /* Remove padding */
-        margin: 0;
-    }
-
-    .footer-info li {
-        margin: 0.5rem 0;
-        /* Add vertical spacing between the social links */
-    }
-
-    .footer-info a {
-        text-decoration: none;
-        /* Remove underline */
-        color: white;
-        /* White text */
-        font-size: 18px;
-        /* Adjust font size */
-    }
-
-        .footer-info a:hover {
-            color: #ffcc00;
-            /* Change color on hover */
-        }

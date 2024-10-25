@@ -1,21 +1,15 @@
-﻿/* Global styles */
+﻿/* Base Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
 }
 
-/* Container styles */
+/* Layout & Container Styles */
 .container {
     max-width: 1100px;
     padding: 0 !important;
 }
 
-.container-border {
-    border: rgb(230, 230, 230) solid 2px;
-    border-top: none;
-}
-
-/* Color classes */
+/* Typography & Colors */
 .text-purple {
     color: #6f42c1;
 }
@@ -24,7 +18,61 @@ body {
     background-color: #6f42c1;
 }
 
-/* Button styles */
+/* Card Components */
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    background-color: #6f42c1;
+    color: white;
+}
+
+.card-body {
+    /* Referenced in Razor file */
+}
+
+/* Form Elements */
+.form-control {
+    border-radius: 8px;
+}
+
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+
+.form-check {
+    /* Referenced in Razor file */
+}
+
+/* Form Switch Controls */
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    margin-top: 0.25em;
+}
+
+/* Textarea Specific Styles */
+.batch-url-area {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+#description {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+#batchDescription {
+    min-height: 100px;
+    max-height: 200px;
+}
+
+/* Button Styles */
 .btn {
     border-radius: 8px;
     padding: 10px 20px;
@@ -43,26 +91,210 @@ body {
         color: white;
     }
 
+/* Alert & List Group Styles */
+.alert {
+    padding: 0 !important;
+}
+
+.list-group-item {
+    border: none !important;
+    padding: 0 !important;
+}
+
+
+
+/* Table Base Styles */
+.table {
+    border-radius: 8px;
+    overflow: auto;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Table Header & Body */
+.table thead th {
+    background-color: #6f42c1; /* Header background color */
+    color: white; /* Header text color */
+    border: none; /* No border for header */
+    padding: 15px;
+}
+
+.table tbody tr {
+    background-color: #fff; /* Row background color */
+}
+
+.table th,
+.table td {
+    vertical-align: middle; /* Aligns content vertically */
+    border: none; /* No border for cells */
+}
+
+/* Table Cell Styles */
+.table td {
+    word-wrap: break-word; /* Allows long words to break onto the next line */
+    white-space: normal; /* Allows text to wrap based on the cell width */
+    overflow: hidden; /* Hides overflowing content */
+    text-overflow: ellipsis; /* Displays ellipsis (...) for overflowing text */
+}
+
+.table thead th:nth-child(1) {
+    border-radius: 15px 0 0 0;
+}
+
+.table thead th:nth-child(7) {
+    border-radius: 0 15px 0 0;
+}
+/* Specific Column Styles */
+.table td:nth-child(2),
+.table td:nth-child(4),
+.table td:nth-child(5) {
+    max-width: 200px; /* Sets a maximum width for specified columns */
+}
+
+/* Ensuring proper overflow handling for the fifth column */
+.table td:nth-child(5) {
+    white-space: normal; /* Allows wrapping of text within the fifth column */
+}
+
+
+/* Status Toggle Styles */
+.status-toggle {
+    background: none; /* No background */
+    border: none; /* No border */
+    padding: 0; /* No padding */
+    margin: 0; /* No margin */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+    .status-toggle:focus {
+        outline: none; /* No outline on focus */
+        box-shadow: none; /* No box shadow on focus */
+    }
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 6px 12px; /* Padding around the badge */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 0.875rem; /* Font size */
+    font-weight: 500; /* Font weight */
+    text-align: center; /* Center align text */
+    transition: background-color 0.2s ease; /* Smooth background transition */
+}
+
+    /* Status Badge State Styles */
+    .status-badge.active,
+    .status-badge.inactive {
+        color: white;
+    }
+
+    .status-badge.active {
+        background-color: #28a745; /* Green background for active status */
+    }
+
+    .status-badge.inactive {
+        background-color: #6c757d; /* Gray background for inactive status */
+    }
+
+/* Category Badge Styles */
+.badge {
+    font-size: 0.8em;
+    margin-right: 5px;
+}
+
+/* Action Button Styles */
 .btn-icon {
-    background-color: transparent;
-    /* Transparent background */
-    border: none;
-    /* Remove border */
-    cursor: pointer;
-    /* Pointer cursor on hover */
-    padding: 5px;
-    /* Padding around icon */
-    transition: color 0.3s;
-    /* Transition for hover effect */
-    color: green;
+    background-color: transparent; /* No background color */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Padding around the button */
+    transition: color 0.3s; /* Smooth color transition */
+    color: green; /* Default text color */
 }
 
     .btn-icon:hover {
-        color: #007bff;
-        /* Change color on hover */
+        color: #007bff; /* Color change on hover */
     }
 
-/* Button for Bootstrap switch */
+    /* Focus and Active States */
+    .btn-icon:focus,
+    .btn-icon:active {
+        outline: none !important; /* No outline on focus or active state */
+        box-shadow: none !important; /* No box shadow on focus or active state */
+        border: none !important; /* No border on focus or active state */
+    }
+
+
+/* Pagination Styles */
+.pagination {
+    margin-bottom: 25px; /* Space below the pagination */
+    display: flex; /* Aligns pagination items horizontally */
+    justify-content: center; /* Centers pagination items */
+}
+
+.page-item {
+    margin: 0 4px; /* Space between pagination items */
+}
+
+.page-link {
+    color: #6f42c1; /* Default text color */
+    padding: 0.75rem 1rem; /* Increase padding for larger button size */
+    border: 1px solid #dee2e6; /* Set border for a more distinct look */
+    border-radius: 4px; /* Rounded corners for buttons */
+    background-color: #fff; /* Default background color */
+    font-size: 1rem; /* Increased font size for better readability */
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s; /* Smooth transition for hover effects */
+}
+
+    /* Hover effect for all links */
+    .page-link:hover:not(.disabled) {
+        color: #fff; /* Text color on hover */
+        background-color: #6f42c1; /* Background color on hover */
+        border-color: #6f42c1; /* Border color on hover */
+    }
+
+/* Active state styling */
+.page-item.active .page-link {
+    background-color: #6f42c1; /* Active background color */
+    color: white; /* Active text color */
+    border-color: #6f42c1; /* Active border color */
+}
+
+/* Disable state styling */
+.page-item.disabled .page-link {
+    color: #6c757d; /* Text color for disabled state */
+    pointer-events: none; /* Prevent clicking */
+    background-color: #f8f9fa; /* Slightly different background for disabled state */
+    border-color: #dee2e6; /* Border color for disabled state */
+}
+
+/* Custom focus style */
+.page-link:focus {
+    outline: none; /* Removes default outline */
+    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.5); /* Custom focus outline for better visibility */
+}
+
+/* Responsive Styles */
+@media (max-width: 576px) {
+    .page-link {
+        padding: 0.5rem; /* Consistent padding for smaller screens */
+        font-size: 0.875rem; /* Slightly smaller font size for mobile */
+    }
+}
+
+
+/* Other Utility Styles */
+.btn-analytics {
+    background-color: #28a745;
+    color: white;
+}
+
+    .btn-analytics:hover {
+        background-color: #218838;
+    }
+
+/* Bootstrap Overrides */
 .btn-check:focus + .btn {
     outline: none;
     box-shadow: none;
@@ -79,163 +311,6 @@ body {
         border-color: #5a30a2;
     }
 
-/* Card styles */
-.card {
-    border: none;
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.card-header {
-    border-bottom: none;
-    background-color: #6f42c1;
-    color: white;
-}
-
-/* Header styles */
-.header {
-    background-color: #6f42c1;
-    color: white;
-}
-
-    .header h1 {
-        font-weight: 700;
-        font-size: larger;
-        margin: 0;
-        margin-bottom: 10px;
-    }
-
-    .header p {
-        margin: 0;
-        text-indent: 10px;
-    }
-
-/* Badge styles */
-.badge {
-    font-weight: 500;
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin: 2px;
-    /* Add some space between badges */
-}
-
-.badge-purple {
-    background-color: #6f42c1;
-    color: white;
-}
-
-.badge-success {
-    background-color: #28a745;
-    color: white;
-}
-
-/* Form styles */
-.form-control {
-    border-radius: 8px;
-}
-
-    .form-control:focus {
-        border-color: #6f42c1;
-        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
-    }
-
-.form-group {
-    margin-left: 20px !important;
-}
-
-/* Switch control styles */
-.form-switch .form-check-input {
-    width: 3em;
-    height: 1.5em;
-    margin-top: 0.25em;
-}
-
-    .form-switch .form-check-input:checked {
-        background-color: #5a30a2 !important;
-        border-color: #5a30a2 !important;
-    }
-
-/* Textarea for batch URL input */
-.batch-url-area {
-    min-height: 100px;
-    max-height: 200px;
-}
-
-#batchDescription {
-    min-height: 100px;
-    max-height: 200px;
-}
-
-#description {
-    min-height: 100px;
-    max-height: 200px;
-}
-
-/* Button styles specific to forms */
-.button-style {
-    margin-left: 20px !important;
-    width: 95%;
-}
-
-/* Text decoration class */
-.dec {
-    color: rgba(0, 0, 0, 0.5);
-}
-
-/* Table styles */
-.table {
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-    .table thead th {
-        background-color: #6f42c1;
-        color: white;
-        border: none;
-    }
-
-    .table tbody tr {
-        background-color: #fff;
-    }
-
-    .table th,
-    .table td {
-        vertical-align: middle;
-        border: none;
-    }
-
-    .table td {
-        word-wrap: break-word;
-        white-space: normal;
-    }
-
-        /* Specific column styles for wrapping text */
-        .table td:nth-child(2),
-        .table td:nth-child(4) {
-            max-width: 200px;
-        }
-
-        .table td:nth-child(5) {
-            max-width: 200px;
-            white-space: normal;
-            word-wrap: break-word;
-            /* Break long words to avoid overflow */
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-
-/* Responsive styles */
-@media (max-width: 576px) {
-    .card-header .h5 {
-        font-size: 1rem;
-    }
-
-    .form-switch .form-check-label {
-        font-size: 0.9rem;
-    }
-}
-
-/* Bootstrap focus overrides */
 .btn:focus {
     border-color: #6f42c1;
     box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
@@ -250,46 +325,18 @@ body {
     padding: 0 !important;
 }
 
-.btn-icon:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.btn-icon:active {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.status-toggle {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-}
-
-    .status-toggle:focus {
-        outline: none;
-        box-shadow: none;
+/* Responsive Styles */
+@media (max-width: 576px) {
+    .pagination .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
 
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-align: center;
-    transition: background-color 0.2s ease;
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+
+    .pagination li:not(.active):not(:first-child):not(:last-child):not(:nth-last-child(2)):not(:nth-child(2)) {
+        display: none;
+    }
 }
-
-    .status-badge.active {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .status-badge.inactive {
-        background-color: #6c757d;
-        color: white;
-    }

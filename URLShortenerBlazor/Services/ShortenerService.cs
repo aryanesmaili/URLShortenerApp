@@ -115,7 +115,7 @@ namespace URLShortenerBlazor.Services
             HttpResponseMessage response = await _authClient.SendAsync(req);
             APIResponse<string>? result;
             if (response.StatusCode == HttpStatusCode.Unauthorized)
-                result = new() { ErrorType=ErrorType.NotAuthorizedException };
+                result = new() { ErrorType = ErrorType.NotAuthorizedException };
             else
                 result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
 

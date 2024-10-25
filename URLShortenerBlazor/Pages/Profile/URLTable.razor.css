@@ -124,33 +124,59 @@
 /* Pagination Styles */
 .pagination {
     margin-bottom: 25px; /* Space below the pagination */
+    display: flex; /* Aligns pagination items horizontally */
+    justify-content: center; /* Centers pagination items */
+}
+
+.page-item {
+    margin: 0 4px; /* Space between pagination items */
 }
 
 .page-link {
     color: #6f42c1; /* Default text color */
-    padding: 0.5rem 0.75rem; /* Padding around the link */
-    border-color: #dee2e6; /* Default border color */
+    padding: 0.75rem 1rem; /* Increase padding for larger button size */
+    border: 1px solid #dee2e6; /* Set border for a more distinct look */
+    border-radius: 4px; /* Rounded corners for buttons */
     background-color: #fff; /* Default background color */
-    font-size: 0.875rem; /* Font size */
-    transition: background-color 0.2s, color 0.2s; /* Smooth transition for hover effects */
+    font-size: 1rem; /* Increased font size for better readability */
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s; /* Smooth transition for hover effects */
 }
 
-    .page-link:hover {
+    /* Hover effect for all links */
+    .page-link:hover:not(.disabled) {
         color: #fff; /* Text color on hover */
         background-color: #6f42c1; /* Background color on hover */
         border-color: #6f42c1; /* Border color on hover */
     }
 
+/* Active state styling */
 .page-item.active .page-link {
     background-color: #6f42c1; /* Active background color */
+    color: white; /* Active text color */
     border-color: #6f42c1; /* Active border color */
 }
 
+/* Disable state styling */
 .page-item.disabled .page-link {
     color: #6c757d; /* Text color for disabled state */
     pointer-events: none; /* Prevent clicking */
-    background-color: #fff; /* Background color for disabled state */
+    background-color: #f8f9fa; /* Slightly different background for disabled state */
     border-color: #dee2e6; /* Border color for disabled state */
+}
+
+/* Custom focus style */
+.page-link:focus {
+    outline: none; /* Removes default outline */
+    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.5); /* Custom focus outline for better visibility */
+
+}
+
+/* Responsive Styles */
+@media (max-width: 576px) {
+    .page-link {
+        padding: 0.5rem; /* Consistent padding for smaller screens */
+        font-size: 0.875rem; /* Slightly smaller font size for mobile */
+    }
 }
 
 
