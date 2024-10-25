@@ -7,83 +7,120 @@
 
 
 <div class="mt-5 mb-5">
-    <h2 class="h4 px-3">Preview of Shortened URLs</h2>
-    <div class="">
-        <table class="table-responsive table table-hover">
-            <thead class="table-purple">
-                <tr>
-                    <th>ID</th>
-                    <th>Description</th>
-                    <th>Short Code</th>
-                    <th>Long URL</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th></th>
+    <h2 class="h4 px-3 mb-3">Your Links</h2>
+    <table class="table-responsive table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Description</th>
+                <th>Short Code</th>
+                <th>Long URL</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in TableURLs)
+            {
+                <tr class="bg-light">
+                    <td>@item.Index</td>
+                    <td>@item.URL.Description</td>
+                    <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
+                    <td>@item.URL.LongURL</td>
+                    <td class="px-2 py-3">
+                        @if (item.URL.Categories?.Count > 0)
+                            @foreach (var category in item.URL.Categories)
+                            {
+                                <span class="@GetCategorySpanClass(category.Title)">@category.Title</span>
+                            }
+                    </td>
+                    <td>
+                        <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
+                            <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
+                                @(item.URL.IsActive ? "Active" : "InActive")
+                            </span>
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
+                            <Icon Name="IconName.Copy"></Icon>
+                        </button>
+                        <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                            <Icon Name="IconName.Delete"></Icon>
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in TableURLs)
+            }
+        </tbody>
+    </table>
+    <div class="d-flex flex-column align-items-center mt-5">
+        <nav aria-label="Table pagination">
+            <ul class="pagination">
+                <li class="page-item @(currentpageNumber <= 1 ? "disabled" : "")">
+                    <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber - 1)" tabindex="-1">Previous</button>
+                </li>
+
+                @if (currentpageNumber > 2)
                 {
-                    <tr>
-                        <td>@item.Index</td>
-                        <td>@item.URL.Description</td>
-                        <td><a href="https://Pexita.click/@item.URL.ShortCode" class="text-decoration-none">@item.URL.ShortCode</a></td>
-                        <td class="text-truncate">@item.URL.LongURL</td>
-                        <td class="p-1">
-                            @if (item.URL.Categories?.Count > 0)
-                                @foreach (var category in item.URL.Categories)
-                                {
-                                    <span class="@GetCategorySpanClass(category.Title)">@category.Title</span>
-                                }
-                        </td>
-                        <td>
-                            <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
-                                <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
-                                    @(item.URL.IsActive ? "Active" : "InActive")
-                                </span>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
-                                <Icon Name="IconName.Copy"></Icon>
-                            </button>
-                            <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
-                                <Icon Name="IconName.Delete"></Icon>
-                            </button>
-                        </td>
-                    </tr>
+                    <li class="page-item">
+                        <button type="button" class="page-link" @onclick="() => ChangePage(1)">1</button>
+                    </li>
+                    @if (currentpageNumber > 3)
+                    {
+                        <li class="page-item">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
                 }
-            </tbody>
-        </table>
-        <div class="d-flex flex-column align-items-center mt-5">
-            <nav aria-label="Table pagination">
-                <ul class="pagination mb-0">
-                    <li class="page-item @(currentpageNumber <= 1 ? "disabled" : "")">
-                        <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber - 1)" tabindex="-1">Previous</button>
-                    </li>
-                    <li class="page-item active" aria-current="page">
-                        <a class="page-link" href="#">1</a>
-                    </li>
+
+                @if (currentpageNumber - 1 >= 1)
+                {
                     <li class="page-item">
-                        <a class="page-link" href="#">2</a>
+                        <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber - 1)">@(currentpageNumber - 1)</button>
                     </li>
+                }
+
+                <li class="page-item active">
+                    <button type="button" class="page-link">@currentpageNumber</button>
+                </li>
+
+                @if (currentpageNumber + 1 <= TotalPages)
+                {
                     <li class="page-item">
-                        <a class="page-link" href="#">3</a>
+                        <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">@(currentpageNumber + 1)</button>
                     </li>
+                }
+
+                @if (currentpageNumber + 2 < TotalPages)
+                {
+                    <li class="page-item">
+                        <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 2)">@(currentpageNumber + 2)</button>
+                    </li>
+                }
+
+                @if (currentpageNumber < TotalPages - 1)
+                {
                     <li class="page-item">
                         <span class="page-link">...</span>
                     </li>
+                }
+                @if (currentpageNumber != TotalPages && currentpageNumber != TotalPages - 1)
+                {
                     <li class="page-item">
-                        <a class="page-link" href="#">400</a>
+                        <button type="button" class="page-link" @onclick="() => ChangePage(TotalPages)">@TotalPages</button>
                     </li>
-                    <li class="page-item @(currentpageNumber == TotalPages ? "disabled": "")">
-                        <button Type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">Next</button>
-                    </li>
-                </ul>
-            </nav>
-            <div class="pagination-info mt-3">
+                }
+                <li class="page-item @(currentpageNumber == TotalPages ? "disabled" : "")">
+                    <button type="button" class="page-link" @onclick="() => ChangePage(currentpageNumber + 1)">Next</button>
+                </li>
+            </ul>
+
+        </nav>
+        <div class="pagination-info text-muted">
+            <small>
                 Showing <span class="fw-bold">@(Index - pageSize)-@Index</span> of <span class="fw-bold">@TotalCount</span> items
-            </div>
+            </small>
         </div>
     </div>
 </div>

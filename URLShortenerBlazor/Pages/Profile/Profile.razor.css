@@ -1,14 +1,17 @@
+/* Base Styles */
 body {
     background-color: #f8f9fa;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Layout Container */
 .container {
     max-width: 1400px;
     margin-top: 50px;
     margin-bottom: 50px;
 }
 
+/* Card Component */
 .card {
     border: none;
     border-radius: 15px;
@@ -22,6 +25,7 @@ body {
     padding: 30px;
 }
 
+/* Profile Information Section */
 .profile-info {
     background-color: white;
     padding: 30px;
@@ -32,3 +36,7 @@ body {
         margin-right: 10px;
     }
 
+.user-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}

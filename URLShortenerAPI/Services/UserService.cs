@@ -73,6 +73,7 @@ namespace URLShortenerAPI.Services
                 .Where(u => u.UserID == userID)
                 .OrderByDescending(u => u.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
+                .Include(x => x.Categories)
                 .Take(pageSize)
                 .ToListAsync();
 

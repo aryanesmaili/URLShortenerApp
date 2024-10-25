@@ -1,17 +1,160 @@
-﻿.table {
-    margin-top: 30px;
+﻿/* Table Base Styles */
+.table {
+    border-radius: 8px;
+    overflow: auto;
 }
 
-    .table th {
-        background-color: #6f42c1;
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Table Header & Body */
+.table thead th {
+    background-color: #6f42c1; /* Header background color */
+    color: white; /* Header text color */
+    border: none; /* No border for header */
+    padding: 15px;
+}
+
+.table tbody tr {
+    background-color: #fff; /* Row background color */
+}
+
+.table th,
+.table td {
+    vertical-align: middle; /* Aligns content vertically */
+    border: none; /* No border for cells */
+}
+
+/* Table Cell Styles */
+.table td {
+    word-wrap: break-word; /* Allows long words to break onto the next line */
+    white-space: normal; /* Allows text to wrap based on the cell width */
+    overflow: hidden; /* Hides overflowing content */
+    text-overflow: ellipsis; /* Displays ellipsis (...) for overflowing text */
+}
+
+.table thead th:nth-child(1) {
+    border-radius: 15px 0 0 0;
+}
+
+.table thead th:nth-child(7) {
+    border-radius: 0 15px 0 0;
+}
+/* Specific Column Styles */
+.table td:nth-child(2),
+.table td:nth-child(4),
+.table td:nth-child(5) {
+    max-width: 200px; /* Sets a maximum width for specified columns */
+}
+
+/* Ensuring proper overflow handling for the fifth column */
+.table td:nth-child(5) {
+    white-space: normal; /* Allows wrapping of text within the fifth column */
+}
+
+
+/* Status Toggle Styles */
+.status-toggle {
+    background: none; /* No background */
+    border: none; /* No border */
+    padding: 0; /* No padding */
+    margin: 0; /* No margin */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+    .status-toggle:focus {
+        outline: none; /* No outline on focus */
+        box-shadow: none; /* No box shadow on focus */
+    }
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 6px 12px; /* Padding around the badge */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 0.875rem; /* Font size */
+    font-weight: 500; /* Font weight */
+    text-align: center; /* Center align text */
+    transition: background-color 0.2s ease; /* Smooth background transition */
+}
+
+    /* Status Badge State Styles */
+    .status-badge.active,
+    .status-badge.inactive {
         color: white;
-        font-weight: 500;
     }
 
-    .table td {
-        vertical-align: middle;
+    .status-badge.active {
+        background-color: #28a745; /* Green background for active status */
     }
 
+    .status-badge.inactive {
+        background-color: #6c757d; /* Gray background for inactive status */
+    }
+
+/* Category Badge Styles */
+.badge {
+    font-size: 0.8em;
+    margin-right: 5px;
+}
+
+/* Action Button Styles */
+.btn-icon {
+    background-color: transparent; /* No background color */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Padding around the button */
+    transition: color 0.3s; /* Smooth color transition */
+    color: green; /* Default text color */
+}
+
+    .btn-icon:hover {
+        color: #007bff; /* Color change on hover */
+    }
+
+    /* Focus and Active States */
+    .btn-icon:focus,
+    .btn-icon:active {
+        outline: none !important; /* No outline on focus or active state */
+        box-shadow: none !important; /* No box shadow on focus or active state */
+        border: none !important; /* No border on focus or active state */
+    }
+
+
+/* Pagination Styles */
+.pagination {
+    margin-bottom: 25px; /* Space below the pagination */
+}
+
+.page-link {
+    color: #6f42c1; /* Default text color */
+    padding: 0.5rem 0.75rem; /* Padding around the link */
+    border-color: #dee2e6; /* Default border color */
+    background-color: #fff; /* Default background color */
+    font-size: 0.875rem; /* Font size */
+    transition: background-color 0.2s, color 0.2s; /* Smooth transition for hover effects */
+}
+
+    .page-link:hover {
+        color: #fff; /* Text color on hover */
+        background-color: #6f42c1; /* Background color on hover */
+        border-color: #6f42c1; /* Border color on hover */
+    }
+
+.page-item.active .page-link {
+    background-color: #6f42c1; /* Active background color */
+    border-color: #6f42c1; /* Active border color */
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d; /* Text color for disabled state */
+    pointer-events: none; /* Prevent clicking */
+    background-color: #fff; /* Background color for disabled state */
+    border-color: #dee2e6; /* Border color for disabled state */
+}
+
+
+/* Other Utility Styles */
 .btn-analytics {
     background-color: #28a745;
     color: white;
@@ -21,77 +164,7 @@
         background-color: #218838;
     }
 
-.badge {
-    font-size: 0.8em;
-    margin-right: 5px;
-}
-
-.table-responsive {
-    overflow-x: auto;
-}
-
-.user-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-/* Pagination Styles */
-.pagination {
-    margin-bottom: 0;
-}
-
-.page-link {
-    color: #6f42c1;
-    padding: 0.5rem 0.75rem;
-    border-color: #dee2e6;
-    background-color: #fff;
-    font-size: 0.875rem;
-}
-
-    .page-link:hover {
-        color: #fff;
-        background-color: #6f42c1;
-        border-color: #6f42c1;
-    }
-
-.page-item.active .page-link {
-    background-color: #6f42c1;
-    border-color: #6f42c1;
-}
-
-.page-item.disabled .page-link {
-    color: #6c757d;
-    pointer-events: none;
-    background-color: #fff;
-    border-color: #dee2e6;
-}
-
-.pagination-info {
-    color: #6c757d;
-    font-size: 0.875rem;
-}
-
-/* Bootstrap overrides */
-
-.btn-icon {
-    background-color: transparent;
-    /* Transparent background */
-    border: none;
-    /* Remove border */
-    cursor: pointer;
-    /* Pointer cursor on hover */
-    padding: 5px;
-    /* Padding around icon */
-    transition: color 0.3s;
-    /* Transition for hover effect */
-    color: green;
-}
-
-    .btn-icon:hover {
-        color: #007bff;
-        /* Change color on hover */
-    }
-
-/* Button for Bootstrap switch */
+/* Bootstrap Overrides */
 .btn-check:focus + .btn {
     outline: none;
     box-shadow: none;
@@ -122,52 +195,7 @@
     padding: 0 !important;
 }
 
-.btn-icon:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.btn-icon:active {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-
-.status-toggle {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-}
-
-    .status-toggle:focus {
-        outline: none;
-        box-shadow: none;
-    }
-
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-align: center;
-    transition: background-color 0.2s ease;
-}
-
-    .status-badge.active {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .status-badge.inactive {
-        background-color: #6c757d;
-        color: white;
-    }
-
-/* Responsive adjustments */
+/* Responsive Styles */
 @media (max-width: 576px) {
     .pagination .page-link {
         padding: 0.25rem 0.5rem;
@@ -178,7 +206,6 @@
         font-size: 0.75rem;
     }
 
-    /* Hide some page numbers on mobile */
     .pagination li:not(.active):not(:first-child):not(:last-child):not(:nth-last-child(2)):not(:nth-child(2)) {
         display: none;
     }
