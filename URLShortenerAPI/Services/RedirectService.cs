@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.URL;
@@ -13,13 +15,14 @@ namespace URLShortenerAPI.Services
         private readonly IIPInfoService _ipInfoService;
         private readonly ICacheService _cacheService;
         private readonly IRedisQueueService _redisQueueService;
-
-        public RedirectService(AppDbContext context, IIPInfoService ipInfoService, ICacheService cacheService, IRedisQueueService redisQueueService)
+        private readonly IMapper _mapper;
+        public RedirectService(AppDbContext context, IIPInfoService ipInfoService, ICacheService cacheService, IRedisQueueService redisQueueService, IMapper mapper)
         {
             _context = context;
             _ipInfoService = ipInfoService;
             _cacheService = cacheService;
             _redisQueueService = redisQueueService;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -28,7 +31,7 @@ namespace URLShortenerAPI.Services
         /// <param name="shortCode">short code of the URL.</param>
         /// <param name="requestInfo">information about the incoming get request such as IP address, user agent etc.</param>
         /// <returns> a string containing the Long URL.</returns>
-        public async Task<string> ResolveURL(string shortCode, IncomingRequestInfo requestInfo)
+        public async Task<URLDTO> ResolveURL(string shortCode, IncomingRequestInfo requestInfo)
         {
             // first we try to retrieve URL from cache
             URLModel? urlRecord = await ResolveURLFromCacheAsync(shortCode);
@@ -44,7 +47,21 @@ namespace URLShortenerAPI.Services
 
             await _redisQueueService.EnqueueItem(requestInfo);
 
-            return urlRecord.LongURL;
+            return _mapper.Map<URLDTO>(urlRecord);
+        }
+
+        public async Task<bool> QuickLookup(string shortcode)
+        {
+            URLModel? url;
+            url = await ResolveURLFromCacheAsync(shortcode);
+            if (url != null)
+                return true;
+
+            url = await ResolveURLFromDatabaseAsync(shortcode);
+            if (url != null) 
+                return true;
+
+            return false;
         }
 
         /// <summary>

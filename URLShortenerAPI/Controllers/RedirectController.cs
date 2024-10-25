@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Services.Interfaces;
@@ -18,16 +19,35 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpGet("{shortCode}")]
-        public async Task<IActionResult> RedirectToLongUrl([FromRoute] string shortCode)
+        public async Task<IActionResult> QuickLookup([FromRoute] string shortCode)
         {
-            APIResponse<string> response;
+            try
+            {
+                return await _redirectService.QuickLookup(shortCode) ? Redirect($"http://localhost:5083/RedirectURL/{shortCode}") : Redirect("http://localhost:5083/Notfound");
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse error =
+                    new()
+                    {
+                        Message = e.Message,
+                        InnerException = e.InnerException?.ToString() ?? "",
+                        StackTrace = e.StackTrace ?? ""
+                    };
+                return StatusCode(500, error);
+            }
+        }
+        [HttpGet("Resolve/{shortcode}")]
+        public async Task<IActionResult> ResolveURL(string shortcode)
+        {
+            APIResponse<URLDTO> response;
             try
             {
                 string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
                 string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
                 Dictionary<string, string?> headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
-                string result = await _redirectService.ResolveURL(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
+                URLDTO result = await _redirectService.ResolveURL(shortcode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
 
                 response = new()
                 { Success = true, Result = result };
