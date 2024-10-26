@@ -1,4 +1,5 @@
-﻿using URLShortenerAPI.Data.Entities.URL;
+﻿using System.Text.Json.Serialization;
+using URLShortenerAPI.Data.Entities.URL;
 
 namespace URLShortenerAPI.Data.Entities.Analytics
 {
@@ -22,6 +23,7 @@ namespace URLShortenerAPI.Data.Entities.Analytics
         public required string UserAgent { get; set; }
         public required Dictionary<string, string?> Headers { get; set; }
         public required DateTime TimeClicked { get; set; }
+        [JsonInclude]
         internal URLModel? URL { get; set; }
     }
 }
