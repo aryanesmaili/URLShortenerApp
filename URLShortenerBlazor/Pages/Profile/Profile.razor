@@ -17,13 +17,13 @@
                     </div>
                     <div class="col-md-6 text-center text-md-end">
                         <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
-                        <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: @urlCount</p>
+                        <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Calendar"></Icon>    276 days</p>
                     </div>
                 </div>
                 <div class="stats-container mt-2">
                     <div class="header-container">
                         <span class="stats-title">Stats</span>
-                        <a href="#" class="see-all">See All</a>
+                        <a class="see-all" @onclick="() => SetActiveTab(Pages.Dashboard)">See All</a>
                     </div>
 
                     <div class="stats-grid">
@@ -78,7 +78,7 @@
             }
             else if(activeTab == Pages.Dashboard)
             {
-
+                <ProfileDashboard/>
             }
             else if(activeTab == Pages.Settings)
             {
