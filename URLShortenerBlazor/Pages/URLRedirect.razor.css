@@ -1,107 +1,300 @@
-﻿.outer {
+﻿/* -----------------------------
+* Reset & Base Styles
+----------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ff 100%);
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* -----------------------------
+* Layout Containers
+----------------------------- */
+.container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.content-wrapper {
     display: grid;
-    /* Enable grid layout */
-    place-items: center;
-    /* Center both horizontally and vertically */
-    background-color: lightgray;
+    gap: 20px;
+    grid-template-columns: 1fr minmax(auto, 600px) 1fr;
 }
 
-.info h2 {
-    font-weight: 700;
-    font-size: x-large;
-    border-bottom: 2px solid #007bff;
-    /* Change color as needed */
-    padding-bottom: 10px;
-    /* Space between text and border */
-    margin-bottom: 15px;
-    /* Space below the heading */
+.main-content {
+    grid-column: 2;
+}
+
+/* -----------------------------
+* Advertisement Styles
+----------------------------- */
+.ad-banner,
+.sidebar-ad {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.ad-label {
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 4px;
     text-align: center;
+    text-transform: uppercase;
 }
 
-.info h5 {
-    font-weight: 500;
-    font-size: large;
+.ad-space {
+    align-items: center;
+    color: #adb5bd;
+    display: flex;
+    font-size: 14px;
+    height: 90px;
+    justify-content: center;
 }
 
-/* Styles for the circular countdown */
-.countdown-container {
+.sidebar-ad .ad-space {
+    height: 250px;
+}
+
+/* -----------------------------
+* Card & Content Styles
+----------------------------- */
+.card {
+    background: white;
+    border-radius: 25px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 32px;
+    text-align: center;
+    border: #5a33e9 2px solid;
+}
+
+h1 {
+    font-family: 'Poppins', sans-serif;
+    /* Or adjust to your preference */
+    font-weight: 600;
+    color: #5a33e9;
+    /* A richer purple for contrast */
+}
+
+p {
+    font-size: 1.1rem;
+    /* Slightly larger text for easier reading */
+    line-height: 1.6;
+    /* Improve text spacing */
+    color: #555555;
+    /* Slightly darker for better contrast */
+}
+
+.subtitle {
+    color: #718096;
+    font-size: 16px;
+    margin-bottom: 32px;
+}
+
+/* -----------------------------
+* Countdown Timer Styles
+----------------------------- */
+.countdown-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.countdown {
+    height: 120px;
     position: relative;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto;
-    /* Center horizontally */
+    width: 120px;
+}
+
+.countdown-svg {
+    height: 100%;
+    transform: rotate(-90deg);
+    width: 100%;
+}
+
+.countdown-circle-bg {
+    fill: none;
+    stroke: #9a70e9;
+    stroke-width: 8;
 }
 
 .countdown-circle {
-    transform: rotate(-90deg);
-    /* Rotate to start the circle from the top */
+    fill: none;
+    stroke: #6f42c1;
+    stroke-dasharray: 283; 
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    stroke-width: 8;
+    transition: stroke-dashoffset 1s linear; 
 }
 
-    .countdown-circle circle {
-        fill: none;
-        stroke-width: 8;
-    }
-
-    .countdown-circle .background-circle {
-        stroke: #e6e6e6;
-        /* Background circle color */
-    }
-
-    .countdown-circle .progress-circle {
-        stroke: #007bff;
-        /* Progress circle color */
-        stroke-linecap: round;
-        /* Smooth ends */
-        stroke-dasharray: 314;
-        /* Length of the circle's circumference (2 * π * r where r = 50) */
-        stroke-dashoffset: 0;
-        /* Initial offset (full circle) */
-        transition: stroke-dashoffset 1s linear;
-        /* Smooth transition */
-    }
 
 .countdown-number {
+    color: #6f42c1;
+    font-size: 32px;
+    font-weight: bold;
+    left: 50%;
     position: absolute;
     top: 50%;
-    left: 50%;
     transform: translate(-50%, -50%);
-    /* Center the number in the circle */
-    font-size: 24px;
-    font-weight: bold;
 }
 
-#long-url a {
-    color: black;
-    text-decoration: none;
-}
-
-    #long-url a:hover {
-        color: #6f42c1;
-    }
-
-#long-url p {
-    border: rgba(0, 0, 0, 0.5) solid 2px;
-}
-
-.ad-section {
-    background-color: rgb(179, 179, 179);
-    color: white;
-}
-
-    .ad-section p {
-        text-align: center;
-        margin: 0;
-    }
-
-    .ad-section div {
-        border-left: white solid 10px;
-    }
-
-.full-width-ad div {
+/* -----------------------------
+* Features Section Styles
+----------------------------- */
+.features {
     display: grid;
-    place-items: center;
+    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 32px;
 }
 
-.full-width-ad p {
-    margin: 0 !important;
+.feature {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+    .feature ::deep i {
+        color: #5a33e9;
+        /* Current purple color */
+        font-size: 1.5rem;
+        transition: color 0.3s ease;
+    }
+
+        .feature ::deep i:hover {
+            color: #9261f8;
+            /* Brighter or complementary color */
+        }
+
+    .feature span {
+        color: #718096;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+/* -----------------------------
+* Destination URL Styles
+----------------------------- */
+.destination-url {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 24px;
+    padding-top: 24px;
+}
+
+.url-container {
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 12px;
+}
+
+.url-text {
+    color: #4a5568;
+    font-size: 14px;
+    margin-right: 12px;
+    word-break: break-all;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    color: #4299e1;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+    .copy-btn:hover {
+        color: #2b6cb0;
+    }
+
+.proceed-btn {
+    background: #6f42c1;
+    background-color: #6f42c1;
+    border-radius: 8px;
+    color: white;
+    display: inline-block;
+    font-weight: 500;
+    padding: 12px 24px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+    .proceed-btn:hover {
+        background: #2b6cb0;
+    }
+
+/* -----------------------------
+* Responsive Design
+----------------------------- */
+@media (max-width: 768px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-ad {
+        display: none;
+    }
+
+    .main-content {
+        grid-column: 1;
+    }
+
+    .card {
+        padding: 24px;
+    }
+
+    .features {
+        gap: 16px;
+    }
+}
+
+.text-left {
+    text-align: left;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .countdown {
+        height: 100px;
+        width: 100px;
+    }
+
+    .countdown-number {
+        font-size: 28px;
+    }
 }

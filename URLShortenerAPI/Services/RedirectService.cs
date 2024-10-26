@@ -58,7 +58,7 @@ namespace URLShortenerAPI.Services
                 return true;
 
             url = await ResolveURLFromDatabaseAsync(shortcode);
-            if (url != null) 
+            if (url != null)
                 return true;
 
             return false;
