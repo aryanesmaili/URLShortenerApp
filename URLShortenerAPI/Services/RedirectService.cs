@@ -81,7 +81,7 @@ namespace URLShortenerAPI.Services
         /// <exception cref="NotFoundException"></exception>
         private async Task<URLModel> ResolveURLFromDatabaseAsync(string shortCode)
         {
-            URLModel url = await _context.URLs.FirstOrDefaultAsync(x => x.ShortCode == shortCode)
+            URLModel url = await _context.URLs.Include(x => x.Categories).FirstOrDefaultAsync(x => x.ShortCode == shortCode)
                     ?? throw new NotFoundException($"URL {shortCode} does not exist.");
             return url;
         }

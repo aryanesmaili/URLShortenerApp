@@ -45,7 +45,7 @@
             userinfo = await AuthService.GetUserInfo() ?? throw new Exception();
             await base.OnInitializedAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
             await Task.Delay(2000);

@@ -93,7 +93,7 @@ namespace URLShortenerAPI.Services
                 await transaction.RollbackAsync();
 
                 // Handle or log the error
-                throw new Exception("Error processing the click information", ex);
+                
             }
         }
 

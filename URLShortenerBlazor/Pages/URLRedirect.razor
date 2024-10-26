@@ -34,10 +34,20 @@
             <!-- Main Content -->
             <article class="main-content">
                 <div class="card my-5 mx-3">
-                    <h1 class="h4">Your Link is Almost Ready</h1>
-                    <p class="subtitle mt-2">Please wait while we prepare your destination</p>
-                    <p class="text-left mb-4">@url.Description</p>
+                    <h1 class="h4">@headerText</h1>
 
+                    <p class="subtitle mt-2 mb-5">
+                        @(showsubtitle ? "Please wait while we prepare your destination" : "")
+                    </p>
+
+                    <p class="text-left my-4">@url.Description</p>
+                    <p class="px-2 py-3 categories text-start">
+                        @if (url.Categories?.Count > 0)
+                            @foreach (var category in url.Categories)
+                            {
+                                <span class="@GetCategorySpanClass(category.Title)">@category.Title</span>
+                            }
+                    </p>
                     <!-- Countdown Timer -->
                     <div class="countdown-wrapper my-3" style="@countCircleStyle">
                         <div class="countdown">
@@ -106,13 +116,22 @@
     public string? ShortCode { get; set; }
     URLDTO url = new();
     private string errorMessage = string.Empty;
-
+    private readonly List<string> badges = new()
+    {
+        "badge bg-primary",
+        "badge bg-secondary",
+        "badge bg-success",
+        "badge bg-danger",
+        "badge bg-info",
+    };
 
     private int countdownValue = 10; // Starting countdown value
     private double strokeDashOffset = 0; // Stroke offset for animation
     private System.Timers.Timer? countdownTimer;
     private string destinationUrlStyle = "display: none;";
     private string countCircleStyle = "display: flex;";
+    private string headerText = "Your Link is Almost Ready!";
+    private bool showsubtitle = true;
 
     protected override void OnInitialized()
     {
@@ -139,6 +158,8 @@
             countdownTimer!.Stop();
             destinationUrlStyle = "display: block;"; // Show destination URL
             countCircleStyle = "display: none;";
+            headerText = "Your Link is Ready!";
+            showsubtitle = false;
             InvokeAsync(StateHasChanged);
         }
     }
@@ -183,5 +204,10 @@
             ToastClient.ShowSuccess("Text Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
             await JSRuntime.InvokeVoidAsync("copyToClipboard", url.LongURL);
         }
+    }
+    private string GetCategorySpanClass(string category)
+    {
+        int index = Math.Abs(category.GetHashCode()) % badges.Count;
+        return badges[index];
     }
 }

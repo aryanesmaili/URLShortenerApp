@@ -108,6 +108,12 @@ p {
     margin-bottom: 32px;
 }
 
+/* Category Badge Styles */
+.badge {
+    font-size: 0.8em;
+    margin-right: 5px;
+}
+
 /* -----------------------------
 * Countdown Timer Styles
 ----------------------------- */
