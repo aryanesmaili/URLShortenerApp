@@ -20,22 +20,88 @@
                         <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Link"></Icon> Total URLs: @urlCount</p>
                     </div>
                 </div>
+                <div class="stats-container mt-2">
+                    <div class="header-container">
+                        <span class="stats-title">Stats</span>
+                        <a href="#" class="see-all">See All</a>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <Icon Name="IconName.Link" class="stat-icon" />
+                                <div class="stat-value">71</div>
+                            </div>
+                            <div class="stat-label mx-4">Links</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <Icon Name="IconName.Eye" class="stat-icon" />
+                                <div class="stat-value">249</div>
+                            </div>
+                            <div class="stat-label mx-4">Clicks</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <Icon Name="IconName.Globe" class="stat-icon" />
+                                <div class="stat-value">Germany</div>
+                            </div>
+                            <div class="stat-label mx-4">Top Country</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <Icon Name="IconName.Smartphone" class="stat-icon" />
+                                <div class="stat-value">Android</div>
+                            </div>
+                            <div class="stat-label mx-4">Top Device</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-        <div class="mb-1">
-        <URLTable />
+
+
+        <nav class="nav flat-nav mt-5">
+            <button class="nav-link @(activeTab == Pages.Dashboard ? "active" : "")" @onclick="() => SetActiveTab(Pages.Dashboard)">Dashboard</button>
+            <button class="nav-link @(activeTab == Pages.URLs ? "active" : "")" @onclick="() => SetActiveTab(Pages.URLs)">Links</button>
+            <button class="nav-link @(activeTab == Pages.Settings ? "active" : "")" @onclick="() => SetActiveTab(Pages.Settings)">Settings</button>
+        </nav>
+
+        <div class="pt-5">
+            @if(activeTab == Pages.URLs)
+            {
+                <URLTable />
+            }
+            else if(activeTab == Pages.Dashboard)
+            {
+
+            }
+            else if(activeTab == Pages.Settings)
+            {
+                
+            }
         </div>
     </div>
 </main>
 
 @code {
+    private enum Pages
+    {
+        Dashboard,
+        URLs,
+        Settings
+    }
     UserDTO userinfo = new()
         {
             Name = string.Empty,
             Email = string.Empty,
             Username = string.Empty
         };
-
+    private Pages activeTab = Pages.URLs;
     private int urlCount = 0; // TODO: Fix this
 
     protected override async Task OnInitializedAsync()
@@ -52,5 +118,10 @@
             Navigation.NavigateTo("/Login");
         }
 
+    }
+
+    private void SetActiveTab(Pages tabName)
+    {
+        activeTab = tabName;
     }
 }

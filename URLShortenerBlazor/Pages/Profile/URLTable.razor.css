@@ -134,11 +134,10 @@
 
 .page-link {
     color: #6f42c1; /* Default text color */
-    padding: 0.75rem 1rem; /* Increase padding for larger button size */
     border: 1px solid #dee2e6; /* Set border for a more distinct look */
     border-radius: 4px; /* Rounded corners for buttons */
     background-color: #fff; /* Default background color */
-    font-size: 1rem; /* Increased font size for better readability */
+    font-size: 0.9rem; /* Increased font size for better readability */
     transition: background-color 0.2s, color 0.2s, border-color 0.2s; /* Smooth transition for hover effects */
 }
 
