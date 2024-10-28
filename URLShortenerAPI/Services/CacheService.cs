@@ -62,12 +62,13 @@ namespace URLShortenerAPI.Services
         /// <param name="key">key of the key:value pair.</param>
         /// <param name="value">value to be stored in key:value pair in Redis.</param>
         /// <returns></returns>
-        public async Task SetAsync<T>(string key, T value)
+        public async Task SetAsync<T>(string key, T value, TimeSpan CacheDuration = default)
         {
+            CacheDuration = CacheDuration == default ? TimeSpan.FromDays(1) : CacheDuration;
 
-            var serializedData = JsonSerializer.Serialize(value, _serializerOptions);
-            var content = Encoding.UTF8.GetBytes(serializedData);
-            await _cache.SetAsync(typeof(T).Name.ToLower() + "_" + key, content, new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromDays(1) });
+            string serializedData = JsonSerializer.Serialize(value, _serializerOptions);
+            byte[] content = Encoding.UTF8.GetBytes(serializedData);
+            await _cache.SetAsync(typeof(T).Name.ToLower() + "_" + key, content, new DistributedCacheEntryOptions { SlidingExpiration = CacheDuration });
         }
 
         /// <summary>
