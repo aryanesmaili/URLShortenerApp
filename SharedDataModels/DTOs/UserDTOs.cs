@@ -21,6 +21,16 @@ namespace SharedDataModels.DTOs
         ChannelAdmin
     }
 
+    public class UserDashboardDTO
+    {
+        public Dictionary<string, int>? MonthlyChartData { get; set; }
+        public Dictionary<string, int>? DailyChartData { get; set; }
+        public List<string>? TopCountries { get; set; }
+        public List<string>? TopDevices { get; set; }
+        public List<URLDTO>? TopClickedURLs { get; set; }
+        public List<URLDTO>? MostRecentURLs { get; set; }
+    }
+
     public class UserCreateDTO
     {
         [Required(ErrorMessage = "Full Name is Required.")]

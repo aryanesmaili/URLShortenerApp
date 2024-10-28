@@ -111,6 +111,38 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpGet("/Dashbord/{id:int}")]
+        public async Task<IActionResult> GetDashboard(int id)
+        {
+            APIResponse<UserDashboardDTO> response;
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                UserDashboardDTO result = await _userService.GetDashboardByIDAsync(id, username!);
+                response = new()
+                { Result = result, Success = true };
+                return Ok(response);
+            }
+            catch (NotFoundException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
         [Authorize(Policy = "AllUsers")]
         [HttpGet("{username}")]
         public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
@@ -455,6 +487,7 @@ namespace URLShortenerAPI.Controllers
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
+                await _userUpdateValidator.ValidateAndThrowAsync(user);
                 UserDTO result = await _userService.UpdateUserInfoAsync(user, username!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
@@ -472,7 +505,18 @@ namespace URLShortenerAPI.Controllers
                 response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
+            catch (ValidationException e)
+            {
+                List<string> errors = [];
 
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+
+                return BadRequest(response);
+            }
             catch (Exception e)
             {
                 var errorResponse = new DebugErrorResponse

@@ -8,6 +8,7 @@ namespace URLShortenerAPI.Services.Interfaces
         public Task<UserDTO> GetUserByIDAsync(int id);
         public Task<UserDTO> GetFullUserInfoAsync(int id);
         public Task<UserDTO> GetUserByUsernameAsync(string Username);
+        public Task<UserDashboardDTO> GetDashboardByIDAsync(int userID, string reqUsername);
         public Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
         public Task<UserLoginResponse> LoginUserAsync(UserLoginDTO user);
         public Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);

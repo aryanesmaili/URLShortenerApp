@@ -11,9 +11,9 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
 
 
         public int LocationID { get; set; }
-        public LocationInfo? PossibleLocation { get; set; }
+        public required LocationInfo PossibleLocation { get; set; }
         public int DeviceInfoID { get; set; }
-        public DeviceInfo? DeviceInfo { get; set; }
+        public required DeviceInfo DeviceInfo { get; set; }
         public int URLID { get; set; }
         public required URLModel URL { get; set; }
     }

@@ -4,18 +4,20 @@ using Microsoft.IdentityModel.Tokens;
 using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services
 {
-    internal class UserService(AppDbContext context, IAuthService authorizationService, IMapper mapper, IEmailService emailService) : IUserService
+    internal class UserService(AppDbContext context, IAuthService authorizationService, IMapper mapper, IEmailService emailService, ICacheService cacheService) : IUserService
     {
         private readonly AppDbContext _context = context;
         private readonly IAuthService _authService = authorizationService;
         private readonly IMapper _mapper = mapper;
         private readonly IEmailService _emailService = emailService;
+        private readonly ICacheService _cacheService = cacheService;
 
         /// <summary>
         /// gets a user's info by their ID asynchronously.
@@ -62,6 +64,14 @@ namespace URLShortenerAPI.Services
             return UserModelToDTO(user);
         }
 
+        /// <summary>
+        /// used in pagination. gives the records required to be shown in a table.
+        /// </summary>
+        /// <param name="userID">ID of the user whose records we're loading.</param>
+        /// <param name="pageNumber">number of the page to retrieve.</param>
+        /// <param name="pageSize">Count of elements in each page.</param>
+        /// <param name="reqUsername">username asking the operation.</param>
+        /// <returns></returns>
         public async Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername)
         {
             await _authService.AuthorizeURLsAccessAsync(userID, reqUsername);
@@ -86,6 +96,172 @@ namespace URLShortenerAPI.Services
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
             };
+        }
+
+        /// <summary>
+        /// Gets the info required for dashboard from database.
+        /// </summary>
+        /// <param name="userID">ID Of the user</param>
+        /// <param name="reqUsername">the username requesting the data.</param>
+        /// <returns>a <see cref="UserDashboardDTO"/> object containing dashboard info.</returns>
+        public async Task<UserDashboardDTO> GetDashboardByIDAsync(int userID, string reqUsername)
+        {
+            await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
+
+            List<URLDTO> recentURLs = await GetRecentURLs(userID) ?? [];
+            Dictionary<string, int> ClicksThisMonth = await GetClicksInMonth(userID) ?? [];
+            Dictionary<string, int> ClicksThisDay = await GetClicksInDay(userID) ?? [];
+            List<string>? topCountries = await GetTopCountries(userID) ?? [];
+            List<string>? topDevices = await GetTopDeviceOS(userID) ?? [];
+
+            UserDashboardDTO result = new()
+            {
+                DailyChartData = ClicksThisDay,
+                MonthlyChartData = ClicksThisMonth,
+                MostRecentURLs = recentURLs,
+                TopCountries = topCountries,
+                TopDevices = topDevices
+            };
+
+            return result;
+        }
+        /// <summary>
+        /// Gets the most recent URLs of user.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns></returns>
+        private async Task<List<URLDTO>?> GetRecentURLs(int userID)
+        {
+            // Asynchronously retrieve recent URLs
+            List<URLDTO> recentURLs = await _context.URLs
+                .Where(x => x.UserID == userID)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(5)
+                .Select(url => _mapper.Map<URLDTO>(url))
+                .ToListAsync();
+
+            return recentURLs;
+        }
+        /// <summary>
+        /// Gets the 5 top countries the user's urls are clicked from.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns></returns>
+        private async Task<List<string>?> GetTopCountries(int userID)
+        {
+            // retrieve from cache
+            List<string>? topLocations = await _cacheService.GetValueAsync<List<string>>("TopCountry_" + userID.ToString());
+            if (topLocations != null)
+                return topLocations;
+
+            List<LocationInfo> countries = await _context.Clicks
+                .Include(x => x.URL)
+                .AsNoTracking()
+                .Where(x => x.URL.UserID == userID)
+                .Select(x => x.PossibleLocation)
+                .ToListAsync();
+
+            topLocations = countries
+                .GroupBy(x => x.Country)
+                .OrderByDescending(x => x.Count())
+                .Select(x => x.Key)
+                .Take(5)
+                .ToList();
+
+            if (topLocations != null)
+                await _cacheService.SetAsync("TopCountry_" + userID.ToString(), topLocations);
+            return topLocations;
+        }
+        /// <summary>
+        /// Gets the 5most used OS by the users.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns></returns>
+        private async Task<List<string>?> GetTopDeviceOS(int userID)
+        {
+            List<string>? topUsers = await _cacheService.GetValueAsync<List<string>>("TopUser_" + userID.ToString());
+            if (topUsers != null)
+                return topUsers;
+
+            List<DeviceInfo> topDevices = await _context.Clicks
+                .Include(x => x.URL)
+                .AsNoTracking()
+                .Where(c => c.URL.UserID == userID)
+                .Select(x => x.DeviceInfo)
+                .ToListAsync();
+
+            topUsers = topDevices
+                        .Where(x => !string.IsNullOrWhiteSpace(x?.OS))
+                        .GroupBy(x => x?.OS ?? "")
+                        .OrderByDescending(x => x.Count())
+                        .Select(x => x.Key)
+                        .Take(5)
+                        .ToList();
+
+            if (topUsers != null)
+                await _cacheService.SetAsync("TopUser_" + userID.ToString(), topUsers);
+            return topUsers;
+        }
+
+        /// <summary>
+        /// Gets the statistics about the times that user's urls are more likely to be clicked.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns></returns>
+        private async Task<Dictionary<string, int>?> GetClicksInDay(int userID)
+        {
+            // try to retrieve from cache first
+            Dictionary<string, int>? ClicksInDay = await _cacheService.GetValueAsync<Dictionary<string, int>>("D_Clicks_" + userID.ToString());
+            if (ClicksInDay != null)
+                return ClicksInDay;
+
+            // if not, we query database.
+            ClicksInDay = await _context.Clicks.Include(x => x.URL).AsNoTracking().Where(x => x.URL.UserID == userID).GroupBy(x => x.ClickedAt.Hour).ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+
+            // cache in Redis
+            if (ClicksInDay != null)
+                await _cacheService.SetAsync("D_Clicks_" + userID.ToString(), ClicksInDay);
+
+            return ClicksInDay;
+        }
+
+        /// <summary>
+        /// Gets the statistics about the clicks on current month.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns></returns>
+        private async Task<Dictionary<string, int>?> GetClicksInMonth(int userID)
+        {
+            // first we try to retrieve from cache
+            Dictionary<string, int>? clicksinMonth = await _cacheService.GetValueAsync<Dictionary<string, int>>("M_Clicks_" + userID.ToString());
+            if (clicksinMonth != null)
+                return clicksinMonth;
+
+            var currentDate = DateTime.Now;
+            int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+
+            // Initialize dictionary with all days of the month set to 0
+            clicksinMonth = Enumerable.Range(1, daysInMonth)
+                .ToDictionary(day => day.ToString(), day => 0);
+
+            // Fetch and count clicks by day
+            var clickCounts = await _context.Clicks
+                .Include(x => x.URL)
+                .AsNoTracking()
+                .Where(x => x.URL.UserID == userID && x.ClickedAt.Month == currentDate.Month && x.ClickedAt.Year == currentDate.Year)
+                .GroupBy(x => x.ClickedAt.Day)
+                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+
+            // Update the initialized dictionary with actual counts
+            foreach (var (day, count) in clickCounts)
+            {
+                clicksinMonth[day] = count;
+            }
+
+            if (clicksinMonth != null)
+                await _cacheService.SetAsync("M_Clicks_" + userID.ToString(), clicksinMonth, DateTime.Now.AddDays(1) - DateTime.Now);
+
+            return clicksinMonth;
         }
 
         /// <summary>
