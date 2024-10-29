@@ -113,8 +113,8 @@ namespace URLShortenerAPI.Controllers
         }
 
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("/Dashbord/{id:int}")]
-        public async Task<IActionResult> GetDashboard(int id)
+        [HttpGet("Dashboard/{id:int}")]
+        public async Task<IActionResult> GetDashboard([FromRoute] int id)
         {
             APIResponse<UserDashboardDTO> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
@@ -130,6 +130,12 @@ namespace URLShortenerAPI.Controllers
                 response = new()
                 { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
                 return NotFound(response);
+            }
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return Unauthorized(response);
             }
             catch (Exception e)
             {
@@ -439,7 +445,6 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "AllUsers")]
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken()
         {

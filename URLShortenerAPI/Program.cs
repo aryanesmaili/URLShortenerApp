@@ -27,6 +27,8 @@ builder.Services.AddValidatorsFromAssembly(assembly);
 
 // Add services to the container.
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddSingleton<IIPInfoService, IPInfoService>();
 
 builder.Services.AddTransient<IUserService, UserService>();
@@ -35,6 +37,7 @@ builder.Services.AddTransient<IURLService, URLService>();
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<ICacheService, CacheService>();
+builder.Services.AddTransient<IUserAgentService, UserAgentService>();
 
 builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
 

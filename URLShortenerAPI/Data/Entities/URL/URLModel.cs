@@ -13,7 +13,7 @@ namespace URLShortenerAPI.Data.Entities.URL
         public required string LongURL { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
-
+        public int ClickCount { get; set; }
 
         public int UserID { get; set; }
         public required UserModel User { get; set; }

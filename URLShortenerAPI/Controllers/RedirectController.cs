@@ -45,9 +45,8 @@ namespace URLShortenerAPI.Controllers
             {
                 string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
                 string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
-                Dictionary<string, string?> headers = HttpContext.Request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
 
-                URLDTO result = await _redirectService.ResolveURL(shortcode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, Headers = headers, TimeClicked = DateTime.UtcNow });
+                URLDTO result = await _redirectService.ResolveURL(shortcode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, TimeClicked = DateTime.UtcNow });
 
                 response = new()
                 { Success = true, Result = result };

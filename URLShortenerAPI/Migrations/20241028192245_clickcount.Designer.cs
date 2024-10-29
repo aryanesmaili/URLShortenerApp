@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using URLShortenerAPI.Data;
@@ -11,9 +12,11 @@ using URLShortenerAPI.Data;
 namespace URLShortenerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241028192245_clickcount")]
+    partial class clickcount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,19 +116,25 @@ namespace URLShortenerAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("BrowserFamily")
-                        .IsRequired()
+                    b.Property<string>("BotInfo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Brand")
                         .HasColumnType("text");
 
                     b.Property<int>("ClickID")
                         .HasColumnType("integer");
 
-                    b.Property<string>("OSFamily")
-                        .IsRequired()
+                    b.Property<string>("ClientInfo")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserAgent")
-                        .IsRequired()
+                    b.Property<bool>("IsBot")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OS")
                         .HasColumnType("text");
 
                     b.HasKey("ID");
@@ -366,88 +375,7 @@ namespace URLShortenerAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("URLShortenerAPI.Data.Entities.ClickInfo.ClientInfo", "Client", b1 =>
-                        {
-                            b1.Property<int>("DeviceInfoID")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Engine")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("EngineVersion")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Name")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Type")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Version")
-                                .HasColumnType("text");
-
-                            b1.HasKey("DeviceInfoID");
-
-                            b1.ToTable("DeviceInfos");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DeviceInfoID");
-                        });
-
-                    b.OwnsOne("URLShortenerAPI.Data.Entities.ClickInfo.Device", "Device", b1 =>
-                        {
-                            b1.Property<int>("DeviceInfoID")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Brand")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Model")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Type")
-                                .HasColumnType("text");
-
-                            b1.HasKey("DeviceInfoID");
-
-                            b1.ToTable("DeviceInfos");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DeviceInfoID");
-                        });
-
-                    b.OwnsOne("URLShortenerAPI.Data.Entities.ClickInfo.OSInfo", "OS", b1 =>
-                        {
-                            b1.Property<int>("DeviceInfoID")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Name")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Platform")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Version")
-                                .HasColumnType("text");
-
-                            b1.HasKey("DeviceInfoID");
-
-                            b1.ToTable("DeviceInfos");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DeviceInfoID");
-                        });
-
                     b.Navigation("ClickInfo");
-
-                    b.Navigation("Client")
-                        .IsRequired();
-
-                    b.Navigation("Device")
-                        .IsRequired();
-
-                    b.Navigation("OS")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("URLShortenerAPI.Data.Entities.ClickInfo.LocationInfo", b =>

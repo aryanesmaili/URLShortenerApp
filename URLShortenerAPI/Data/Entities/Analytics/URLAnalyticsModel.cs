@@ -21,7 +21,6 @@ namespace URLShortenerAPI.Data.Entities.Analytics
     {
         public required string IPAddress { get; set; }
         public required string UserAgent { get; set; }
-        public required Dictionary<string, string?> Headers { get; set; }
         public required DateTime TimeClicked { get; set; }
         [JsonInclude]
         internal URLModel? URL { get; set; }

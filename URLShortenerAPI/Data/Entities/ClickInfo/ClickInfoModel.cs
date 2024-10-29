@@ -1,4 +1,6 @@
-﻿using URLShortenerAPI.Data.Entities.URL;
+﻿using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using URLShortenerAPI.Data.Entities.URL;
 
 namespace URLShortenerAPI.Data.Entities.ClickInfo
 {
@@ -36,14 +38,40 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     internal class DeviceInfo
     {
         public int ID { get; set; }
-        public string? OS { set; get; }
-        public string? ClientInfo { get; set; }
-        public string? Brand { get; set; }
-        public bool IsBot { get; set; }
-        public string? BotInfo { get; set; }
-        public string? Model { get; set; }
+        public required string BrowserFamily { get; set; }
+        public required ClientInfo Client { get; set; }
+        public required Device Device { get; set; }
+        public required OSInfo OS { get; set; }
+        public required string OSFamily { get; set; }
+        public required string UserAgent { get; set; }
 
         public int ClickID { get; set; }
         public ClickInfoModel? ClickInfo { get; set; }
+    }
+
+    [Owned]
+    internal class ClientInfo
+    {
+        public string? Engine { get; set; }
+        public string? EngineVersion { get; set; }
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public string? Version { get; set; }
+    }
+
+    [Owned]
+    internal class Device
+    {
+        public string? Brand { get; set; }
+        public string? Model { get; set; }
+        public string? Type { get; set; }
+    }
+
+    [Owned]
+    internal class OSInfo
+    {
+        public string? Name { get; set; }
+        public string? Platform { get; set; }
+        public string? Version { get; set; }
     }
 }

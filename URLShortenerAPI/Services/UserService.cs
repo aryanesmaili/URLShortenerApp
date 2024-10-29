@@ -113,18 +113,37 @@ namespace URLShortenerAPI.Services
             Dictionary<string, int> ClicksThisDay = await GetClicksInDay(userID) ?? [];
             List<string>? topCountries = await GetTopCountries(userID) ?? [];
             List<string>? topDevices = await GetTopDeviceOS(userID) ?? [];
+            List<URLDTO>? topClickedURLs = await GetTopClickedURLs(userID) ?? [];
 
             UserDashboardDTO result = new()
             {
-                DailyChartData = ClicksThisDay,
+                HourlyChartData = ClicksThisDay,
                 MonthlyChartData = ClicksThisMonth,
                 MostRecentURLs = recentURLs,
                 TopCountries = topCountries,
-                TopDevices = topDevices
+                TopOSs = topDevices,
+                TopClickedURLs = topClickedURLs
             };
 
             return result;
         }
+        /// <summary>
+        /// Gets the 5 most clicked URLs of the user.
+        /// </summary>
+        /// <param name="userID">ID of the user</param>
+        /// <returns> a URLDTO list.</returns>
+        private async Task<List<URLDTO>?> GetTopClickedURLs(int userID)
+        {
+            List<URLDTO> urls = await _context.URLs
+                .AsNoTracking()
+                .Where(x => x.UserID == userID)
+                .OrderByDescending(x => x.ClickCount)
+                .Take(5)
+                .Select( x=> _mapper.Map<URLDTO>(x))
+                .ToListAsync();
+            return urls;
+        }
+
         /// <summary>
         /// Gets the most recent URLs of user.
         /// </summary>
@@ -134,6 +153,7 @@ namespace URLShortenerAPI.Services
         {
             // Asynchronously retrieve recent URLs
             List<URLDTO> recentURLs = await _context.URLs
+                .AsNoTracking()
                 .Where(x => x.UserID == userID)
                 .OrderByDescending(x => x.CreatedAt)
                 .Take(5)
@@ -191,8 +211,8 @@ namespace URLShortenerAPI.Services
                 .ToListAsync();
 
             topUsers = topDevices
-                        .Where(x => !string.IsNullOrWhiteSpace(x?.OS))
-                        .GroupBy(x => x?.OS ?? "")
+                        .Where(x => !string.IsNullOrWhiteSpace(x.OS?.Name))
+                        .GroupBy(x => x.OS?.Name ?? "")
                         .OrderByDescending(x => x.Count())
                         .Select(x => x.Key)
                         .Take(5)

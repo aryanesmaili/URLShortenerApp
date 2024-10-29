@@ -1,7 +1,4 @@
-﻿using DeviceDetectorNET;
-using DeviceDetectorNET.Cache;
-using DeviceDetectorNET.Parser;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
@@ -14,12 +11,14 @@ namespace URLShortenerAPI.Services
         private readonly IRedisQueueService _redisQueueService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IIPInfoService _ipInfoService;
+        private readonly IUserAgentService _userAgentService;
 
-        public ClickProcessService(IRedisQueueService redisQueueService, IServiceProvider serviceProvider, IIPInfoService ipInfoService)
+        public ClickProcessService(IRedisQueueService redisQueueService, IServiceProvider serviceProvider, IIPInfoService ipInfoService, IUserAgentService userAgentService)
         {
             _redisQueueService = redisQueueService;
             _serviceProvider = serviceProvider;
             _ipInfoService = ipInfoService;
+            _userAgentService = userAgentService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -59,27 +58,21 @@ namespace URLShortenerAPI.Services
                     context.Attach(requestInfo.URL!); // to avoid postgreSQL from throwing PK error.
                 }
 
+                // create a new processed record 
                 ClickInfoModel clickInfo = new()
                 {
                     IPAddress = requestInfo.IPAddress,
                     URL = requestInfo.URL!,
                     UserAgent = requestInfo.UserAgent,
                     ClickedAt = DateTime.UtcNow,
+                    DeviceInfo = await AnalyzeUserAgent(requestInfo.UserAgent),
+                    PossibleLocation = await AnalyzeIPAddress(requestInfo.IPAddress)
                 };
 
-                // Analyze IP address and user agent for location and device info.
-                LocationInfo locationInfo = await AnalyzeIPAddress(requestInfo.IPAddress);
-                DeviceInfo deviceInfo = AnalyzeUserAgent(requestInfo.UserAgent, requestInfo.Headers);
-
-                // Relate locationInfo and deviceInfo to clickInfo
-                clickInfo.PossibleLocation = locationInfo;
-                clickInfo.DeviceInfo = deviceInfo;
-
+                requestInfo.URL!.ClickCount++;
 
                 // Add click info, location, and device info to the database.
                 await context.Clicks.AddAsync(clickInfo);
-                await context.LocationInfos.AddAsync(locationInfo);
-                await context.DeviceInfos.AddAsync(deviceInfo);
 
                 // Save everything to database
                 await context.SaveChangesAsync();
@@ -93,7 +86,7 @@ namespace URLShortenerAPI.Services
                 await transaction.RollbackAsync();
 
                 // Handle or log the error
-                
+
             }
         }
 
@@ -125,26 +118,10 @@ namespace URLShortenerAPI.Services
         /// <param name="userAgent">the user agent string.</param>
         /// <param name="headers">ClientHint info</param>
         /// <returns>a <see cref="DeviceInfo"/> object containing info about the user.</returns>
-        private static DeviceInfo AnalyzeUserAgent(string userAgent, Dictionary<string, string?> headers)
+        private async Task<DeviceInfo?> AnalyzeUserAgent(string userAgent)
         {
-            DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE); // to ensure I store the full version string not just minor/major
-            var clientHints = ClientHints.Factory(headers);
-            var deviceDetector = new DeviceDetector(userAgent, clientHints); // client hints provide additional information.
-            deviceDetector.SetCache(new DictionaryCache()); // cache to increase performance.
-            deviceDetector.Parse();
-
-            if (deviceDetector.IsBot())
-            {
-                return new DeviceInfo() { IsBot = true, BotInfo = deviceDetector.GetBot().ToString() };
-            }
-
-            var clientInfo = deviceDetector.GetClient().ToString();
-            var osInfo = deviceDetector.GetOs().ToString();
-            var brand = deviceDetector.GetBrandName().ToString();
-            var model = deviceDetector.GetModel().ToString();
-            DeviceInfo info = new()
-            { Brand = brand, ClientInfo = clientInfo, OS = osInfo, Model = model, IsBot = false };
-            return info;
+            DeviceInfo? apiResponse = await _userAgentService.GetRequestInfo(userAgent);
+            return apiResponse;
         }
 
     }

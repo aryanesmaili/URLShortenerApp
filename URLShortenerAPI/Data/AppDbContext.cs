@@ -56,6 +56,11 @@ namespace URLShortenerAPI.Data
                 .HasForeignKey<DeviceInfo>(x => x.ClickID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<DeviceInfo>().OwnsOne(a => a.Client);
+            builder.Entity<DeviceInfo>().OwnsOne(a => a.Device);
+            builder.Entity<DeviceInfo>().OwnsOne(a => a.OS);
+
+
         }
         public DbSet<UserModel> Users { get; set; }
         public DbSet<URLModel> URLs { get; set; }
