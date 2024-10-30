@@ -1,4 +1,7 @@
-﻿<div class="py-4">
+﻿ @inject IProfileDashboardService DashboardService
+ @inject IAuthenticationService AuthService
+
+<div class="py-4">
     <div class="container-fluid">
         <div class="row">
             <!-- Click Trends -->
@@ -8,9 +11,10 @@
                         Click Trends
                     </div>
                     <div class="card-body">
-                        <div class="chart-placeholder">
-                            Chart visualization goes here
-                        </div>
+                        @if (_config != null)
+                        {
+                            <Chart Config="_config"></Chart>
+                        }
                     </div>
                 </div>
             </div>
@@ -22,9 +26,10 @@
                         Time of Day Analysis
                     </div>
                     <div class="card-body">
-                        <div class="chart-placeholder">
-                            Chart visualization goes here
-                        </div>
+                        @if (_barConfig != null)
+                        {
+                            <Chart Config="_barConfig"></Chart>
+                        }
                     </div>
                 </div>
             </div>
@@ -35,13 +40,12 @@
                     <div class="card-header">
                         Top Clicked Locations
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0 bg-light">
                         <ol class="top-list">
-                            <li>Location 1</li>
-                            <li>Location 2</li>
-                            <li>Location 3</li>
-                            <li>Location 4</li>
-                            <li>Location 5</li>
+                            @foreach (var item in TopCountries)
+                            {
+                                <li>@item</li>
+                            }
                         </ol>
                     </div>
                 </div>
@@ -52,13 +56,12 @@
                     <div class="card-header">
                         Top Devices Used
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0 bg-light">
                         <ol class="top-list">
-                            <li>Device 1</li>
-                            <li>Device 2</li>
-                            <li>Device 3</li>
-                            <li>Device 4</li>
-                            <li>Device 5</li>
+                            @foreach (var item in TopDevices)
+                            {
+                                <li>@item</li>
+                            }
                         </ol>
                     </div>
                 </div>
@@ -69,13 +72,12 @@
                     <div class="card-header">
                         Top Clicked URLs
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0 bg-light">
                         <ol class="top-list">
-                            <li>Short URL 1</li>
-                            <li>Short URL 2</li>
-                            <li>Short URL 3</li>
-                            <li>Short URL 4</li>
-                            <li>Short URL 5</li>
+                            @foreach (var item in TopClickedURLs)
+                            {
+                                <li><a href="https://@item.LongURL"></a></li>
+                            }
                         </ol>
                     </div>
                 </div>
@@ -122,5 +124,96 @@
     </div>
 </div>
 @code {
+    private Dictionary<string, int> MonthlyChartData = new();
+    private Dictionary<string, int> HourlyChartData = new();
+    private List<string> TopDevices = new();
+    private List<string> TopCountries = new();
+    private List<URLDTO> RecentURLs = new();
+    private List<URLDTO> TopClickedURLs = new();
 
+    private string errorMessage = string.Empty;
+
+    private LineConfig? _config;
+    private BarConfig? _barConfig;
+
+    protected override async Task OnInitializedAsync()
+    {
+        int uid = await AuthService.GetUserIDAsync();
+        await GetDashboardData(uid);
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetDashboardData(int userID)
+    {
+        APIResponse<UserDashboardDTO> response = await DashboardService.GetDashboardInfo(userID);
+        try
+        {
+            if (!response.Success)
+            {
+                errorMessage = response.ErrorMessage;
+                return;
+            }
+            MonthlyChartData = response.Result!.MonthlyChartData ?? new();
+            HourlyChartData = response.Result!.HourlyChartData ?? new();
+            TopClickedURLs = response.Result!.TopClickedURLs ?? new();
+            TopCountries = response.Result!.TopCountries ?? new();
+            TopDevices = response.Result!.TopOSs ?? new();
+            RecentURLs = response.Result!.MostRecentURLs ?? new();
+            PrepareCharts();
+        }
+        catch (Exception)
+        {
+            errorMessage = response.ErrorMessage;
+        }
+    }
+
+    private void PrepareCharts()
+    {
+        _config = new LineConfig
+            {
+                Options = new LineOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Monthly Clicks"
+                    },
+                    Legend = new()
+                    {
+                        Display = false
+                    },
+                }
+            };
+        _barConfig = new BarConfig
+            {
+                Options = new BarOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Daily Clicks"
+                    },
+                    Legend = new()
+                    {
+                        Display = false
+                    },
+
+                }
+            };
+        foreach (string day in MonthlyChartData.Keys)
+        {
+            _config.Data.Labels.Add(day);
+        }
+        foreach (var hour in HourlyChartData.Keys)
+        {
+            _barConfig.Data.Labels.Add(hour);
+        }
+        LineDataset<int> linedataset = new LineDataset<int>(MonthlyChartData.Values) { BackgroundColor = ColorUtil.ColorHexString(75, 192, 192), };
+        BarDataset<int> BarDataset = new(HourlyChartData.Values) { BackgroundColor = ColorUtil.ColorHexString(75, 192, 192) };
+        _config.Data.Datasets.Add(linedataset);
+        _barConfig.Data.Datasets.Add(BarDataset);
+    }
 }

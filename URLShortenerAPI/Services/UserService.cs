@@ -108,6 +108,11 @@ namespace URLShortenerAPI.Services
         {
             await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
 
+            // check cache first
+            UserDashboardDTO? result = await _cacheService.GetValueAsync<UserDashboardDTO>($"Dashboard_{userID}");
+            if (result != null)
+                return result;
+
             List<URLDTO> recentURLs = await GetRecentURLs(userID) ?? [];
             Dictionary<string, int> ClicksThisMonth = await GetClicksInMonth(userID) ?? [];
             Dictionary<string, int> ClicksThisDay = await GetClicksInDay(userID) ?? [];
@@ -115,7 +120,7 @@ namespace URLShortenerAPI.Services
             List<string>? topDevices = await GetTopDeviceOS(userID) ?? [];
             List<URLDTO>? topClickedURLs = await GetTopClickedURLs(userID) ?? [];
 
-            UserDashboardDTO result = new()
+            result = new()
             {
                 HourlyChartData = ClicksThisDay,
                 MonthlyChartData = ClicksThisMonth,
@@ -124,9 +129,11 @@ namespace URLShortenerAPI.Services
                 TopOSs = topDevices,
                 TopClickedURLs = topClickedURLs
             };
-
+            // cache the results for refreshes
+            await _cacheService.SetAsync($"Dashboard_{userID}", result, TimeSpan.FromMinutes(1));
             return result;
         }
+
         /// <summary>
         /// Gets the 5 most clicked URLs of the user.
         /// </summary>
@@ -139,7 +146,7 @@ namespace URLShortenerAPI.Services
                 .Where(x => x.UserID == userID)
                 .OrderByDescending(x => x.ClickCount)
                 .Take(5)
-                .Select( x=> _mapper.Map<URLDTO>(x))
+                .Select(x => _mapper.Map<URLDTO>(x))
                 .ToListAsync();
             return urls;
         }
@@ -235,8 +242,21 @@ namespace URLShortenerAPI.Services
             if (ClicksInDay != null)
                 return ClicksInDay;
 
+            ClicksInDay = Enumerable.Range(0, 24).ToDictionary(day => day.ToString(), day => 0); // so that we have all hours.
+
             // if not, we query database.
-            ClicksInDay = await _context.Clicks.Include(x => x.URL).AsNoTracking().Where(x => x.URL.UserID == userID).GroupBy(x => x.ClickedAt.Hour).ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+            var clickcounts = await _context.Clicks
+                .Include(x => x.URL)
+                .AsNoTracking()
+                .Where(x => x.URL.UserID == userID)
+                .GroupBy(x => x.ClickedAt.Hour)
+                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+
+            // Update the initialized dictionary with actual counts
+            foreach (var (day, count) in clickcounts)
+            {
+                ClicksInDay[day] = count;
+            }
 
             // cache in Redis
             if (ClicksInDay != null)

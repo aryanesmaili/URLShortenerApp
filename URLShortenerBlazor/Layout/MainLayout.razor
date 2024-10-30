@@ -96,7 +96,7 @@
 
     private async Task Logout()
     {
-        await AuthService.LogOut();
+        await AuthService.LogOutAsync();
         isLoggedIn = false;
         Navigation.NavigateTo("/");
     }

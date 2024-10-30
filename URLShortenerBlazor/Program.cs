@@ -20,6 +20,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IProfileServices, ProfileServices>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
+builder.Services.AddTransient<IProfileDashboardService, ProfileDashboardService>();
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)

@@ -101,14 +101,14 @@
             Email = string.Empty,
             Username = string.Empty
         };
-    private Pages activeTab = Pages.URLs;
+    private Pages activeTab = Pages.Dashboard;
     private int urlCount = 0; // TODO: Fix this
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            userinfo = await AuthService.GetUserInfo() ?? throw new Exception();
+            userinfo = await AuthService.GetUserInfoAsync() ?? throw new Exception();
             await base.OnInitializedAsync();
         }
         catch (Exception)

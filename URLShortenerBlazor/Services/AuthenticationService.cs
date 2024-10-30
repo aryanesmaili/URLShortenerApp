@@ -38,7 +38,7 @@ namespace URLShortenerBlazor.Services
             return result;
         }
 
-        public async Task LogOut()
+        public async Task LogOutAsync()
         {
             var client = _httpClientFactory.CreateClient("Auth");
             // Call the Logout endpoint: no content is needed as it will read the refreshToken from the cookies
@@ -57,12 +57,12 @@ namespace URLShortenerBlazor.Services
             return result!;
         }
 
-        public async Task<int> GetUserID()
+        public async Task<int> GetUserIDAsync()
         {
             return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;
         }
 
-        public async Task<UserDTO?> GetUserInfo()
+        public async Task<UserDTO?> GetUserInfoAsync()
         {
             return await _localStorage.GetItemAsync<UserDTO>("user");
         }

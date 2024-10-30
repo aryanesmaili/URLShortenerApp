@@ -226,7 +226,7 @@
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         url = query["url"];
-        userID = await AuthService.GetUserID();
+        userID = await AuthService.GetUserIDAsync();
         urlCreate.LongURL = string.IsNullOrEmpty(url) ? string.Empty : url;
         urlCreate.UserID = userID;
         await base.OnInitializedAsync();
