@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
 using URLShortenerAPI.Data.Entities.URL;
 
 namespace URLShortenerAPI.Data.Entities.ClickInfo
@@ -13,9 +12,9 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
 
 
         public int LocationID { get; set; }
-        public required LocationInfo PossibleLocation { get; set; }
+        public LocationInfo? PossibleLocation { get; set; }
         public int DeviceInfoID { get; set; }
-        public required DeviceInfo DeviceInfo { get; set; }
+        public DeviceInfo? DeviceInfo { get; set; }
         public int URLID { get; set; }
         public required URLModel URL { get; set; }
     }
@@ -38,12 +37,12 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     internal class DeviceInfo
     {
         public int ID { get; set; }
-        public required string BrowserFamily { get; set; }
-        public required ClientInfo Client { get; set; }
-        public required Device Device { get; set; }
-        public required OSInfo OS { get; set; }
-        public required string OSFamily { get; set; }
-        public required string UserAgent { get; set; }
+        public string? BrowserFamily { get; set; }
+        public ClientInfo? Client { get; set; }
+        public Device? Device { get; set; }
+        public OSInfo? OS { get; set; }
+        public string? OSFamily { get; set; }
+        public string? UserAgent { get; set; }
 
         public int ClickID { get; set; }
         public ClickInfoModel? ClickInfo { get; set; }
@@ -52,6 +51,7 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     [Owned]
     internal class ClientInfo
     {
+        public bool PreventNull {  get; set; } = true;
         public string? Engine { get; set; }
         public string? EngineVersion { get; set; }
         public string? Name { get; set; }
@@ -62,6 +62,7 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     [Owned]
     internal class Device
     {
+        public bool PreventNull { get; set; } = true;
         public string? Brand { get; set; }
         public string? Model { get; set; }
         public string? Type { get; set; }
@@ -70,6 +71,7 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     [Owned]
     internal class OSInfo
     {
+        public bool PreventNull { get; set; } = true;
         public string? Name { get; set; }
         public string? Platform { get; set; }
         public string? Version { get; set; }
