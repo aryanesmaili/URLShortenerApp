@@ -181,7 +181,7 @@ namespace URLShortenerAPI.Services
             if (topLocations != null)
                 return topLocations;
 
-            List<LocationInfo> countries = await _context.Clicks
+            List<LocationInfo?> countries = await _context.Clicks
                 .Include(x => x.URL)
                 .AsNoTracking()
                 .Where(x => x.URL.UserID == userID)
@@ -189,7 +189,7 @@ namespace URLShortenerAPI.Services
                 .ToListAsync();
 
             topLocations = countries
-                .GroupBy(x => x.Country)
+                .GroupBy(x => x!.Country)
                 .OrderByDescending(x => x.Count())
                 .Select(x => x.Key)
                 .Take(5)
@@ -210,7 +210,7 @@ namespace URLShortenerAPI.Services
             if (topUsers != null)
                 return topUsers;
 
-            List<DeviceInfo> topDevices = await _context.Clicks
+            List<DeviceInfo?> topDevices = await _context.Clicks
                 .Include(x => x.URL)
                 .AsNoTracking()
                 .Where(c => c.URL.UserID == userID)
@@ -218,8 +218,8 @@ namespace URLShortenerAPI.Services
                 .ToListAsync();
 
             topUsers = topDevices
-                        .Where(x => !string.IsNullOrWhiteSpace(x.OS?.Name))
-                        .GroupBy(x => x.OS?.Name ?? "")
+                        .Where(x => !string.IsNullOrWhiteSpace(x?.OS?.Name))
+                        .GroupBy(x => x?.OS?.Name ?? "")
                         .OrderByDescending(x => x.Count())
                         .Select(x => x.Key)
                         .Take(5)
@@ -237,42 +237,49 @@ namespace URLShortenerAPI.Services
         /// <returns></returns>
         private async Task<Dictionary<string, int>?> GetClicksInDay(int userID)
         {
-            // try to retrieve from cache first
+            // Try to retrieve from cache first
             Dictionary<string, int>? ClicksInDay = await _cacheService.GetValueAsync<Dictionary<string, int>>("D_Clicks_" + userID.ToString());
             if (ClicksInDay != null)
                 return ClicksInDay;
 
-            ClicksInDay = Enumerable.Range(0, 24).ToDictionary(day => day.ToString(), day => 0); // so that we have all hours.
+            // Initialize dictionary with all 24 hours as keys with 0 counts
+            ClicksInDay = Enumerable.Range(0, 24).ToDictionary(hour => hour.ToString(), hour => 0);
 
-            // if not, we query database.
-            var clickcounts = await _context.Clicks
+            // Get the Tehran time zone information
+            TimeZoneInfo tehranTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Iran Standard Time");
+
+            // Query the database for clicks, then convert ClickedAt to Tehran time and group by the hour
+            var clickCounts = await _context.Clicks
                 .Include(x => x.URL)
                 .AsNoTracking()
-                .Where(x => x.URL.UserID == userID)
-                .GroupBy(x => x.ClickedAt.Hour)
-                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+                .Where(x => x.URL.UserID == userID).ToListAsync();
 
-            // Update the initialized dictionary with actual counts
-            foreach (var (day, count) in clickcounts)
+            var tehrantime = clickCounts
+                .Select(x => TimeZoneInfo.ConvertTimeFromUtc(x.ClickedAt, tehranTimeZone).Hour)
+                .GroupBy(hour => hour)
+                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+
+            // Update initialized dictionary with actual counts from the database
+            foreach (var (hour, count) in tehrantime)
             {
-                ClicksInDay[day] = count;
+                ClicksInDay[hour] = count;
             }
 
-            // cache in Redis
-            if (ClicksInDay != null)
-                await _cacheService.SetAsync("D_Clicks_" + userID.ToString(), ClicksInDay);
+            // Cache the results in Redis
+            await _cacheService.SetAsync("D_Clicks_" + userID.ToString(), ClicksInDay);
 
             return ClicksInDay;
         }
 
+
         /// <summary>
-        /// Gets the statistics about the clicks on current month.
+        /// Gets the statistics about the clicks on the current month.
         /// </summary>
         /// <param name="userID">ID of the user</param>
         /// <returns></returns>
         private async Task<Dictionary<string, int>?> GetClicksInMonth(int userID)
         {
-            // first we try to retrieve from cache
+            // First, we try to retrieve from cache
             Dictionary<string, int>? clicksinMonth = await _cacheService.GetValueAsync<Dictionary<string, int>>("M_Clicks_" + userID.ToString());
             if (clicksinMonth != null)
                 return clicksinMonth;
@@ -284,25 +291,35 @@ namespace URLShortenerAPI.Services
             clicksinMonth = Enumerable.Range(1, daysInMonth)
                 .ToDictionary(day => day.ToString(), day => 0);
 
-            // Fetch and count clicks by day
+            // Create an instance of PersianCalendar
+            var persianCalendar = new System.Globalization.PersianCalendar();
+
+            // Fetch clicks for the current month from the database
             var clickCounts = await _context.Clicks
                 .Include(x => x.URL)
                 .AsNoTracking()
-                .Where(x => x.URL.UserID == userID && x.ClickedAt.Month == currentDate.Month && x.ClickedAt.Year == currentDate.Year)
-                .GroupBy(x => x.ClickedAt.Day)
-                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count());
+                .Where(x => x.URL.UserID == userID &&
+                            x.ClickedAt.Month == currentDate.Month &&
+                            x.ClickedAt.Year == currentDate.Year).ToListAsync();
+
+            // Grouping by just the Persian day
+            var persianDayCounts = clickCounts
+                .Select(x => persianCalendar.GetDayOfMonth(x.ClickedAt)) // Get only the Persian day
+                .GroupBy(day => day) // Group by the Persian day
+                .ToDictionary(g => g.Key.ToString(), g => g.Count()); // Create a dictionary of days to counts
 
             // Update the initialized dictionary with actual counts
-            foreach (var (day, count) in clickCounts)
+            foreach (var (day, count) in persianDayCounts)
             {
-                clicksinMonth[day] = count;
+                clicksinMonth[day] = count; // Use the Persian day as the key
             }
 
-            if (clicksinMonth != null)
-                await _cacheService.SetAsync("M_Clicks_" + userID.ToString(), clicksinMonth, DateTime.Now.AddDays(1) - DateTime.Now);
+            // Cache the results in Redis for 1 day
+            await _cacheService.SetAsync("M_Clicks_" + userID.ToString(), clicksinMonth, DateTime.Now.AddDays(1) - DateTime.Now);
 
             return clicksinMonth;
         }
+
 
         /// <summary>
         /// logs a user in and gives them respective tokens to surf across webpages.
