@@ -1,7 +1,5 @@
-﻿using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Services.Interfaces;
 

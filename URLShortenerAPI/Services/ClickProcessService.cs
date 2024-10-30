@@ -65,10 +65,10 @@ namespace URLShortenerAPI.Services
                     URL = requestInfo.URL!,
                     UserAgent = requestInfo.UserAgent,
                     ClickedAt = DateTime.UtcNow,
-                    DeviceInfo = await AnalyzeUserAgent(requestInfo.UserAgent),
-                    PossibleLocation = await AnalyzeIPAddress(requestInfo.IPAddress)
-                };
 
+                };
+                clickInfo.DeviceInfo = await AnalyzeUserAgent(requestInfo.UserAgent);
+                clickInfo.PossibleLocation = await AnalyzeIPAddress(requestInfo.IPAddress);
                 requestInfo.URL!.ClickCount++;
 
                 // Add click info, location, and device info to the database.
@@ -86,7 +86,6 @@ namespace URLShortenerAPI.Services
                 await transaction.RollbackAsync();
 
                 // Handle or log the error
-
             }
         }
 
