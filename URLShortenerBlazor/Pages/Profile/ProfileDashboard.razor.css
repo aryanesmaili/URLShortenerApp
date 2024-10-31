@@ -1,99 +1,338 @@
-﻿:root {
-    --primary-bg: #f8f9fa;
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --card-border: 1px solid rgba(0, 0, 0, 0.125);
-    --accent-color: #0d6efd;
-}
-
-body {
+﻿body {
     background-color: #f0f2f5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Container and layout */
+.container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
 
+@media (min-width: 768px) {
+    .container-fluid {
+        padding: 0 1.5rem;
+    }
+}
+
+/* Row and column adjustments */
+.row {
+    margin: -0.75rem;
+}
+
+.col-md-6, .col-md-4, .col-12 {
+    padding: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    .col-md-6, .col-md-4 {
+        width: 100%;
+    }
+}
+
+/* Card Styling */
 .card {
     background: white;
     border-radius: 10px;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     margin-bottom: 1.5rem;
-    transition: transform 0.2s ease-in-out;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
 }
+
     .card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
     }
 
 .card-header {
-    background-color: #6f42c1;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #6f42c1, #8250df);
+    border-bottom: none;
+    padding: 1.25rem;
     font-weight: 600;
     color: white;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
 }
+
 .card-body {
+    background: #f0f2f8;
+    position: relative; /* Set the card body to relative */
+    height: 300px; /* Ensure it has a defined height (or adjust as needed) */
     padding: 0 !important;
 }
-.recent-activity {
-    overflow-x: auto;
-}
 
-.table {
-    margin-bottom: 0;
-}
-
-    .table th {
-        font-weight: 600;
-        color: #6c757d;
-        border-bottom-width: 1px;
+    /* Chart specific styling */
+    .card-body canvas {
+        min-height: 300px;
+        width: 100% !important;
     }
 
-    .table td {
-        vertical-align: middle;
-    }
-
-.action-btn {
-    color: var(--accent-color);
-    background: none;
-    border: none;
-    padding: 0.25rem;
-    margin: 0 0.25rem;
-    cursor: pointer;
-    transition: color 0.2s ease-in-out;
+/* Responsive chart container */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
-    .action-btn:hover {
-        color: #0056b3;
+@media (max-width: 768px) {
+    .chart-container {
+        min-height: 250px;
     }
-
-.url-cell {
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
+@media (max-width: 576px) {
+    .chart-container {
+        min-height: 200px;
+    }
+}
+
+/* List Styling */
 .top-list {
-    list-style-position: inside;
-    padding-left: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: item;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
     .top-list li {
-        padding: 0.75rem 1.25rem;
-        color: #2c3e50;
-        font-size: 0.95rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+        counter-increment: item;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
     }
+
+        .top-list li::before {
+            content: counter(item);
+            background: #6f42c1;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
 
         .top-list li:last-child {
             border-bottom: none;
         }
 
-.chart-placeholder {
-    height: 300px;
-    background: linear-gradient(45deg, #f8f9fa 25%, #e9ecef 25%, #e9ecef 50%, #f8f9fa 50%, #f8f9fa 75%, #e9ecef 75%, #e9ecef 100%);
-    background-size: 56.57px 56.57px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    font-style: italic;
+        .top-list li:hover {
+            background-color: #fff;
+            padding-left: 1.75rem;
+        }
+
+        /* Top 3 Styling */
+        .top-list li:nth-child(1)::before {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .top-list li:nth-child(2)::before {
+            background: #c0c0c0;
+            color: #000;
+        }
+
+        .top-list li:nth-child(3)::before {
+            background: #cd7f32;
+            color: #fff;
+        }
+
+        /* URL handling in lists */
+        .top-list li a {
+            position: relative;
+            display: inline-block;
+            max-width: calc(100% - 40px);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            padding-right: 24px;
+            text-decoration: none;
+        }
+
+            .top-list li a::after {
+                position: absolute;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.875rem;
+                opacity: 0.5;
+            }
+
+/* Recent Activity Table */
+
+.recent-activity {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+    .recent-activity .card-header {
+        background-color: #f7f9fc;
+        font-weight: bold;
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .recent-activity .card-body {
+        overflow-y: auto;
+        height: auto; /* Ensures container height adjusts dynamically */
+    }
+
+
+.custom-table {
+    width: 100%;
+    margin: 0;
+}
+
+    .custom-table thead th {
+        font-weight: 600;
+        color: #5a5a5a;
+        background-color: #f1f3f6;
+        border-bottom: 2px solid #ddd;
+        padding: 0.75rem;
+    }
+
+    .custom-table tbody td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+
+    .custom-table tbody tr:hover {
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+/* URL Cell Tooltip */
+.url-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+}
+
+    .url-cell:hover::after {
+        content: attr(data-full-url);
+        position: absolute;
+        white-space: normal;
+        background: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        top: 110%;
+        left: 0;
+        z-index: 1000;
+        max-width: 400px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+/* Action Buttons */
+.btn-icon {
+    background-color: transparent; /* No background color */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Padding around the button */
+    transition: color 0.3s; /* Smooth color transition */
+    color: green; /* Default text color */
+}
+
+    .btn-icon:hover {
+        color: #007bff; /* Color change on hover */
+    }
+
+    /* Focus and Active States */
+    .btn-icon:focus,
+    .btn-icon:active {
+        outline: none !important; /* No outline on focus or active state */
+        box-shadow: none !important; /* No box shadow on focus or active state */
+        border: none !important; /* No border on focus or active state */
+    }
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .recent-activity {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .custom-table thead {
+        display: none;
+    }
+
+    .custom-table tbody td {
+        display: block;
+        padding: 0.5rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+        .custom-table tbody td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            display: inline-block;
+            width: 120px;
+            color: #6c757d;
+        }
+}
+
+/* Loading state */
+.chart-loading {
+    position: absolute; /* Position loading div absolutely */
+    top: 0; /* Align to the top of the card body */
+    left: 0; /* Align to the left of the card body */
+    right: 0; /* Align to the right of the card body */
+    bottom: 0; /* Align to the bottom of the card body */
+    width: 100%; /* Fill the width */
+    height: 100%; /* Fill the height */
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+}
+
+@keyframes shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 576px) {
+    .py-4 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .card-header {
+        padding: 1rem;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .top-list li {
+        padding: 0.75rem 1rem;
+    }
+
+    .table td, .table th {
+        padding: 0.75rem;
+    }
 }

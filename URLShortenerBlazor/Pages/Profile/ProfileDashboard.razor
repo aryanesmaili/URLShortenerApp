@@ -1,8 +1,21 @@
-﻿ @inject IProfileDashboardService DashboardService
+﻿@using System.Globalization
+ @inject IProfileDashboardService DashboardService
  @inject IAuthenticationService AuthService
+ @inject IJSRuntime JSRuntime
+ @inject IShortenerService ShortenerService
+ @inject Blazored.Toast.Services.IToastService ToastClient
 
 <div class="py-4">
     <div class="container-fluid">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-1 mb-2 py-1">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item list-group-item-danger mx-3 my-2">@errorMessage</li>
+                </ul>
+            </div>
+        }
+
         <div class="row">
             <!-- Click Trends -->
             <div class="col-md-6 mb-4">
@@ -11,9 +24,15 @@
                         Click Trends
                     </div>
                     <div class="card-body">
-                        @if (_config != null)
+                        @if (!isLoading)
                         {
-                            <Chart Config="_config"></Chart>
+                            <div class="chart-container">
+                                <canvas id="linechart"></canvas>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="chart-loading"></div>
                         }
                     </div>
                 </div>
@@ -26,9 +45,15 @@
                         Time of Day Analysis
                     </div>
                     <div class="card-body">
-                        @if (_barConfig != null)
+                        @if (!isLoading)
                         {
-                            <Chart Config="_barConfig"></Chart>
+                            <div class="chart-container">
+                                <canvas id="barchart"></canvas>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="chart-loading"></div>
                         }
                     </div>
                 </div>
@@ -40,13 +65,20 @@
                     <div class="card-header">
                         Top Clicked Locations
                     </div>
-                    <div class="card-body p-0 bg-light">
-                        <ol class="top-list">
-                            @foreach (var item in TopCountries)
-                            {
-                                <li>@item</li>
-                            }
-                        </ol>
+                    <div class="card-body p-0">
+                        @if (!isLoading)
+                        {
+                            <ol class="top-list">
+                                @foreach (var item in TopCountries)
+                                {
+                                    <li>@item</li>
+                                }
+                            </ol>
+                        }
+                        else
+                        {
+                            <div class="chart-loading"></div> <!-- Loading indicator for locations -->
+                        }
                     </div>
                 </div>
             </div>
@@ -57,12 +89,19 @@
                         Top Devices Used
                     </div>
                     <div class="card-body p-0 bg-light">
-                        <ol class="top-list">
-                            @foreach (var item in TopDevices)
-                            {
-                                <li>@item</li>
-                            }
-                        </ol>
+                        @if (!isLoading)
+                        {
+                            <ol class="top-list">
+                                @foreach (var item in TopDevices)
+                                {
+                                    <li>@item</li>
+                                }
+                            </ol>
+                        }
+                        else
+                        {
+                            <div class="chart-loading"></div> <!-- Loading indicator for devices -->
+                        }
                     </div>
                 </div>
             </div>
@@ -72,57 +111,253 @@
                     <div class="card-header">
                         Top Clicked URLs
                     </div>
-                    <div class="card-body p-0 bg-light">
-                        <ol class="top-list">
-                            @foreach (var item in TopClickedURLs)
-                            {
-                                <li><a href="https://@item.LongURL"></a></li>
-                            }
-                        </ol>
+                    <div class="card-body p-0">
+                        @if (!isLoading)
+                        {
+                            <ol class="top-list">
+                                @foreach (var item in TopClickedURLs)
+                                {
+                                    <li>
+                                        <a class="text-decoration-none"
+                                           href="@item.LongURL"
+                                           title="@item.LongURL">
+                                            @(item.LongURL.Length > 40 ? item.LongURL.Substring(0, 37) + "..." : item.LongURL)
+                                        </a>
+                                    </li>
+                                }
+                            </ol>
+                        }
+                        else
+                        {
+                            <div class="chart-loading"></div> <!-- Loading indicator for clicked URLs -->
+                        }
                     </div>
                 </div>
             </div>
+
             <!-- Recent Activity -->
             <div class="col-12 mb-4">
                 <div class="card recent-activity">
                     <div class="card-header">
-                        Recent Activity
+                        <h5 class="mb-0">Recent Activity</h5>
                     </div>
                     <div class="card-body p-3">
-                        <table class="table  table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Long URL</th>
-                                    <th>Short Code</th>
-                                    <th>Date Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="url-cell">https://example.com/some-long-url</td>
-                                    <td>exmpl123</td>
-                                    <td>2024-10-26</td>
-                                    <td>
-                                        <button class="action-btn" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="action-btn" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <button class="action-btn" title="Open">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-borderless custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Long URL</th>
+                                        <th>Short Code</th>
+                                        <th>Date Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in RecentURLs)
+                                    {
+                                        <tr>
+                                            <td class="url-cell"><a class="text-decoration-none" href="@item.LongURL">@item.LongURL</a></td>
+                                            <td><a class="text-decoration-none" href="https://localhost:5261/@item.ShortCode">@item.ShortCode</a></td>
+                                            <td>@item.CreatedAt</td>
+                                            <td>
+                                                <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.ShortCode!)">
+                                                    <Icon Name="IconName.Copy"></Icon>
+                                                </button>
+                                                <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.ID)">
+                                                    <Icon Name="IconName.Delete"></Icon>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function InitializeLineChart(data) {
+        // Get the 2D context of the canvas
+        const linechart = document.getElementById("linechart").getContext("2d");
+
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+
+        // Create a new Chart
+        new Chart(linechart, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Daily Clicks',
+                    data: values,
+                    backgroundColor: "rgba(54, 162, 235, 0.1)", // Softer background for fill
+                    borderColor: "rgba(54, 162, 235, 1)", // Bold line color
+                    borderWidth: 2,
+                    pointBackgroundColor: "#fff",
+                    pointBorderColor: "rgba(54, 162, 235, 1)",
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.3 // Smooth line curve
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Date",
+                            color: "#555",
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false // Hide x-axis gridlines
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Clicks",
+                            color: "#555",
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: "rgba(200, 200, 200, 0.3)", // Subtle gridlines for y-axis
+                            lineWidth: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Optional: hiding the legend since it’s a single dataset
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark tooltip for readability
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 }
+                    },
+                    title: {
+                        display: true,
+                        text: "Daily Clicks for Current Month",
+                        color: "#333",
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { top: 10, bottom: 15 }
+                    }
+                }
+            }
+        });
+
+    }
+
+    function InitializeBarChart(data) {
+        // Get the 2D context of the canvas
+        const barchart = document.getElementById("barchart").getContext("2d");
+
+        // Ensure data is properly formatted
+        const dataLabels = Object.keys(data);
+        const values = Object.values(data);
+
+        // Create a new Chart
+        new Chart(barchart, {
+            type: 'bar',
+            data: {
+                labels: dataLabels,
+                datasets: [{
+                    label: 'Hourly Clicks',
+                    data: values,
+                    backgroundColor: "rgba(54, 162, 235, 0.6)", // Softer, modern color with opacity
+                    borderColor: "rgba(54, 162, 235, 1)",
+                    borderWidth: 1.5, // Slightly thinner border for a sleeker look
+                    borderRadius: 6, // Rounded corners for bars
+                    barPercentage: 0.8 // Adjusts bar width within available space
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: false, // No animations as requested
+                scales: {
+                    x: {
+                        grid: {
+                            display: false // Hide x-axis gridlines
+                        },
+                        title: {
+                            display: true,
+                            text: "Hours",
+                            color: "#555", // Subtle color for title
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false // Hide y-axis gridlines
+                        },
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Clicks",
+                            color: "#555", // Subtle color for title
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // No legend since only one dataset is shown
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: "rgba(0,0,0,0.7)", // Darker background for better readability
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 }
+                    },
+                    title: {
+                        display: true,
+                        text: "Click Distribution In a Day",
+                        color: "#333", // Darker color for title
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { top: 10, bottom: 15 }
+                    }
+                }
+            }
+        });
+
+    }
+
+    window.copyToClipboard = function (text) {
+        navigator.clipboard.writeText(text)
+            .catch(function (err) {
+                console.error('Could not copy text: ', err);
+            });
+    }
+</script>
 @code {
     private Dictionary<string, int> MonthlyChartData = new();
     private Dictionary<string, int> HourlyChartData = new();
@@ -130,11 +365,9 @@
     private List<string> TopCountries = new();
     private List<URLDTO> RecentURLs = new();
     private List<URLDTO> TopClickedURLs = new();
-
+    private bool isLoading = true;
     private string errorMessage = string.Empty;
 
-    private LineConfig? _config;
-    private BarConfig? _barConfig;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,60 +393,67 @@
             TopCountries = response.Result!.TopCountries ?? new();
             TopDevices = response.Result!.TopOSs ?? new();
             RecentURLs = response.Result!.MostRecentURLs ?? new();
-            PrepareCharts();
+            TopClickedURLs[0] = new URLDTO()
+                {
+                    ClickCount = 15,
+                    LongURL = "https://github.com/theLunarxs/3524635748653243526435746857964567546879453643574685676792341352463574685796435465768",
+                    ShortCode = "jflvkmd",
+                    IsActive = true,
+
+                };
+            RecentURLs.Select(x => ConvertToPersianDateTime(x.CreatedAt));
+            isLoading = false;
+            StateHasChanged();
+            await PrepareCharts();
         }
         catch (Exception)
         {
             errorMessage = response.ErrorMessage;
+            isLoading = false;
         }
     }
 
-    private void PrepareCharts()
+    private async Task PrepareCharts()
     {
-        _config = new LineConfig
-            {
-                Options = new LineOptions
-                {
-                    Responsive = true,
-                    Title = new OptionsTitle
-                    {
-                        Display = true,
-                        Text = "Monthly Clicks"
-                    },
-                    Legend = new()
-                    {
-                        Display = false
-                    },
-                }
-            };
-        _barConfig = new BarConfig
-            {
-                Options = new BarOptions
-                {
-                    Responsive = true,
-                    Title = new OptionsTitle
-                    {
-                        Display = true,
-                        Text = "Daily Clicks"
-                    },
-                    Legend = new()
-                    {
-                        Display = false
-                    },
-
-                }
-            };
-        foreach (string day in MonthlyChartData.Keys)
-        {
-            _config.Data.Labels.Add(day);
-        }
-        foreach (var hour in HourlyChartData.Keys)
-        {
-            _barConfig.Data.Labels.Add(hour);
-        }
-        LineDataset<int> linedataset = new LineDataset<int>(MonthlyChartData.Values) { BackgroundColor = ColorUtil.ColorHexString(75, 192, 192), };
-        BarDataset<int> BarDataset = new(HourlyChartData.Values) { BackgroundColor = ColorUtil.ColorHexString(75, 192, 192) };
-        _config.Data.Datasets.Add(linedataset);
-        _barConfig.Data.Datasets.Add(BarDataset);
+        await JSRuntime.InvokeVoidAsync("InitializeLineChart", MonthlyChartData);
+        await JSRuntime.InvokeVoidAsync("InitializeBarChart", HourlyChartData);
     }
+
+    private async Task DeleteURL(int urlID)
+    {
+        APIResponse<string> response = await ShortenerService.DeleteURL(urlID);
+        if (response.Success)
+        {
+            var urlindex = RecentURLs.Remove(RecentURLs.First(x => x.ID == urlID));
+            StateHasChanged();
+            ToastClient.ShowSuccess("URL Deleted Successfully", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+        }
+        else
+            ToastClient.ShowError("Something went wrong while deleting the URL", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+    }
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (!string.IsNullOrEmpty(textToCopy))
+        {
+            textToCopy = "https://Pexita.click/" + textToCopy;
+            ToastClient.ShowSuccess("Text Copied to Clipboard!", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", textToCopy);
+        }
+    }
+
+    static DateTime ConvertToPersianDateTime(DateTime utcDateTime)
+    {
+        PersianCalendar persianCalendar = new PersianCalendar();
+        return new DateTime(
+            persianCalendar.GetYear(utcDateTime),
+            persianCalendar.GetMonth(utcDateTime),
+            persianCalendar.GetDayOfMonth(utcDateTime),
+            utcDateTime.Hour, // Keep the same hour from UTC
+            utcDateTime.Minute,
+            utcDateTime.Second,
+            persianCalendar // Specify the calendar
+        );
+    }
+
 }

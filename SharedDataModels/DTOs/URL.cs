@@ -6,8 +6,8 @@ namespace SharedDataModels.DTOs
     {
         public int ID { get; set; }
         public string? Description { get; set; }
-        public string? ShortCode { get; set; }
-        public string? LongURL { get; set; }
+        public string ShortCode { get; set; } = string.Empty;
+        public string LongURL { get; set; } = string.Empty;
         public int ClickCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }

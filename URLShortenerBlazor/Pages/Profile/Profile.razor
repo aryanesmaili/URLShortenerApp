@@ -17,7 +17,7 @@
                     </div>
                     <div class="col-md-6 text-center text-md-end">
                         <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
-                        <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Calendar"></Icon>    276 days</p>
+                        <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Calendar"></Icon> @((DateTime.Now.Date - userinfo.CreatedAt.Date).Days) Days</p>
                     </div>
                 </div>
                 <div class="stats-container mt-2">
