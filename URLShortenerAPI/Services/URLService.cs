@@ -43,7 +43,7 @@ namespace URLShortenerAPI.Services
         public async Task<URLShortenResponse> AddURL(URLCreateDTO createDTO, string username)
         {
             // Authorize user access. This throws an exception if the user is not authorized.
-            UserModel user = await _authService.AuthorizeUserAccessAsync(createDTO.UserID, username);
+            UserModel user = await _authService.AuthorizeUserAccessAsync(createDTO.UserID, username, true);
 
             // Check if the user has already shortened this URL. returns answer if yes.
             URLModel? url = await IsURLAlreadyAsync(createDTO.LongURL, createDTO.UserID);
@@ -83,7 +83,7 @@ namespace URLShortenerAPI.Services
             int userID = batchURL[0].UserID;
 
             // Authorize user access. This throws an exception if the user is not authorized.
-            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, username);
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, username, true);
 
             // the HashSet of all the new URLs to be added. later used to pull out the new ones. HashSet helps with avoiding duplicates.
             HashSet<string> AllNewURLs = batchURL.Select(x => x.LongURL).ToHashSet();
