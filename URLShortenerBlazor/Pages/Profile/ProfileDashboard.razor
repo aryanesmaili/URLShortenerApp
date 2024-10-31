@@ -77,7 +77,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> <!-- Loading indicator for locations -->
+                            <div class="chart-loading"></div> 
                         }
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> <!-- Loading indicator for devices -->
+                            <div class="chart-loading"></div> 
                         }
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> <!-- Loading indicator for clicked URLs -->
+                            <div class="chart-loading"></div> 
                         }
                     </div>
                 </div>
@@ -437,13 +437,11 @@
 
     static string ConvertToPersianDateTime(DateTime utcDateTime)
     {
-        // Iran is UTC +3:30
         TimeSpan iranOffset = TimeSpan.FromHours(3).Add(TimeSpan.FromMinutes(30));
 
         // Convert UTC to Iran's local time
         DateTime iranLocalTime = utcDateTime + iranOffset;
-
-        // Create a PersianCalendar instance
+        
         PersianCalendar persianCalendar = new PersianCalendar();
 
         // Get the Persian date components
