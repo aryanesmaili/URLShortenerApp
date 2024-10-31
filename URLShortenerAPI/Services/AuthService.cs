@@ -40,16 +40,23 @@ namespace URLShortenerAPI.Services
         /// <returns>a <see cref="URLModel"/> object to modify.</returns>
         /// <exception cref="NotFoundException"></exception>
         /// <exception cref="NotAuthorizedException"></exception>
-        public async Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username)
+        public async Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username, bool includeRelations = false)
         {
             ArgumentException.ThrowIfNullOrEmpty(username);
-            URLModel url = await _context.URLs
-                .Include(x => x.User)
-                .Include(x => x.Clicks)
-                .Include(x => x.Categories)
-                .Include(x => x.URLAnalytics)
-                .FirstOrDefaultAsync(x => x.ID == urlID)
-                ?? throw new NotFoundException($"URL {urlID} Does not exist.");
+            URLModel url;
+            if (includeRelations)
+                url = await _context.URLs
+                    .Include(x => x.User)
+                    .Include(x => x.Clicks)
+                    .Include(x => x.Categories)
+                    .Include(x => x.URLAnalytics)
+                    .FirstOrDefaultAsync(x => x.ID == urlID)
+                    ?? throw new NotFoundException($"URL {urlID} Does not exist.");
+            else
+                url = await _context.URLs
+                     .FirstOrDefaultAsync(x => x.ID == urlID)
+                     ?? throw new NotFoundException($"URL {urlID} Does not exist.");
+
             UserModel reqUser = await _context.Users.AsNoTracking()
                     .FirstOrDefaultAsync(x => x.Username == username) ?? throw new NotFoundException($"User {username} not found.");
 
@@ -72,16 +79,22 @@ namespace URLShortenerAPI.Services
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
         /// <exception cref="NotAuthorizedException"></exception>
-        public async Task<UserModel> AuthorizeUserAccessAsync(int UserID, string reqUsername)
+        public async Task<UserModel> AuthorizeUserAccessAsync(int UserID, string reqUsername, bool includeRelations)
         {
             if (string.IsNullOrEmpty(reqUsername))
                 throw new ArgumentNullException(nameof(reqUsername));
 
-            UserModel user = await _context.Users
-                .Include(u => u.URLs)
-                .Include(u => u.URLCategories)
-                .FirstOrDefaultAsync(x => x.ID == UserID)
-                ?? throw new NotFoundException($"User {UserID} not found.");
+            UserModel user;
+            if (includeRelations)
+                user = await _context.Users
+                   .Include(u => u.URLs)
+                   .Include(u => u.URLCategories)
+                   .FirstOrDefaultAsync(x => x.ID == UserID)
+                   ?? throw new NotFoundException($"User {UserID} not found.");
+            else
+                user = await _context.Users
+                   .FirstOrDefaultAsync(x => x.ID == UserID)
+                   ?? throw new NotFoundException($"User {UserID} not found.");
 
             UserModel reqUser = await _context.Users.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Username == reqUsername) ?? throw new NotFoundException($"User {reqUsername} not found.");
