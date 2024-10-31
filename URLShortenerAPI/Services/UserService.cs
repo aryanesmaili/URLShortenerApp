@@ -379,6 +379,63 @@ namespace URLShortenerAPI.Services
         }
 
         /// <summary>
+        /// Initiates a Email Reset Process and sends an Auth code to user.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns></returns>
+        public async Task ResetEmailAsync(int userID, string reqUsername)
+        {
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
+            user.ResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
+            string Subject = "Pexita Authentication code";
+            string Body = $"Your Authentication Code Is {user.ResetCode}";
+
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+
+            await _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
+        }
+
+        /// <summary>
+        /// Checks if the code entered by user is correct.
+        /// </summary>
+        /// <param name="code">The Code to be checked.</param>
+        /// <param name="userID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async Task CheckEmailResetCodeAsync(string code, int userID, string reqUsername)
+        {
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
+
+            var resetCode = user.ResetCode;
+
+            if (resetCode != code)
+                throw new ArgumentException("Code is Wrong.");
+            user.ResetCode = null;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Sets the new email for the user.
+        /// </summary>
+        /// <param name="newEmail">The new Email to be set</param>
+        /// <param name="userID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns>a <see cref="UserDTO"/> object containing the new info to be set.</returns>
+        public async Task<UserDTO> SetNewEmailAsync(string newEmail, int userID, string reqUsername)
+        {
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
+
+            user.Email = newEmail;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return UserModelToDTO(user);
+        }
+
+        /// <summary>
         /// begins a Change password procedure for the user.
         /// </summary>
         /// <param name="identifier">user's input that can be either email or username.</param>
@@ -415,9 +472,8 @@ namespace URLShortenerAPI.Services
         /// <summary>
         /// checks if the given code matches the one in Database.
         /// </summary>
-        /// <param name="userID">user whom we want to edit.</param>
         /// <param name="Code">the ResetCode. entered by user.</param>
-        /// <returns>a <see cref="UserInfoDTO"/> object containing tokens. the user is verified after this.</returns>
+        /// <param name="identifier">user's input that can be either email or username.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
         public async Task<UserLoginResponse> CheckResetCodeAsync(string identifier, string Code)

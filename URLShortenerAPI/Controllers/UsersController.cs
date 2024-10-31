@@ -68,7 +68,7 @@ namespace URLShortenerAPI.Controllers
             {
                 response = new()
                 { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-                return Unauthorized(response);
+                return BadRequest(response);
             }
             catch (Exception e)
             {
@@ -135,7 +135,7 @@ namespace URLShortenerAPI.Controllers
             {
                 response = new()
                 { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-                return Unauthorized(response);
+                return BadRequest(response);
             }
             catch (Exception e)
             {
@@ -381,6 +381,141 @@ namespace URLShortenerAPI.Controllers
             catch (ArgumentException e)
             {
                 response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (Exception e)
+            {
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpPost("ResetEmail/{id:int}")]
+        public async Task<IActionResult> ResetEmail(int id)
+        {
+            APIResponse<string> response;
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                await _userService.ResetEmailAsync(id, username!);
+                response = new()
+                { Success = true, Result = string.Empty };
+                return Ok(response);
+            }
+
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (NotFoundException e)
+            {
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (Exception e)
+            {
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpPost("CheckEmailResetCode/{id:int}")]
+        public async Task<IActionResult> CheckResetCode(int id, [FromBody] string code)
+        {
+            APIResponse<string> response;
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                await _userService.CheckEmailResetCodeAsync(code, id, username!);
+                response = new()
+                { Success = true, Result = string.Empty };
+                return Ok(response);
+            }
+
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (NotFoundException e)
+            {
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (Exception e)
+            {
+                var errorResponse = new DebugErrorResponse
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpPost("ChangeEmail/{id:int}")]
+        public async Task<IActionResult> ChangeEmail(int id, [FromBody] string newEmail)
+        {
+            APIResponse<UserDTO> response;
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            try
+            {
+                UserDTO result = await _userService.SetNewEmailAsync(newEmail, id, username!);
+                response = new()
+                { Success = true, Result = result };
+                return Ok(response);
+            }
+
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (NotFoundException e)
+            {
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
 

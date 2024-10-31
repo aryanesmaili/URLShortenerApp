@@ -18,6 +18,9 @@ namespace URLShortenerAPI.Services.Interfaces
         public Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername);
         public Task<string> TokenRefresher(string refreshToken);
         public Task<UserLoginResponse> CheckResetCodeAsync(string identifier, string Code);
+        public Task ResetEmailAsync(int userID, string reqUsername);
+        public Task CheckEmailResetCodeAsync(string code, int userID, string reqUsername);
+        public Task<UserDTO> SetNewEmailAsync(string newEmail, int userID, string reqUsername);
         public Task RevokeTokenAsync(string token);
         public bool IsUser(int id);
         public bool IsUser(string username);
