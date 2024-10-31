@@ -158,7 +158,7 @@
                                         <tr>
                                             <td class="url-cell"><a class="text-decoration-none" href="@item.LongURL">@item.LongURL</a></td>
                                             <td><a class="text-decoration-none" href="https://localhost:5261/@item.ShortCode">@item.ShortCode</a></td>
-                                            <td>@item.CreatedAt</td>
+                                            <td>@ConvertToPersianDateTime(@item.CreatedAt)</td>
                                             <td>
                                                 <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.ShortCode!)">
                                                     <Icon Name="IconName.Copy"></Icon>
@@ -393,15 +393,8 @@
             TopCountries = response.Result!.TopCountries ?? new();
             TopDevices = response.Result!.TopOSs ?? new();
             RecentURLs = response.Result!.MostRecentURLs ?? new();
-            TopClickedURLs[0] = new URLDTO()
-                {
-                    ClickCount = 15,
-                    LongURL = "https://github.com/theLunarxs/3524635748653243526435746857964567546879453643574685676792341352463574685796435465768",
-                    ShortCode = "jflvkmd",
-                    IsActive = true,
 
-                };
-            RecentURLs.Select(x => ConvertToPersianDateTime(x.CreatedAt));
+
             isLoading = false;
             StateHasChanged();
             await PrepareCharts();
@@ -442,18 +435,27 @@
         }
     }
 
-    static DateTime ConvertToPersianDateTime(DateTime utcDateTime)
+    static string ConvertToPersianDateTime(DateTime utcDateTime)
     {
+        // Iran is UTC +3:30
+        TimeSpan iranOffset = TimeSpan.FromHours(3).Add(TimeSpan.FromMinutes(30));
+
+        // Convert UTC to Iran's local time
+        DateTime iranLocalTime = utcDateTime + iranOffset;
+
+        // Create a PersianCalendar instance
         PersianCalendar persianCalendar = new PersianCalendar();
-        return new DateTime(
-            persianCalendar.GetYear(utcDateTime),
-            persianCalendar.GetMonth(utcDateTime),
-            persianCalendar.GetDayOfMonth(utcDateTime),
-            utcDateTime.Hour, // Keep the same hour from UTC
-            utcDateTime.Minute,
-            utcDateTime.Second,
-            persianCalendar // Specify the calendar
-        );
+
+        // Get the Persian date components
+        int persianYear = persianCalendar.GetYear(iranLocalTime);
+        int persianMonth = persianCalendar.GetMonth(iranLocalTime);
+        int persianDay = persianCalendar.GetDayOfMonth(iranLocalTime);
+
+        // Format the Persian date as a string
+        string persianDateString = $"{persianYear}/{persianMonth:D2}/{persianDay:D2} {iranLocalTime.Hour:D2}:{iranLocalTime.Minute:D2}";
+
+        return persianDateString;
     }
+
 
 }
