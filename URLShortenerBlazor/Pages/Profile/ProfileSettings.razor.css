@@ -1,0 +1,36 @@
+﻿body {
+}
+.card-header h5 {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-text.text-danger {
+    font-size: 0.85rem;
+}
+
+button[type="submit"] {
+    width: 100%;
+}
+
+/* Loading state */
+.window-loading {
+    position: absolute; /* Position loading div absolutely */
+    top: 0; /* Align to the top of the card body */
+    left: 0; /* Align to the left of the card body */
+    right: 0; /* Align to the right of the card body */
+    bottom: 0; /* Align to the bottom of the card body */
+    width: 100%; /* Fill the width */
+    height: 100%; /* Fill the height */
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+}
+.divider {
+    border: none; /* Remove default border */
+    height: 2px; /* Increased height for a denser look */
+    background-color: #999; /* Dark gray color for the divider */
+    /* or use #aaa for a slightly darker gray */
+    margin: 1.5rem 0; /* Margin for spacing */
+    border-radius: 2px; /* Rounded edges for the divider */
+}
