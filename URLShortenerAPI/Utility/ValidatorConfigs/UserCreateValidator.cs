@@ -44,9 +44,20 @@ namespace URLShortenerAPI.Responses.ValidatorConfigs
         public UserUpdateValidator(IUserService userService)
         {
             _userService = userService;
-            RuleFor(x => x.Name).MinimumLength(4).When(x => x.Name?.Length > 0);
 
-            RuleFor(x => x.Username).Must(x => !_userService.IsUser(x)).When(x => x.Username?.Length > 0);
+            RuleFor(x => x)
+                .Must(x => !string.IsNullOrWhiteSpace(x.Name) || !string.IsNullOrWhiteSpace(x.Username))
+                .WithMessage("At least one of Name or Username must be filled.");
+
+            RuleFor(x => x.Name)
+                .MinimumLength(4)
+                .When(x => !string.IsNullOrWhiteSpace(x.Name))
+                .WithMessage("Name must be at least 4 characters long.");
+
+            RuleFor(x => x.Username)
+                .Must(x => !_userService.IsUser(x))
+                .When(x => !string.IsNullOrWhiteSpace(x.Username))
+                .WithMessage("Username already taken.");
         }
     }
     public class UserChangeEmailValidator : AbstractValidator<ChangeEmailRequest>
