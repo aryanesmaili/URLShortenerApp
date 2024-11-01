@@ -42,6 +42,7 @@ namespace URLShortenerBlazor.Services
         {
             if (user == null)
                 return;
+            await _localStorage.SetItemAsync("authToken", user.JWToken); // Reassign the new token. 
             await _localStorage.SetItemAsync("user", user);
         }
 
