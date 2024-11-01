@@ -21,6 +21,7 @@ builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IProfileServices, ProfileServices>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<IProfileDashboardService, ProfileDashboardService>();
+builder.Services.AddTransient<IProfileSettingsService, ProfileSettingsService>();
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)

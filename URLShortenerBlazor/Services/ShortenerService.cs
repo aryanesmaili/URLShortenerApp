@@ -42,7 +42,6 @@ namespace URLShortenerBlazor.Services
             HttpResponseMessage response = await _authClient.SendAsync(req);
 
             APIResponse<URLShortenResponse>? responseContent;
-            string x = string.Empty;
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 responseContent = new() { ErrorType = ErrorType.NotAuthorizedException };
