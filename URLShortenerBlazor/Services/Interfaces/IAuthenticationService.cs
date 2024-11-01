@@ -12,5 +12,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public Task<int> GetUserIDAsync();
         public Task<string?> RefreshTokenAsync();
         public Task<UserDTO?> GetUserInfoAsync();
+        Task UpdateUserInfo(UserDTO user);
     }
 }

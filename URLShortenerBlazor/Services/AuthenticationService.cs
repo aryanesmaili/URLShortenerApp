@@ -38,6 +38,13 @@ namespace URLShortenerBlazor.Services
             return result;
         }
 
+        public async Task UpdateUserInfo(UserDTO user)
+        {
+            if (user == null)
+                return;
+            await _localStorage.SetItemAsync("user", user);
+        }
+
         public async Task LogOutAsync()
         {
             var client = _httpClientFactory.CreateClient("Auth");
