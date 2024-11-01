@@ -667,7 +667,6 @@ namespace URLShortenerAPI.Controllers
                 await _userUpdateValidator.ValidateAndThrowAsync(user);
                 UserDTO result = await _userService.UpdateUserInfoAsync(user, username!);
 
-                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
@@ -688,7 +687,7 @@ namespace URLShortenerAPI.Controllers
 
                 foreach (var error in e.Errors)
                 {
-                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                    errors.Add($"{error.PropertyName + ":"} {error.ErrorMessage}");
                 }
                 response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 

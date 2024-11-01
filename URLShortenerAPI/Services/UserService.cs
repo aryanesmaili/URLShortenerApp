@@ -5,6 +5,8 @@ using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;
+using URLShortenerAPI.Data.Entities.URL;
+using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
 using URLShortenerAPI.Utility.Exceptions;
@@ -606,7 +608,20 @@ namespace URLShortenerAPI.Services
         public async Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername)
         {
             UserModel user = await _authService.AuthorizeUserAccessAsync(newUserInfo.ID, requestingUsername);
-            UserModel temp = user;
+            UserModel temp = new()
+            {
+                ID = user.ID,
+                Name = user.Name,
+                Email = user.Email,
+                Username = user.Username,
+                PasswordHash = user.PasswordHash,
+                ResetCode = user.ResetCode,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt,
+                URLs = user.URLs != null ? new List<URLModel>(user.URLs) : null,
+                URLCategories = user.URLCategories != null ? new List<URLCategoryModel>(user.URLCategories) : null,
+                RefreshTokens = user.RefreshTokens != null ? new List<RefreshToken>(user.RefreshTokens) : null
+            };
 
             user = _mapper.Map(newUserInfo, user);
             _context.Update(user);
