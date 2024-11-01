@@ -59,8 +59,6 @@ namespace SharedDataModels.DTOs
     {
         public int ID { get; set; }
         public string? Name { get; set; }
-        [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
-        public string? Email { get; set; }
         public string? Username { get; set; }
     }
 
@@ -92,6 +90,12 @@ namespace SharedDataModels.DTOs
         [Length(5, 64, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
         [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
         public required string ConfirmPassword { get; set; }
+    }
+    public class ChangeEmailRequest
+    {
+        public string Code { get; set; } = string.Empty;
+        [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
+        public string NewEmail { get; set; } = string.Empty;
     }
     public class RefreshTokenDTO
     {
