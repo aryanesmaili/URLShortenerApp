@@ -613,7 +613,7 @@ namespace URLShortenerAPI.Services
             await _context.SaveChangesAsync();
 
             UserDTO userDTO = UserModelToDTO(user);
-            if (temp.Username != newUserInfo.Username || temp.Email != newUserInfo.Email)
+            if (temp.Username != newUserInfo.Username)
             {
                 // username or email has changed, thus the user needs new tokens.
                 string jwt = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
