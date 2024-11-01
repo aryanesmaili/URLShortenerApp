@@ -34,41 +34,97 @@ namespace SharedDataModels.DTOs
 
     public class UserCreateDTO
     {
+        private string? _name;
+
         [Required(ErrorMessage = "Full Name is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Full Name should have at least 5 Characters and at most 64 Characters.")]
-        public required string Name { get; set; }
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Full Name should have at least 5 Characters and at most 64 Characters.")]
+        public required string Name
+        {
+            get => _name ?? string.Empty;
+            set => _name = value?.Trim();
+        }
+
+        private string? _email;
 
         [Required(ErrorMessage = "Email is Required.")]
         [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
-        public required string Email { get; set; }
+        public required string Email
+        {
+            get => _email ?? string.Empty;
+            set => _email = value?.Trim();
+        }
+
+        private string? _username;
 
         [Required(ErrorMessage = "Username is Required.")]
-        [Length(5, 32, ErrorMessage = "Your Username should have at least 5 Characters and at most 32 Characters.")]
-        public required string Username { get; set; }
+        [StringLength(32, MinimumLength = 5, ErrorMessage = "Your Username should have at least 5 Characters and at most 32 Characters.")]
+        public required string Username
+        {
+            get => _username ?? string.Empty;
+            set => _username = value?.Trim();
+        }
+
+        private string? _password;
 
         [Required(ErrorMessage = "Password is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
-        public required string Password { get; set; }
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
+        public required string Password
+        {
+            get => _password ?? string.Empty;
+            set => _password = value?.Trim();
+        }
+
+        private string? _confirmPassword;
 
         [Required(ErrorMessage = "Confirm Password is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
         [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
-        public required string ConfirmPassword { get; set; }
+        public required string ConfirmPassword
+        {
+            get => _confirmPassword ?? string.Empty;
+            set => _confirmPassword = value?.Trim();
+        }
     }
+
     public class UserUpdateDTO
     {
         public int ID { get; set; }
-        public string? Name { get; set; }
-        public string? Username { get; set; }
+
+        private string? _name;
+        public string? Name
+        {
+            get => _name;
+            set => _name = value?.Trim();
+        }
+
+        private string? _username;
+        public string? Username
+        {
+            get => _username;
+            set => _username = value?.Trim();
+        }
     }
 
     public class UserLoginDTO
     {
+        private string? _identifier;
+
         [Required(ErrorMessage = "Email or Username is Required.")]
-        public string? Identifier { get; set; } // could be email or Username.
+        public string? Identifier
+        {
+            get => _identifier;
+            set => _identifier = value?.Trim();
+        }
+
+        private string? _password;
+
         [Required(ErrorMessage = "Password is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
-        public string? Password { get; set; }
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
+        public string? Password
+        {
+            get => _password;
+            set => _password = value?.Trim();
+        }
     }
 
     public class UserLoginResponse
@@ -82,20 +138,46 @@ namespace SharedDataModels.DTOs
         [Required(ErrorMessage = "A valid UserInfo is required.")]
         public required UserDTO UserInfo { get; set; }
 
+        private string? _newPassword;
+
         [Required(ErrorMessage = "Password is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
-        public required string NewPassword { get; set; }
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
+        public required string NewPassword
+        {
+            get => _newPassword ?? string.Empty;
+            set => _newPassword = value?.Trim();
+        }
+
+        private string? _confirmPassword;
 
         [Required(ErrorMessage = "Confirm Password is Required.")]
-        [Length(5, 64, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
-        [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
-        public required string ConfirmPassword { get; set; }
+        [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
+        [Compare("NewPassword", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
+        public required string ConfirmPassword
+        {
+            get => _confirmPassword ?? string.Empty;
+            set => _confirmPassword = value?.Trim();
+        }
     }
+
     public class ChangeEmailRequest
     {
-        public string Code { get; set; } = string.Empty;
+        private string? _code;
+
+        public string Code
+        {
+            get => _code ?? string.Empty;
+            set => _code = value?.Trim();
+        }
+
+        private string? _email;
+
         [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
-        public string NewEmail { get; set; } = string.Empty;
+        public string NewEmail
+        {
+            get => _email ?? string.Empty; 
+            set => _email = value?.Trim();
+        }
     }
     public class RefreshTokenDTO
     {
