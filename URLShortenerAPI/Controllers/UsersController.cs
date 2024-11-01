@@ -19,17 +19,24 @@ namespace URLShortenerAPI.Controllers
         private readonly IValidator<UserCreateDTO> _userValidator;
         private readonly IValidator<UserUpdateDTO> _userUpdateValidator;
         private readonly IValidator<UserLoginDTO> _userLoginValidator;
+        private readonly IValidator<ChangeEmailRequest> _emailValidator;
+        private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
 
         public UsersController(IUserService userService,
             IValidator<UserCreateDTO> userValidator,
             IValidator<UserLoginDTO> userLoginValidator,
-            IValidator<UserUpdateDTO> userUpdateValidator)
+            IValidator<UserUpdateDTO> userUpdateValidator,
+            IValidator<ChangeEmailRequest> emailValidator,
+            IValidator<ChangePasswordRequest> changePasswordValidator)
         {
             _userService = userService;
             _userValidator = userValidator;
             _userLoginValidator = userLoginValidator;
             _userUpdateValidator = userUpdateValidator;
+            _emailValidator = emailValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
+
         [Authorize("AllUsers")]
         [HttpGet("Profile/{userId}")]
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -366,6 +373,7 @@ namespace URLShortenerAPI.Controllers
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
+                await _changePasswordValidator.ValidateAndThrowAsync(reqInfo);
                 UserDTO result = await _userService.ChangePasswordAsync(reqInfo, username!);
 
                 Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
@@ -373,6 +381,20 @@ namespace URLShortenerAPI.Controllers
                 { Result = result, Success = true };
                 return Ok(response);
             }
+
+            catch (ValidationException e)
+            {
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+
+                return BadRequest(response);
+            }
+
             catch (NotFoundException e)
             {
                 response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
@@ -443,13 +465,15 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("CheckEmailResetCode/{id:int}")]
-        public async Task<IActionResult> CheckResetCode(int id, [FromBody] string code)
+        public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] ChangeEmailRequest reqInfo)
         {
             APIResponse<string> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                await _userService.CheckEmailResetCodeAsync(code, id, username!);
+                ArgumentException.ThrowIfNullOrEmpty(reqInfo.Code);
+
+                await _userService.CheckEmailResetCodeAsync(reqInfo.Code, id, username!);
                 response = new()
                 { Success = true, Result = string.Empty };
                 return Ok(response);
@@ -488,18 +512,31 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ChangeEmail/{id:int}")]
-        public async Task<IActionResult> ChangeEmail(int id, [FromBody] string newEmail)
+        public async Task<IActionResult> ChangeEmail(int id, [FromBody] ChangeEmailRequest reqInfo)
         {
             APIResponse<UserDTO> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                UserDTO result = await _userService.SetNewEmailAsync(newEmail, id, username!);
+                await _emailValidator.ValidateAndThrowAsync(reqInfo);
+
+                UserDTO result = await _userService.SetNewEmailAsync(reqInfo.NewEmail, id, username!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
             }
+            catch (ValidationException e)
+            {
+                List<string> errors = [];
 
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+
+                return BadRequest(response);
+            }
             catch (ArgumentException e)
             {
                 response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
