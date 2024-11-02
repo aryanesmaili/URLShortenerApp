@@ -30,8 +30,8 @@ builder.Services
 
 builder.Services.AddBlazoredToast();
 
-builder.Services.AddScoped<HTTTPAuthAdder>();
+builder.Services.AddScoped<HTTPAuthAdder>();
 builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("http://localhost:5261"))
-    .AddHttpMessageHandler<HTTTPAuthAdder>();
+    .AddHttpMessageHandler<HTTPAuthAdder>();
 
 await builder.Build().RunAsync();

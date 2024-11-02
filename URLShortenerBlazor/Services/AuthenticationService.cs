@@ -1,7 +1,10 @@
 ﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
@@ -11,12 +14,19 @@ namespace URLShortenerBlazor.Services
         private readonly ILocalStorageService _localStorage;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         public AuthenticationService(ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, HttpClient httpClient)
         {
             _localStorage = localStorage;
             _httpClientFactory = httpClientFactory;
             _httpClient = httpClient;
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,  // Make property name matching case-insensitive
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
+            };
         }
 
         public async Task<bool> IsLoggedInAsync()
@@ -27,9 +37,14 @@ namespace URLShortenerBlazor.Services
 
         public async Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo)
         {
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Users/Login", loginInfo);
+            HttpRequestMessage req = new(HttpMethod.Post, "/api/Users/Login")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(loginInfo), Encoding.UTF8, "application/json")
+            };
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage response = await _httpClient.SendAsync(req);
 
-            APIResponse<UserDTO>? result = await response.Content.ReadFromJsonAsync<APIResponse<UserDTO>>();
+            APIResponse<UserDTO>? result = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
             if (result!.Success)
             {
                 await _localStorage.SetItemAsync("authToken", result!.Result!.JWToken!);
@@ -49,7 +64,7 @@ namespace URLShortenerBlazor.Services
         public async Task LogOutAsync()
         {
             var client = _httpClientFactory.CreateClient("Auth");
-            // Call the Logout endpoint: no content is needed as it will read the refreshToken from the cookies
+
             await client.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
 
             await _localStorage.RemoveItemAsync("authToken"); // Remove local token 
@@ -78,11 +93,12 @@ namespace URLShortenerBlazor.Services
         public async Task<string?> RefreshTokenAsync()
         {
             // Make a request to your refresh token endpoint
-            var response = await _httpClient.PostAsync("api/Users/RefreshToken", null); // Adjust endpoint as necessary
-
+            HttpRequestMessage req = new(HttpMethod.Post, "api/Users/RefreshToken");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage response = await _httpClient.SendAsync(req);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<APIResponse<string>>(); // Assume TokenResponse has a property for JWT
+                APIResponse<string>? result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
                 if (result != null && !string.IsNullOrEmpty(result.Result))
                 {
                     // Store the new JWT token in local storage

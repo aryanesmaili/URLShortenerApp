@@ -198,8 +198,8 @@ namespace URLShortenerAPI.Controllers
                 CookieOptions? cookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
-                    Secure = true,   // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Secure = false,   // Use HTTPS //TODO: fix this in production
+                    SameSite = SameSiteMode.Lax, // Prevents CSRF attacks
                     Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
@@ -621,15 +621,15 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             APIResponse<string> response;
-            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshTokenJson))
             {
                 return BadRequest("No refresh token found in cookies.");
             }
             try
             {
-                string result = await _userService.TokenRefresher(refreshToken!);
+                var refrehToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
+                string result = await _userService.TokenRefresher(refrehToken!.Token);
 
-                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 response = new()
                 { Result = result, Success = true };
                 return Ok(response);

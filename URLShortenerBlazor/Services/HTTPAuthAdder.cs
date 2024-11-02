@@ -6,13 +6,13 @@ using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class HTTTPAuthAdder : DelegatingHandler
+    internal class HTTPAuthAdder : DelegatingHandler
     {
         private readonly ILocalStorageService _localStorage;
         private readonly HttpClient _httpClient;
         private readonly IAuthenticationService _authenticationService;
 
-        public HTTTPAuthAdder(ILocalStorageService localStorage, HttpClient httpClient, IAuthenticationService authenticationService)
+        public HTTPAuthAdder(ILocalStorageService localStorage, HttpClient httpClient, IAuthenticationService authenticationService)
         {
             _localStorage = localStorage;
             _httpClient = httpClient;
