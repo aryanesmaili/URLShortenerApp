@@ -14,6 +14,7 @@ namespace URLShortenerAPI.Data.Entities.URL
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
         public int ClickCount { get; set; }
+        public bool IsMonetized { get; set; }
 
         public int UserID { get; set; }
         public required UserModel User { get; set; }

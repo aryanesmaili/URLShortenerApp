@@ -333,11 +333,11 @@ namespace URLShortenerAPI.Services
         public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
         {
             UserModel? user = null;
-            if (info.Identifier.IsEmail())
+            if (info.Identifier!.IsEmail())
 
-                user = await _context.Users.FirstOrDefaultAsync(x => x.Email == info.Identifier) ?? throw new NotFoundException($"No user with email {info.Identifier} exists.");
+                user = await _context.Users.FirstOrDefaultAsync(x => x.Email == info.Identifier) ?? throw new NotFoundException($"Username or Password is wrong");
             else
-                user = await _context.Users.FirstOrDefaultAsync(u => u.Username == info.Identifier) ?? throw new NotFoundException($"No user with username {info.Identifier} exists.");
+                user = await _context.Users.FirstOrDefaultAsync(u => u.Username == info.Identifier) ?? throw new NotFoundException($"Username or Password is wrong");
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(info.Password, user?.PasswordHash))
                 throw new ArgumentException("Username or Password is not correct");
@@ -389,9 +389,9 @@ namespace URLShortenerAPI.Services
         public async Task ResetEmailAsync(int userID, string reqUsername)
         {
             UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
-            user.ResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
+            user.EmailResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
             string Subject = "Pexita Authentication code";
-            string Body = $"Your Authentication Code Is {user.ResetCode}";
+            string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
 
             _context.Update(user);
             await _context.SaveChangesAsync();
@@ -411,11 +411,11 @@ namespace URLShortenerAPI.Services
         {
             UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
 
-            var resetCode = user.ResetCode;
+            var resetCode = user.EmailResetCode;
 
             if (resetCode != code)
                 throw new ArgumentException("Code is Wrong.");
-            user.ResetCode = null;
+            user.EmailResetCode = null;
             _context.Update(user);
             await _context.SaveChangesAsync();
         }
@@ -444,31 +444,30 @@ namespace URLShortenerAPI.Services
         /// <returns>a <see cref="UserDTO"/> object containing Info. </returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<UserDTO> ResetPasswordAsync(string identifier)
+        public async Task ResetPasswordAsync(string identifier)
         {
             if (string.IsNullOrEmpty(identifier))
-                throw new ArgumentNullException(identifier);
+                throw new ArgumentNullException("Invalid Input.");
 
             UserModel? user;
 
             if (identifier.IsEmail()) // if the user has entered an email:
                 user = await _context.Users.FirstOrDefaultAsync(u => u.Email == identifier); // we search by email
+
             else // if it's not an email then the user has entered their username
                 user = await _context.Users.FirstOrDefaultAsync(user => user.Username == identifier); // we search by username
 
             if (user == null) // if no user exists with that email/username:
                 throw new NotFoundException($"User {identifier} does not exist.");
 
-            user.ResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
+            user.PasswordResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
             string Subject = "Pexita Authentication code";
-            string Body = $"Your Authentication Code Is {user.ResetCode}";
+            string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
 
             _context.Update(user);
             await _context.SaveChangesAsync();
 
             await _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
-
-            return UserModelToDTO(user);
         }
 
         /// <summary>
@@ -490,7 +489,7 @@ namespace URLShortenerAPI.Services
             else // if it's not an email then the user has entered their username
                 userRec = await _context.Users.FirstOrDefaultAsync(user => user.Username == identifier); // we search by username
 
-            string ResetCode = userRec!.ResetCode ?? throw new ArgumentNullException("ResetCode");
+            string ResetCode = userRec!.PasswordResetCode ?? throw new ArgumentNullException("ResetCode");
 
             if (ResetCode != Code)
                 throw new ArgumentException("Code is Wrong.");
@@ -529,8 +528,10 @@ namespace URLShortenerAPI.Services
         /// <exception cref="ArgumentException"></exception>
         public async Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername)
         {
+
             if (reqInfo.NewPassword.IsNullOrEmpty() || reqInfo.ConfirmPassword.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(reqInfo.NewPassword));
+
             else if (reqInfo.NewPassword != reqInfo.ConfirmPassword)
                 throw new ArgumentException($"Entered values {reqInfo.NewPassword} and {reqInfo.ConfirmPassword} Do not match.");
 
@@ -540,7 +541,7 @@ namespace URLShortenerAPI.Services
             if (hashedpassword == user.PasswordHash)
                 throw new ArgumentException("input password is no different from the current password.");
             user.PasswordHash = hashedpassword;
-            user.ResetCode = null;
+            user.PasswordResetCode = null;
             _context.Update(user);
             await _context.SaveChangesAsync();
 
@@ -615,7 +616,7 @@ namespace URLShortenerAPI.Services
                 Email = user.Email,
                 Username = user.Username,
                 PasswordHash = user.PasswordHash,
-                ResetCode = user.ResetCode,
+                PasswordResetCode = user.PasswordResetCode,
                 Role = user.Role,
                 CreatedAt = user.CreatedAt,
                 URLs = user.URLs != null ? new List<URLModel>(user.URLs) : null,

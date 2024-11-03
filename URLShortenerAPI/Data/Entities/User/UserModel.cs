@@ -11,7 +11,8 @@ namespace URLShortenerAPI.Data.Entities.User
         public required string Email { get; set; }
         public required string Username { get; set; }
         public required string PasswordHash { get; set; }
-        public string? ResetCode { get; set; }
+        public string? PasswordResetCode { get; set; }
+        public string? EmailResetCode { get; set; }
         public UserType Role { get; set; }
         public DateTime CreatedAt { get; set; }
 
