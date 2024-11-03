@@ -28,7 +28,11 @@ namespace URLShortenerBlazor.Services
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
             };
         }
-
+        public async Task<string?> GetTokenAsync()
+        {
+            var authToken = await _localStorage.GetItemAsync<string>("authToken");
+            return authToken;
+        }
         public async Task<bool> IsLoggedInAsync()
         {
             var authToken = await _localStorage.GetItemAsync<string>("authToken");
