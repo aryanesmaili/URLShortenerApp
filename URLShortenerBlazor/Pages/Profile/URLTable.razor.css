@@ -15,7 +15,13 @@
     border: none; /* No border for header */
     padding: 15px;
 }
-
+tbody {
+    border-radius:15px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: rgba(211, 211, 211, 0.4);
+    border-top: none;
+}
 .table tbody tr {
     background-color: #fff; /* Row background color */
 }
