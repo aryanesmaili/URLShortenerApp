@@ -6,8 +6,8 @@
     <div class="container">
         <h1 class="mb-5">Welcome to Pexita</h1>
         <div class="input-container">
-            <InputText @bind-Value="input.url" type="text" placeholder="Long URL" aria-label="URL input" />
-            <button type="submit" @onclick="HandleClick" class="btn btn-primary">Shorten Now!</button>
+            <InputText @bind-Value="input.url" class="mt-3" type="text" placeholder="Long URL" aria-label="URL input" />
+            <button type="submit" @onclick="HandleClick" class="btn btn-primary mt-3">Shorten Now!</button>
         </div>
     </div>
 </header>
@@ -107,7 +107,7 @@
     </div>
 </section>
 
-<section class="cta text-center p-5 outer mt-5">
+<section class="cta text-center p-5 outer my-5">
     <h2 class="title pb-3">Ready to get started?</h2>
     <a href="/URLShortener" class="btn btn-primary">Start Shortening Your URLs Now!</a>
 </section>
