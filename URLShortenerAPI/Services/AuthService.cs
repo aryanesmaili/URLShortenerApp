@@ -143,7 +143,7 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="length">length of password.</param>
         /// <returns></returns>
-        public string GenerateRandomPassword(int length)
+        public string GenerateRandomPassword(int length = 8)
         {
             Random random = new();
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
