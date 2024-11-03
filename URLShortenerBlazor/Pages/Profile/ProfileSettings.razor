@@ -5,8 +5,8 @@
 <div class="mt-4">
     <div class="row">
 
+        <!-- Error Section -->
         <div class="col-md-12">
-            <!-- Error Section -->
             @if (errorMessages?.Count != 0 && errorMessages is not null)
             {
                 <div class="alert alert-danger mt-1 mb-2 py-1">
@@ -27,17 +27,17 @@
                     <h5>Update Profile</h5>
                 </div>
                 <div class="card-body">
-                    @if (userUpdate != null)
+                    @if (userUpdateInfo != null)
                     {
-                        <EditForm Model="userUpdate" id="profileUpdateForm" OnValidSubmit="SendNewUserData">
+                        <EditForm Model="userUpdateInfo" id="profileUpdateForm" OnValidSubmit="SendNewUserData">
                             <DataAnnotationsValidator />
                             <div class="mb-3">
                                 <label for="name" class="form-label">Full Name</label>
-                                <InputText @bind-Value="@userUpdate.Name" type="text" class="form-control" id="name" name="name" placeholder="New Full Name (Optional)" />
+                                <InputText @bind-Value="@userUpdateInfo.Name" type="text" class="form-control" id="name" name="name" placeholder="New Full Name (Optional)" />
                             </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <InputText @bind-Value="@userUpdate.Username" type="text" class="form-control" id="username" name="username" placeholder="Enter Your New Username (Optional)" />
+                                <InputText @bind-Value="@userUpdateInfo.Username" type="text" class="form-control" id="username" name="username" placeholder="Enter Your New Username (Optional)" />
                             </div>
                             <button type="submit" class="btn btn-primary">Save Changes</button>
                         </EditForm>
@@ -49,6 +49,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Email Change Section -->
         <div class="col-md-6">
             <div class="card mb-4">
@@ -56,30 +57,29 @@
                     <h5>Change Email</h5>
                 </div>
                 <div class="card-body">
-                    @if (ChangeEmailRequest != null)
+                    @if (ChangeEmailRequestInfo != null)
                     {
-                        <EditForm Model="ChangeEmailRequest" id="emailChangeForm" OnValidSubmit="SendChangeEmail">
+                        <EditForm Model="ChangeEmailRequestInfo" id="emailChangeForm" OnValidSubmit="SendChangeEmail">
                             <DataAnnotationsValidator />
 
-                            <div class="mt-3">
-                                <button class="btn btn-primary" type="button" @onclick="RequestEmailChange">Request a Email Change</button>
+                            <div style="@(isEmailChangeRequestVisible ? "display:inline;": "display:none;")">
+                                <div class="d-flex justify-content-center">
+                                    <button class="btn btn-primary" type="button" @onclick="RequestEmailChange">Request a Email Change</button>
+                                </div>
                             </div>
 
-                            <div style="@(isCodeFieldVisible ? "display:inline;": "display:none;")">
-                                <hr class="divider mb-3" />
-
+                            <div style="@(isEmailCodeFieldVisible ? "display:inline;": "display:none;")">
                                 <div class="mb-3">
                                     <label for="Code" class="form-label">Enter Code Sent to Your Email</label>
-                                    <InputText @bind-Value="ChangeEmailRequest.Code" type="text" class="form-control" id="Code" name="Code" placeholder="Enter the code sent to your email" />
+                                    <InputText @bind-Value="EmailVerificationCode!.Code" type="text" class="form-control" id="Code" name="Code" placeholder="Code" />
                                 </div>
-                                <button class="btn btn-primary" type="button" @onclick="SendResetCode">Submit Code</button>
+                                <button class="btn btn-primary" type="button" @onclick="SendEmailVerificationCode">Submit Code</button>
                             </div>
 
                             <div style="@(isNewEmailFieldVisible ? "display:inline;" : "display:none;")">
-                                <hr class="divider mb-3" />
                                 <div class="mb-3">
                                     <label for="email" class="form-label">New Email</label>
-                                    <InputText @bind-Value="ChangeEmailRequest.NewEmail" type="text" class="form-control" id="email" name="email" placeholder="Enter new email" />
+                                    <InputText @bind-Value="ChangeEmailRequestInfo.NewEmail" type="text" class="form-control" id="email" name="email" placeholder="Enter new email" />
                                     <small class="form-text text-danger">* Must be a valid email address and not in use.</small>
                                     <DataAnnotationsValidator />
                                 </div>
@@ -104,23 +104,41 @@
                     <h5>Change Password</h5>
                 </div>
                 <div class="card-body">
-                    @if (passwordRequest != null)
+                    @if (changePasswordRequestInfo != null)
                     {
-                        <EditForm Model="passwordRequest" id="passwordChangeForm">
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">New Password</label>
-                                <InputText @bind-Value="passwordRequest.NewPassword" type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Enter new password" />
-                                <small class="form-text text-danger">* 5-64 characters</small>
-                                <ValidationMessage For="() => passwordRequest.NewPassword" />
-                            </div>
-                            <div class="mb-3">
+                        <EditForm Model="changePasswordRequestInfo" OnValidSubmit="SendPasswordChangeRequest" id="passwordChangeForm">
+                            <DataAnnotationsValidator />
 
-                                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                <InputText @bind-Value="passwordRequest.ConfirmPassword" type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" />
-                                <small class="form-text text-danger">* Must match new password</small>
-                                <ValidationMessage For="() => passwordRequest.ConfirmPassword" />
+                            <div style="@(isPasswordChangeRequestVisible ? "display:inline;": "display:none;")">
+                                <div class=" d-flex justify-content-center">
+                                    <button class="btn btn-primary" type="button" @onclick="RequestPasswordChange">Request a Passsword Change</button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-warning">Change Password</button>
+
+                            <div style="@(isPasswordCodeFieldVisible ? "display:inline;": "display:none;")">
+
+                                <div class="mb-3">
+                                    <label for="Code" class="form-label">Enter Code Sent to Your Email</label>
+                                    <InputText @bind-Value="PasswordVerificationCode!.Code" type="text" class="form-control" id="Code" name="Code" placeholder="Code" />
+                                </div>
+                                <button class="btn btn-primary" type="button" @onclick="SendPasswordVerificationCode">Submit Code</button>
+                            </div>
+
+                            <div style="@(isNewPasswordFieldVisible ? "display:inline;": "display:none;")">
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <InputText @bind-Value="changePasswordRequestInfo.NewPassword" type="password" class="form-control" id="newPassword" name="newPassword" placeholder="new password" />
+                                    <small class="form-text text-danger">* 5-64 characters</small>
+                                    <ValidationMessage For="() => changePasswordRequestInfo.NewPassword" />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <InputText @bind-Value="changePasswordRequestInfo.ConfirmPassword" type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" />
+                                    <small class="form-text text-danger">* Must match new password</small>
+                                    <ValidationMessage For="() => changePasswordRequestInfo.ConfirmPassword" />
+                                </div>
+                                <button type="submit" class="btn btn-warning">Change Password</button>
+                            </div>
                         </EditForm>
                     }
                     else
@@ -135,20 +153,31 @@
 </div>
 
 @code {
-    UserUpdateDTO? userUpdate;
-    ChangePasswordRequest? passwordRequest;
-    ChangeEmailRequest? ChangeEmailRequest;
+    UserUpdateDTO? userUpdateInfo;
+    ChangePasswordRequest? changePasswordRequestInfo;
+    ChangeEmailRequest? ChangeEmailRequestInfo;
+    CheckVerificationCode? PasswordVerificationCode;
+    CheckVerificationCode? EmailVerificationCode;
     private int userID;
+
     private List<string> errorMessages = new();
-    private bool isCodeFieldVisible = false;
+
+    private bool isEmailChangeRequestVisible = true;
+    private bool isEmailCodeFieldVisible = false;
     private bool isNewEmailFieldVisible = false;
+
+    private bool isPasswordChangeRequestVisible = true;
+    private bool isPasswordCodeFieldVisible = false;
+    private bool isNewPasswordFieldVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
+        EmailVerificationCode = new();
+        PasswordVerificationCode = new();
         userID = await AuthService.GetUserIDAsync();
-        userUpdate = new() { ID = userID };
-        ChangeEmailRequest = new();
-        passwordRequest = new()
+        userUpdateInfo = new() { ID = userID };
+        ChangeEmailRequestInfo = new();
+        changePasswordRequestInfo = new()
             {
                 NewPassword = string.Empty,
                 ConfirmPassword = string.Empty,
@@ -162,10 +191,13 @@
     {
         try
         {
-            if (string.IsNullOrEmpty(userUpdate?.Username?.Trim()) && string.IsNullOrEmpty(userUpdate?.Name?.Trim()))
+            if (string.IsNullOrEmpty(userUpdateInfo?.Username?.Trim()) && string.IsNullOrEmpty(userUpdateInfo?.Name?.Trim()))
+            {
+                errorMessages.Clear();
                 return;
+            }
 
-            APIResponse<UserDTO> response = await SettingsService.ChangeUserInfo(userUpdate!);
+            APIResponse<UserDTO> response = await SettingsService.ChangeUserInfo(userUpdateInfo!);
 
             if (!response.Success)
             {
@@ -178,11 +210,98 @@
             }
             await AuthService.UpdateUserInfo(response.Result!);
             ToastClient.ShowSuccess("User Data Updated Succesfully.", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
-            StateHasChanged();
+            errorMessages.Clear();
+            userUpdateInfo.Name = string.Empty;
+            userUpdateInfo.Username = string.Empty;
         }
         catch (Exception e)
         {
             errorMessages = new() { e.Message };
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task RequestPasswordChange()
+    {
+        try
+        {
+            string identifier = (await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.")).Email;
+            APIResponse<string> response = await SettingsService.RequestChangePassword(identifier);
+            if (!response.Success)
+            {
+                errorMessages = new() { response.ErrorMessage };
+                return;
+            }
+            ManagePasswordVisibility(RequestButtonVisible: !response.Success, CodeFieldVisible: response.Success); // set the visibility of Ui Elements.
+            errorMessages.Clear();
+        }
+        catch (Exception e)
+        {
+            errorMessages = new() { e.Message };
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task SendPasswordVerificationCode()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(PasswordVerificationCode!.Code))
+                return;
+            PasswordVerificationCode.Identifier = (await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.")).Username;
+            APIResponse<UserDTO> response = await SettingsService.SendPasswordVerificationCode(PasswordVerificationCode);
+            if (!response.Success)
+            {
+                errorMessages = new() { response.ErrorMessage };
+                return;
+            }
+            ManagePasswordVisibility(CodeFieldVisible: !response.Success, NewPasswordVisible: response.Success); // set the visibility of Ui Elements.
+            errorMessages.Clear();
+            PasswordVerificationCode.Identifier = string.Empty;
+            PasswordVerificationCode.Code = string.Empty;
+        }
+        catch (Exception e)
+        {
+            errorMessages = new() { e.Message };
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task SendPasswordChangeRequest()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(changePasswordRequestInfo!.NewPassword) || string.IsNullOrEmpty(changePasswordRequestInfo.ConfirmPassword))
+                return;
+            changePasswordRequestInfo.UserInfo = await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.");
+            APIResponse<UserDTO> response = await SettingsService.SendChangePassowrdRequest(changePasswordRequestInfo);
+            if (!response.Success)
+            {
+                errorMessages = new() { response.ErrorMessage };
+                return;
+            }
+            ToastClient.ShowSuccess("Password Updated Succesfully.", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
+            ManagePasswordVisibility(RequestButtonVisible: response.Success, NewPasswordVisible: !response.Success); // set the visibility of Ui Elements.
+            errorMessages.Clear();
+            changePasswordRequestInfo.NewPassword = string.Empty;
+            changePasswordRequestInfo.ConfirmPassword = string.Empty;
+        }
+        catch (Exception e)
+        {
+            errorMessages = new() { e.Message };
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
@@ -196,33 +315,41 @@
                 errorMessages = new() { res.ErrorMessage };
                 return;
             }
-            isCodeFieldVisible = true;
-            StateHasChanged();
+            ManageEmailVisibility(RequestButtonVisible: !res.Success, CodeFieldVisible: res.Success); // set the visibility of Ui Elements.
+            errorMessages.Clear();
         }
         catch (Exception e)
         {
             errorMessages = new() { e.Message };
         }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
-    private async Task SendResetCode()
+    private async Task SendEmailVerificationCode()
     {
         try
         {
-            if (string.IsNullOrEmpty(ChangeEmailRequest!.Code))
+            if (string.IsNullOrEmpty(EmailVerificationCode!.Code))
                 return;
-            APIResponse<string> res = await SettingsService.SendEmailChangeResetCode(userID, ChangeEmailRequest!);
+            APIResponse<string> res = await SettingsService.SendEmailVerificationCode(userID, EmailVerificationCode!);
             if (!res.Success)
             {
                 errorMessages = new() { res.ErrorMessage };
                 return;
             }
-            isNewEmailFieldVisible = true;
-            StateHasChanged();
+            ManageEmailVisibility(CodeFieldVisible: !res.Success, NewEmailVisible: res.Success);
+            errorMessages.Clear();
         }
         catch (Exception e)
         {
             errorMessages = new() { e.Message };
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
@@ -230,10 +357,10 @@
     {
         try
         {
-            if (string.IsNullOrEmpty(ChangeEmailRequest!.NewEmail))
+            if (string.IsNullOrEmpty(ChangeEmailRequestInfo!.NewEmail))
                 return;
 
-            APIResponse<UserDTO> response = await SettingsService.SendChangeEmailRequest(userID, ChangeEmailRequest);
+            APIResponse<UserDTO> response = await SettingsService.SendChangeEmailRequest(userID, ChangeEmailRequestInfo);
 
             if (!response.Success)
             {
@@ -246,11 +373,32 @@
             }
             await AuthService.UpdateUserInfo(response.Result!);
             ToastClient.ShowSuccess("Email Updated Succesfully.", settings => settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
-            StateHasChanged();
+            ManageEmailVisibility(RequestButtonVisible: response.Success, NewEmailVisible: !response.Success);
+            errorMessages.Clear();
+            ChangeEmailRequestInfo.NewEmail = string.Empty;
         }
         catch (Exception e)
         {
             errorMessages = new() { e.Message };
         }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+
+    private void ManagePasswordVisibility(bool RequestButtonVisible = false, bool CodeFieldVisible = false, bool NewPasswordVisible = false)
+    {
+        isPasswordChangeRequestVisible = RequestButtonVisible;
+        isPasswordCodeFieldVisible = CodeFieldVisible;
+        isNewPasswordFieldVisible = NewPasswordVisible;
+    }
+
+    private void ManageEmailVisibility(bool RequestButtonVisible = false, bool CodeFieldVisible = false, bool NewEmailVisible = false)
+    {
+        isEmailChangeRequestVisible = RequestButtonVisible;
+        isEmailCodeFieldVisible = CodeFieldVisible;
+        isNewEmailFieldVisible = NewEmailVisible;
     }
 }

@@ -5,10 +5,12 @@ namespace URLShortenerBlazor.Services.Interfaces
 {
     public interface IProfileSettingsService
     {
-        Task<APIResponse<UserDTO>> ChangePassowrd(ChangePasswordRequest request);
         Task<APIResponse<UserDTO>> ChangeUserInfo(UserUpdateDTO userUpdate);
+        Task<APIResponse<string>> RequestChangePassword(string identifier);
+        Task<APIResponse<UserDTO>> SendPasswordVerificationCode(CheckVerificationCode reqInfo);
+        Task<APIResponse<UserDTO>> SendChangePassowrdRequest(ChangePasswordRequest request);
         Task<APIResponse<string>> RequestChangingEmail(int userID);
+        Task<APIResponse<string>> SendEmailVerificationCode(int userID, CheckVerificationCode reqInfo);
         Task<APIResponse<UserDTO>> SendChangeEmailRequest(int userID, ChangeEmailRequest reqInfo);
-        Task<APIResponse<string>> SendEmailChangeResetCode(int userID, ChangeEmailRequest reqInfo);
     }
 }

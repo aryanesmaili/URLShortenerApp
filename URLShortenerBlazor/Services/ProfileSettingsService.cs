@@ -12,6 +12,7 @@ namespace URLShortenerBlazor.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
+
         public ProfileSettingsService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -40,13 +41,42 @@ namespace URLShortenerBlazor.Services
             else
             {
                 responseContent = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
-
             }
 
             return responseContent!;
         }
 
-        public async Task<APIResponse<UserDTO>> ChangePassowrd(ChangePasswordRequest request)
+        public async Task<APIResponse<string>> RequestChangePassword(string identifier)
+        {
+            HttpRequestMessage req = new(HttpMethod.Post, "api/Users/ResetPassword")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(identifier), Encoding.UTF8, "application/json")
+            };
+
+            HttpResponseMessage response = await _httpClient.SendAsync(req);
+
+            APIResponse<string>? responseContent;
+            responseContent = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return responseContent!;
+
+        }
+
+        public async Task<APIResponse<UserDTO>> SendPasswordVerificationCode(CheckVerificationCode reqInfo)
+        {
+            HttpRequestMessage req = new(HttpMethod.Post, "api/Users/CheckResetCode")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(reqInfo), Encoding.UTF8, "application/json")
+            };
+
+            HttpResponseMessage response = await _httpClient.SendAsync(req);
+            APIResponse<UserDTO>? responseContent;
+            responseContent = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return responseContent!;
+        }
+
+        public async Task<APIResponse<UserDTO>> SendChangePassowrdRequest(ChangePasswordRequest request)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "api/Users/ChangePassword")
             {
@@ -77,7 +107,7 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
-        public async Task<APIResponse<string>> SendEmailChangeResetCode(int userID, ChangeEmailRequest reqInfo)
+        public async Task<APIResponse<string>> SendEmailVerificationCode(int userID, CheckVerificationCode reqInfo)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/CheckEmailResetCode/{userID}")
             {

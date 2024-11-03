@@ -1,8 +1,38 @@
 ﻿body {
 }
+
+.card {
+    margin-top: 1.2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+    .card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+
+.card-header {
+    background: linear-gradient(135deg, #6f42c1, #8250df);
+    border-bottom: none;
+    padding: 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.card-body {
+    background: #f0f2f8;
+    position: relative; /* Set the card body to relative */
+}
+
 .card-header h5 {
     font-weight: 600;
-    color: #495057;
+    margin: 0 !important;
+    color: white;
 }
 
 .form-text.text-danger {
@@ -26,6 +56,7 @@ button[type="submit"] {
     background-size: 200% 100%;
     animation: shimmer 1.5s linear infinite;
 }
+
 .divider {
     border: none; /* Remove default border */
     height: 2px; /* Increased height for a denser look */
