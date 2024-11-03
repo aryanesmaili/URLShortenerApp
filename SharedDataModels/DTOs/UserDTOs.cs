@@ -160,16 +160,19 @@ namespace SharedDataModels.DTOs
         }
     }
 
+    public class CheckVerificationCode
+    {
+        public int? ID { get; set; }
+
+        private string _identifier = string.Empty;
+        public string Identifier { get => _identifier; set => _identifier = value.Trim(); }
+
+        private string _code = string.Empty;
+        public string Code { get => _code; set => _code = value.Trim(); }
+    }
+
     public class ChangeEmailRequest
     {
-        private string? _code;
-
-        public string Code
-        {
-            get => _code ?? string.Empty;
-            set => _code = value?.Trim();
-        }
-
         private string? _email;
 
         [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
