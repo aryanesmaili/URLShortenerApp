@@ -21,13 +21,16 @@ namespace URLShortenerAPI.Controllers
         private readonly IValidator<UserLoginDTO> _userLoginValidator;
         private readonly IValidator<ChangeEmailRequest> _emailValidator;
         private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
 
         public UsersController(IUserService userService,
             IValidator<UserCreateDTO> userValidator,
             IValidator<UserLoginDTO> userLoginValidator,
             IValidator<UserUpdateDTO> userUpdateValidator,
             IValidator<ChangeEmailRequest> emailValidator,
-            IValidator<ChangePasswordRequest> changePasswordValidator)
+            IValidator<ChangePasswordRequest> changePasswordValidator,
+            IWebHostEnvironment webHostEnvironment)
         {
             _userService = userService;
             _userValidator = userValidator;
@@ -35,6 +38,7 @@ namespace URLShortenerAPI.Controllers
             _userUpdateValidator = userUpdateValidator;
             _emailValidator = emailValidator;
             _changePasswordValidator = changePasswordValidator;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [Authorize("AllUsers")]
@@ -42,7 +46,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             APIResponse<PagedResult<URLDTO>> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 if (pageNumber < 1)
@@ -124,7 +128,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> GetDashboard([FromRoute] int id)
         {
             APIResponse<UserDashboardDTO> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 UserDashboardDTO result = await _userService.GetDashboardByIDAsync(id, username!);
@@ -195,14 +199,25 @@ namespace URLShortenerAPI.Controllers
                 await _userLoginValidator.ValidateAndThrowAsync(LoginInfo);
 
                 UserLoginResponse result = await _userService.LoginUserAsync(LoginInfo);
-                CookieOptions? cookieOptions = new()
+
+                CookieOptions refreshCookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
-                    Secure = false,   // Use HTTPS //TODO: fix this in production
-                    SameSite = SameSiteMode.Lax, // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                    Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
+                    Secure = !_webHostEnvironment.IsDevelopment() // Use HTTPS
                 };
-                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
+                CookieOptions jwtCookieOptions = new()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                    Secure = !_webHostEnvironment.IsDevelopment()
+                };
+
+                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
+                Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
+
                 response = new()
                 { Result = result.User, Success = true };
                 return Ok(response);
@@ -324,20 +339,31 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("CheckResetCode")]
-        public async Task<IActionResult> CheckResetCode([FromBody] CheckVerificationCode reqInfo)
+        public async Task<IActionResult> CheckPasswordResetCode([FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<UserDTO> response;
             try
             {
-                UserLoginResponse result = await _userService.CheckResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
-                var cookieOptions = new CookieOptions()
+                UserLoginResponse result = await _userService.CheckPasswordResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
+
+                CookieOptions refreshCookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
-                    Secure = false,   // Use HTTPS
-                    SameSite = SameSiteMode.Lax, // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
+                    Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
+                    Secure = !_webHostEnvironment.IsDevelopment() // Use HTTPS
                 };
-                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
+                CookieOptions jwtCookieOptions = new()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                    Secure = !_webHostEnvironment.IsDevelopment()
+                };
+
+                Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
+                Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
+
                 response = new()
                 { Result = result.User, Success = true };
                 return Ok(response);
@@ -369,7 +395,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest reqInfo)
         {
             APIResponse<UserDTO> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _changePasswordValidator.ValidateAndThrowAsync(reqInfo);
@@ -421,7 +447,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ResetEmail(int id)
         {
             APIResponse<string> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _userService.ResetEmailAsync(id, username!);
@@ -466,7 +492,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<string> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 ArgumentException.ThrowIfNullOrEmpty(reqInfo.Code);
@@ -513,7 +539,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ChangeEmail(int id, [FromBody] ChangeEmailRequest reqInfo)
         {
             APIResponse<UserDTO> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _emailValidator.ValidateAndThrowAsync(reqInfo);
@@ -659,14 +685,34 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
         {
             APIResponse<UserDTO> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _userUpdateValidator.ValidateAndThrowAsync(user);
-                UserDTO result = await _userService.UpdateUserInfoAsync(user, username!);
+                UserLoginResponse result = await _userService.UpdateUserInfoAsync(user, username!);
+
+                if (!string.IsNullOrEmpty(result.JWToken)) // if we have a new JWT, we append a new cookie.
+                {
+                    CookieOptions jwtCookieOptions = new()
+                    {
+                        HttpOnly = true, // Prevents access from JavaScript
+                        Expires = DateTime.UtcNow.AddMinutes(30) // Set expiry for refresh token
+                    };
+                    if (_webHostEnvironment.IsDevelopment())
+                    {
+                        jwtCookieOptions.SameSite = SameSiteMode.None;
+                        jwtCookieOptions.Secure = false;
+                    }
+                    else
+                    {
+                        jwtCookieOptions.SameSite = SameSiteMode.Strict; // Prevents CSRF attacks
+                        jwtCookieOptions.Secure = true; // Use HTTPS
+                    }
+                    Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
+                }
 
                 response = new()
-                { Success = true, Result = result };
+                { Success = true, Result = result.User };
                 return Ok(response);
             }
             catch (NotFoundException e)

@@ -327,7 +327,7 @@ namespace URLShortenerAPI.Services
         /// logs a user in and gives them respective tokens to surf across webpages.
         /// </summary>
         /// <param name="info">user login info</param>
-        /// <returns>a <see cref="UserInfoDTO"/> object containing information.</returns>
+        /// <returns>a <see cref="UserLoginDTO"/> object containing information.</returns>
         /// <exception cref="NotFoundException"></exception>
         /// <exception cref="NotAuthorizedException"></exception>
         public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
@@ -343,7 +343,7 @@ namespace URLShortenerAPI.Services
                 throw new ArgumentException("Username or Password is not correct");
 
             UserDTO userDTO = UserModelToDTO(user!);
-            userDTO.JWToken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
+            string jwtoken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
             string rawRefreshToken = _authService.GenerateRefreshToken();
             RefreshToken refreshToken = new()
             {
@@ -359,7 +359,7 @@ namespace URLShortenerAPI.Services
 
             RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
             UserLoginResponse response = new()
-            { User = userDTO, RefreshToken = refreshTokenDTO };
+            { User = userDTO, RefreshToken = refreshTokenDTO, JWToken = jwtoken };
 
             return response;
         }
@@ -367,8 +367,8 @@ namespace URLShortenerAPI.Services
         /// <summary>
         /// registers a new user.
         /// </summary>
-        /// <param name="userCreateDTO">object containing information about the new user.</param>
-        /// <returns>a <see cref="UserInfoDTO"/> object containing information about the new user.</returns>
+        /// <param name="newUserInfo">object containing information about the new user.</param>
+        /// <returns>a <see cref="UserDTO"/> object containing information about the new user.</returns>
         public async Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo)
         {
             UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
@@ -477,7 +477,7 @@ namespace URLShortenerAPI.Services
         /// <param name="identifier">user's input that can be either email or username.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<UserLoginResponse> CheckResetCodeAsync(string identifier, string Code)
+        public async Task<UserLoginResponse> CheckPasswordResetCodeAsync(string identifier, string Code)
         {
             if (Code.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(Code));
@@ -510,11 +510,10 @@ namespace URLShortenerAPI.Services
             _context.RefreshTokens.Add(refreshToken);
             await _context.SaveChangesAsync();
 
-            result.JWToken = token;
             RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
 
             UserLoginResponse response = new()
-            { User = result, RefreshToken = refreshTokenDTO };
+            { User = result, RefreshToken = refreshTokenDTO, JWToken = token };
             return response;
         }
 
@@ -537,15 +536,17 @@ namespace URLShortenerAPI.Services
 
             // checking if the user has the authorization to access this.
             UserModel user = await _authService.AuthorizeUserAccessAsync(reqInfo.UserInfo.ID, requestingUsername);
+
             string hashedpassword = BCrypt.Net.BCrypt.HashPassword(reqInfo.NewPassword);
             if (hashedpassword == user.PasswordHash)
                 throw new ArgumentException("input password is no different from the current password.");
+
             user.PasswordHash = hashedpassword;
             user.PasswordResetCode = null;
             _context.Update(user);
             await _context.SaveChangesAsync();
 
-            return UserModelToDTO(user, reqInfo.UserInfo.JWToken!);
+            return UserModelToDTO(user);
         }
 
         /// <summary>
@@ -606,7 +607,7 @@ namespace URLShortenerAPI.Services
         /// <param name="requestingUsername">the username requesting the change.</param>
         /// <returns>a <see cref="UserDTO"/> object containing new record's info.</returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername)
+        public async Task<UserLoginResponse> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername)
         {
             UserModel user = await _authService.AuthorizeUserAccessAsync(newUserInfo.ID, requestingUsername);
             UserModel temp = new()
@@ -627,15 +628,15 @@ namespace URLShortenerAPI.Services
             user = _mapper.Map(newUserInfo, user);
             _context.Update(user);
             await _context.SaveChangesAsync();
-
+            string jwToken = string.Empty;
             UserDTO userDTO = UserModelToDTO(user);
-            if (temp.Username != newUserInfo.Username)
-            {
-                // username or email has changed, thus the user needs new tokens.
-                string jwt = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
-                userDTO.JWToken = jwt;
-            }
-            return userDTO;
+            // if the user's username has changed, we generate them a new JWT since we authorize via username.
+            if (temp.Username != user.Username)
+                jwToken = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
+
+            UserLoginResponse response = new() { JWToken = jwToken, User = userDTO, RefreshToken = new() { Token = "" } };
+
+            return response;
         }
 
         /// <summary>
@@ -659,20 +660,6 @@ namespace URLShortenerAPI.Services
         private UserDTO UserModelToDTO(UserModel user)
         {
             return _mapper.Map<UserDTO>(user);
-        }
-
-        /// <summary>
-        /// Maps a UserModel database record to a representable object.
-        /// </summary>
-        /// <param name="user">the database record.</param>
-        /// <param name="refreshToken">RefreshToken of the user.</param>
-        /// <param name="AccessToken">JWToken given to user to authenticate their requests.</param>
-        /// <returns>a <see cref="UserDTO"/> object containing information.</returns>
-        private UserDTO UserModelToDTO(UserModel user, string AccessToken)
-        {
-            var result = _mapper.Map<UserDTO>(user);
-            result.JWToken = AccessToken;
-            return result;
         }
 
         /// <summary>

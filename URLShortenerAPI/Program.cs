@@ -87,7 +87,8 @@ builder.Services.AddAuthentication(auth =>
 {
     auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(jwtBearer =>
+})
+.AddJwtBearer(jwtBearer =>
 {
     jwtBearer.RequireHttpsMetadata = true;
     jwtBearer.SaveToken = true;
@@ -99,6 +100,16 @@ builder.Services.AddAuthentication(auth =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
+    };
+
+    // Read JWT from HttpOnly cookie
+    jwtBearer.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["jwt"];
+            return Task.CompletedTask;
+        }
     };
 });
 

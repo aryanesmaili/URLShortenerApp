@@ -53,7 +53,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
             APIResponse<URLShortenResponse> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
@@ -104,7 +104,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
             APIResponse<List<URLShortenResponse>> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _listValidator.ValidateAndThrowAsync(createDTO);
@@ -154,7 +154,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ToggleActivation(int id)
         {
             APIResponse<string> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _urlService.ToggleActivation(id, username!);
@@ -193,7 +193,7 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> DeleteURL(int id)
         {
             APIResponse<string> response;
-            var username = User.FindFirstValue(ClaimTypes.Name);
+            var username = HttpContext.User.Identity?.Name;
             try
             {
                 await _urlService.DeleteURL(id, username!);
