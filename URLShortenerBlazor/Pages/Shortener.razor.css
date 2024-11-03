@@ -23,6 +23,8 @@ body {
     border: none;
     border-radius: 15px;
     overflow: hidden;
+    box-shadow: 0 8px 6px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
@@ -107,6 +109,14 @@ body {
 .table {
     border-radius: 8px;
     overflow: auto;
+}
+
+tbody {
+    border-radius: 15px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(211, 211, 211, 0.4);
+    border-top: none;
 }
 
 .table-responsive {
