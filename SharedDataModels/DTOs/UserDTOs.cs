@@ -11,7 +11,6 @@ namespace SharedDataModels.DTOs
         public UserType Role { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public string? JWToken { get; set; }
 
         public List<URLDTO>? URLs { get; set; }
         public List<CategoryDTO>? Categories { get; set; } // owned categories
@@ -19,7 +18,8 @@ namespace SharedDataModels.DTOs
     public enum UserType
     {
         Admin,
-        ChannelAdmin
+        ChannelAdmin,
+        TelegramBot
     }
 
     public class UserDashboardDTO
@@ -131,6 +131,7 @@ namespace SharedDataModels.DTOs
     {
         public required UserDTO User { get; set; }
         public required RefreshTokenDTO RefreshToken { get; set; }
+        public required string JWToken { get; set; }
     }
 
     public class ChangePasswordRequest
