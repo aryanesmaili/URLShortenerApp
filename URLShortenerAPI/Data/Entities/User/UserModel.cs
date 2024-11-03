@@ -13,7 +13,7 @@ namespace URLShortenerAPI.Data.Entities.User
         public required string PasswordHash { get; set; }
         public string? PasswordResetCode { get; set; }
         public string? EmailResetCode { get; set; }
-        public UserType Role { get; set; }
+        public UserType Role { get; set; } = UserType.ChannelAdmin;
         public DateTime CreatedAt { get; set; }
 
         public ICollection<URLModel>? URLs { get; set; }
