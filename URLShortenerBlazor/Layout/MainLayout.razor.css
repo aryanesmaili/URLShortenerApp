@@ -7,21 +7,26 @@
 
 .main {
     flex: 1 0 auto; /* This will make the main content expand to push footer down */
-    padding-bottom: 2rem; /* Add some space above footer */
 }
 
 .navigationbar {
-    background-color: #6f42c1;
-    /* Purple background for the navigation bar */
+    background: #6f42c1; /* Gradient background for depth */
+    padding: 10px 20px; /* Added padding for better spacing */
 }
 
     .navigationbar a {
-        color: white;
+        color: white; /* White text for contrast */
+        text-decoration: none; /* Removes underline from links */
+        padding: 10px 15px; /* Padding for better click area */
+        transition: color 0.3s ease, background-color 0.3s ease; /* Smooth transition for hover effects */
+        border-radius: 5px; /* Rounded corners for a softer look */
     }
 
         .navigationbar a:hover {
-            color: black;
+            color: white; /* Change text color on hover */
+            background-color: rgba(255, 255, 255, 0.15); /* Light background on hover */
         }
+
 
 body {
     background-color: #e9ecef;
@@ -35,7 +40,7 @@ img {
 }
 
 footer {
-    flex-shrink: 0; 
+    flex-shrink: 0;
     width: 100%;
     padding: 1rem;
     background-color: #6f42c1;
