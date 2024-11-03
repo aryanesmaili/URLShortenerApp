@@ -292,12 +292,12 @@ namespace URLShortenerAPI.Controllers
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] string identifier)
         {
-            APIResponse<UserDTO> response;
+            APIResponse<string> response;
             try
             {
-                UserDTO result = await _userService.ResetPasswordAsync(identifier);
+                await _userService.ResetPasswordAsync(identifier);
                 response = new()
-                { Result = result, Success = true };
+                { Result = string.Empty, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
@@ -324,17 +324,17 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpPost("CheckResetCode")]
-        public async Task<IActionResult> CheckResetCode([FromQuery] string code, [FromBody] string identifier)
+        public async Task<IActionResult> CheckResetCode([FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<UserDTO> response;
             try
             {
-                UserLoginResponse result = await _userService.CheckResetCodeAsync(identifier, code);
+                UserLoginResponse result = await _userService.CheckResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
                 var cookieOptions = new CookieOptions()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
-                    Secure = true,   // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Secure = false,   // Use HTTPS
+                    SameSite = SameSiteMode.Lax, // Prevents CSRF attacks
                     Expires = DateTime.UtcNow.AddDays(7) // Set expiry for refresh token
                 };
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), cookieOptions);
@@ -352,7 +352,6 @@ namespace URLShortenerAPI.Controllers
                 response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
                 return BadRequest(response);
             }
-
             catch (Exception e)
             {
                 var errorResponse = new DebugErrorResponse
@@ -376,7 +375,6 @@ namespace URLShortenerAPI.Controllers
                 await _changePasswordValidator.ValidateAndThrowAsync(reqInfo);
                 UserDTO result = await _userService.ChangePasswordAsync(reqInfo, username!);
 
-                Response.Cookies.Append("refreshToken", Request.Cookies["refreshToken"]!);
                 response = new()
                 { Result = result, Success = true };
                 return Ok(response);
@@ -465,7 +463,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("CheckEmailResetCode/{id:int}")]
-        public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] ChangeEmailRequest reqInfo)
+        public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<string> response;
             var username = User.FindFirstValue(ClaimTypes.Name);
