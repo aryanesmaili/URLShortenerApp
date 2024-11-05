@@ -179,16 +179,24 @@ namespace SharedDataModels.DTOs
         [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
         public string NewEmail
         {
-            get => _email ?? string.Empty; 
+            get => _email ?? string.Empty;
             set => _email = value?.Trim();
         }
     }
+
     public class RefreshTokenDTO
     {
         public int Id { get; set; }
         public required string Token { get; set; }
         public DateTime Expires { get; set; }
         public DateTime Created { get; set; }
+    }
+
+    public class ClaimValue
+    {
+        public string Role { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 }
 
