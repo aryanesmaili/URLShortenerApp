@@ -37,6 +37,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, error);
             }
         }
+
         [HttpGet("Resolve/{shortcode}")]
         public async Task<IActionResult> ResolveURL(string shortcode)
         {
