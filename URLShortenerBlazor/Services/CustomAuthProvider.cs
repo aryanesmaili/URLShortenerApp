@@ -1,35 +1,47 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using URLShortenerBlazor.Services.Interfaces;
-using SharedDataModels.DTOs;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 namespace URLShortenerBlazor.Services
 {
     public class CustomAuthProvider : AuthenticationStateProvider
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
+        private ClaimsPrincipal? _cachedUser;
 
-        public CustomAuthProvider(IAuthenticationService authenticationService)
+        public CustomAuthProvider(IHttpClientFactory httpClientFactory)
         {
-            _authenticationService = authenticationService;
+            _httpClientFactory = httpClientFactory;
+            _httpClient = _httpClientFactory.CreateClient("Auth");
         }
 
-        public async override Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            string? token = await _authenticationService.GetTokenAsync();
-            if (string.IsNullOrEmpty(token))
+            if (_cachedUser != null)
             {
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                // Return cached user if available
+                return new AuthenticationState(_cachedUser);
             }
 
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+            // If the user is not authenticated or fetching claims failed
+            _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
+            return new AuthenticationState(_cachedUser);
+        }
 
-            // Create claims principal with the identity created from JWT claims
-            var user = new ClaimsPrincipal(identity);
+        public void MarkUserAsAuthenticated(ClaimsPrincipal user)
+        {
+            _cachedUser = user;
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        }
 
-            return new AuthenticationState(user);
+        public void MarkUserAsLoggedOut()
+        {
+            _cachedUser = null;
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
+        }
+
+        public bool IsUserInRole(string role)
+        {
+            return _cachedUser?.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value.ToLower() == role.ToLower()) ?? false;
         }
     }
 }

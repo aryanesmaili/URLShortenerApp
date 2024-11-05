@@ -1,8 +1,7 @@
 ﻿@inherits LayoutComponentBase
-@inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject NavigationManager Navigation
-@inject HttpClient Http
 @inject IAuthenticationService AuthService
+@inject CustomAuthProvider AuthProvider
 
 <div class="page">
     <nav class="navbar navbar-expand-lg navigationbar">
@@ -85,19 +84,22 @@
 @code
 {
     private bool isLoggedIn;
+    private ClaimsPrincipal? _user;
     private int userID;
     protected override async Task OnInitializedAsync()
     {
-        isLoggedIn = await AuthService.IsLoggedInAsync();
+        _user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        isLoggedIn = _user.Identity.IsAuthenticated;
 
         if (isLoggedIn)
-            userID = (await localStorage.GetItemAsync<UserDTO>("user"))!.ID;
+            userID = await AuthService.GetUserIDAsync();
     }
 
     private async Task Logout()
     {
         await AuthService.LogOutAsync();
         isLoggedIn = false;
-        Navigation.NavigateTo("/");
+        StateHasChanged();
+        Navigation.NavigateTo("/", true);
     }
 }
