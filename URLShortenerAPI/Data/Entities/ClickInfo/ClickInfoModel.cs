@@ -51,7 +51,7 @@ namespace URLShortenerAPI.Data.Entities.ClickInfo
     [Owned]
     internal class ClientInfo
     {
-        public bool PreventNull {  get; set; } = true;
+        public bool PreventNull { get; set; } = true;
         public string? Engine { get; set; }
         public string? EngineVersion { get; set; }
         public string? Name { get; set; }
