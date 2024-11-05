@@ -42,8 +42,6 @@ namespace URLShortenerBlazor.Services
             if (result.Success) // if the login was succesful
             {
                 await FetchCSRFTokens(); // we fetch the csrf token.
-
-                await FetchUserRoles(); // we fetch the user roles for auth state.
             }
             return result!; // we return the response to show errors if any.
         }
@@ -138,12 +136,14 @@ namespace URLShortenerBlazor.Services
 
         public async Task<int> GetUserIDAsync()
         {
-            return (await _localStorage.GetItemAsync<UserDTO>("user"))!.ID;
+            int result = (await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist")).ID;
+            return result;
         }
 
-        public async Task<UserDTO?> GetUserInfoAsync()
+        public async Task<UserDTO> GetUserInfoAsync()
         {
-            return await _localStorage.GetItemAsync<UserDTO>("user");
+            UserDTO result = await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist");
+            return result;
         }
 
         public async Task RefreshTokenAsync()

@@ -153,6 +153,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public UserDTO? UserInfo { get; set; }
+
     UserUpdateDTO? userUpdateInfo;
     ChangePasswordRequest? changePasswordRequestInfo;
     ChangeEmailRequest? ChangeEmailRequestInfo;
@@ -174,14 +177,14 @@
     {
         EmailVerificationCode = new();
         PasswordVerificationCode = new();
-        userID = await AuthService.GetUserIDAsync();
+        userID = UserInfo!.ID;
         userUpdateInfo = new() { ID = userID };
         ChangeEmailRequestInfo = new();
         changePasswordRequestInfo = new()
             {
                 NewPassword = string.Empty,
                 ConfirmPassword = string.Empty,
-                UserInfo = await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Empty")
+                UserInfo = UserInfo!
             };
         StateHasChanged();
         await base.OnInitializedAsync();
@@ -228,7 +231,7 @@
     {
         try
         {
-            string identifier = (await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.")).Email;
+            string identifier = UserInfo!.Email;
             APIResponse<string> response = await SettingsService.RequestChangePassword(identifier);
             if (!response.Success)
             {
@@ -254,7 +257,7 @@
         {
             if (string.IsNullOrEmpty(PasswordVerificationCode!.Code))
                 return;
-            PasswordVerificationCode.Identifier = (await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.")).Username;
+            PasswordVerificationCode.Identifier = UserInfo!.Username;
             APIResponse<UserDTO> response = await SettingsService.SendPasswordVerificationCode(PasswordVerificationCode);
             if (!response.Success)
             {
@@ -282,7 +285,7 @@
         {
             if (string.IsNullOrEmpty(changePasswordRequestInfo!.NewPassword) || string.IsNullOrEmpty(changePasswordRequestInfo.ConfirmPassword))
                 return;
-            changePasswordRequestInfo.UserInfo = await AuthService.GetUserInfoAsync() ?? throw new Exception("User Data Not Found In Local Storage.");
+            changePasswordRequestInfo.UserInfo = UserInfo!;
             APIResponse<UserDTO> response = await SettingsService.SendChangePassowrdRequest(changePasswordRequestInfo);
             if (!response.Success)
             {
@@ -386,7 +389,6 @@
             StateHasChanged();
         }
     }
-
 
     private void ManagePasswordVisibility(bool RequestButtonVisible = false, bool CodeFieldVisible = false, bool NewPasswordVisible = false)
     {

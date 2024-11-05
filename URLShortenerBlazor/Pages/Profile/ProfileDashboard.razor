@@ -77,7 +77,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> 
+                            <div class="chart-loading"></div>
                         }
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> 
+                            <div class="chart-loading"></div>
                         }
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                         }
                         else
                         {
-                            <div class="chart-loading"></div> 
+                            <div class="chart-loading"></div>
                         }
                     </div>
                 </div>
@@ -341,6 +341,9 @@
     }
 </script>
 @code {
+    [Parameter]
+    public int UserID { get; set; }
+
     private Dictionary<string, int> MonthlyChartData = new();
     private Dictionary<string, int> HourlyChartData = new();
     private List<string> TopDevices = new();
@@ -353,8 +356,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        int uid = await AuthService.GetUserIDAsync();
-        await GetDashboardData(uid);
+        await GetDashboardData(UserID);
 
         await base.OnInitializedAsync();
     }
@@ -423,7 +425,7 @@
 
         // Convert UTC to Iran's local time
         DateTime iranLocalTime = utcDateTime + iranOffset;
-        
+
         PersianCalendar persianCalendar = new PersianCalendar();
 
         // Get the Persian date components

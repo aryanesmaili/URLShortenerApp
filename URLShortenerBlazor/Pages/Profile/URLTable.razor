@@ -148,7 +148,9 @@
 </script>
 
 @code {
-    private int userID = 1;
+    [Parameter]
+    public int UserID { get; set; }
+
     private List<string> errorMessage = new();
     private List<TRow> currentPageRows = new();
     private Dictionary<int, List<TRow>> rows = new();
@@ -183,7 +185,7 @@
         }
         else
         {
-            await GetTableURLs(userID, pageNumber);
+            await GetTableURLs(UserID, pageNumber);
             currentPageRows = rows[pageNumber];
         }
         StateHasChanged();

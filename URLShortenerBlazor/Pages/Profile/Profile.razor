@@ -71,53 +71,68 @@
             <button class="nav-link @(activeTab == Pages.Settings ? "active" : "")" @onclick="() => SetActiveTab(Pages.Settings)">Settings</button>
         </nav>
 
-        <div class="pt-5">
-            @if(activeTab == Pages.URLs)
-            {
-                <URLTable />
-            }
-            else if(activeTab == Pages.Dashboard)
-            {
-                <ProfileDashboard/>
-            }
-            else if(activeTab == Pages.Settings)
-            {
-                <ProfileSettings/>
-            }
-        </div>
+        @if (isLoading)
+        {
+            <div class="window-loading"></div>
+        }
+        else
+        {
+            <div class="pt-5">
+                @if (activeTab == Pages.URLs)
+                {
+                    <URLTable UserID="@userinfo.ID" />
+                }
+                else if (activeTab == Pages.Dashboard)
+                {
+                    <ProfileDashboard UserID="@userinfo.ID" />
+                }
+                else if (activeTab == Pages.Settings)
+                {
+                    <ProfileSettings UserInfo="@userinfo" />
+                }
+            </div>
+        }
     </div>
 </main>
 
 @code {
+    private bool isLoading = true;
+
     private enum Pages
     {
         Dashboard,
         URLs,
         Settings
     }
-    UserDTO userinfo = new()
+
+    private UserDTO userinfo = new()
         {
             Name = string.Empty,
             Email = string.Empty,
             Username = string.Empty
         };
+
     private Pages activeTab = Pages.Dashboard;
-    private int urlCount = 0; // TODO: Fix this
+    private int urlCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            userinfo = await AuthService.GetUserInfoAsync() ?? throw new Exception();
+            userinfo = await AuthService.GetUserInfoAsync();
+            isLoading = false;
             await base.OnInitializedAsync();
         }
-        catch (Exception)
+        catch (ArgumentNullException)
         {
             ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
             await Task.Delay(2000);
             Navigation.NavigateTo("/Login");
         }
-
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
     private void SetActiveTab(Pages tabName)
