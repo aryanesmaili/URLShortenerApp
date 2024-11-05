@@ -561,7 +561,7 @@ namespace URLShortenerAPI.Services
             if (token == null)
                 throw new ArgumentNullException(token);
 
-            var tokenRecord = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token) ?? throw new NotFoundException();
+            RefreshToken tokenRecord = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token) ?? throw new NotFoundException("Refresh Token Not Found.");
             if (tokenRecord != null && tokenRecord.IsActive)
             {
                 tokenRecord.Revoked = DateTime.UtcNow;

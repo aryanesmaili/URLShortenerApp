@@ -71,7 +71,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("GetRoles")]
-        public IActionResult GetUserProfile()
+        public IActionResult GetUserRoles()
         {
             APIResponse<ClaimValue> response;
             try
@@ -659,30 +659,20 @@ namespace URLShortenerAPI.Controllers
         {
             APIResponse<string> response;
             // Retrieve the refresh token from the cookies
-            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshTokenJson))
             {
                 return BadRequest("No refresh token found in cookies.");
             }
             try
             {
+                RefreshTokenDTO? refreshToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
                 // Invalidate the refresh token in the database
-                await _userService.RevokeTokenAsync(refreshToken);
+                await _userService.RevokeTokenAsync(refreshToken!.Token);
 
                 // Remove the cookie
-                Response.Cookies.Append("refreshToken", "", new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(-1), // Set expiration to the past
-                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax,
-                    Secure = true, // Ensure it's HTTPS only if needed
-                });
-                Response.Cookies.Append("jwt", "", new CookieOptions
-                {
-                    HttpOnly = true, // Prevents access from JavaScript
-                    Expires = DateTime.UtcNow.AddMinutes(-1), // Set expiry for refresh token
-                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                    Secure = true
-                });
+                Response.Cookies.Delete("refreshToken");
+                Response.Cookies.Delete("jwt");
+                Response.Cookies.Delete("XSRF-TOKEN");
 
                 response = new()
                 { Success = true, Result = string.Empty };
