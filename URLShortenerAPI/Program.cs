@@ -1,5 +1,7 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -61,7 +63,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(builder =>
     {
         builder
-            .WithOrigins("http://localhost:5083")
+            .WithOrigins("https://localhost:7112")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();  // Important for cookies/authentication
@@ -117,6 +119,14 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
     .AddPolicy("AllUsers", policy => policy.RequireRole("Admin", "ChannelAdmin"));
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-XSRF-TOKEN";
+    options.Cookie.Name = "XSRF-TOKEN";
+    options.Cookie.SameSite = builder.Environment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -134,4 +144,41 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
+app.Use(async (context, next) =>
+{
+    // Check if the request is for an API endpoint
+    if (!context.Request.Path.StartsWithSegments("/api") ||
+        HttpMethods.IsGet(context.Request.Method))
+    {
+        await next();
+        return;
+    }
+
+    // Get the endpoint being accessed
+    Endpoint? endpoint = context.GetEndpoint();
+    if (endpoint != null)
+    {
+        // Check if the endpoint has the IgnoreAntiforgeryToken attribute
+        bool ignoreAntiforgery = endpoint.Metadata.GetMetadata<IgnoreAntiforgeryTokenAttribute>() != null;
+        if (ignoreAntiforgery)
+        {
+            await next();
+            return;
+        }
+    }
+
+    // Validate the antiforgery token
+    try
+    {
+        await context.RequestServices
+            .GetRequiredService<IAntiforgery>()
+            .ValidateRequestAsync(context);
+        await next();
+    }
+    catch (AntiforgeryValidationException)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+    }
+});
 app.Run();

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.CustomClasses;
@@ -22,7 +23,7 @@ namespace URLShortenerAPI.Controllers
         private readonly IValidator<ChangeEmailRequest> _emailValidator;
         private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
         private readonly IWebHostEnvironment _webHostEnvironment;
-
+        private readonly IAntiforgery _antiforgery;
 
         public UsersController(IUserService userService,
             IValidator<UserCreateDTO> userValidator,
@@ -30,7 +31,8 @@ namespace URLShortenerAPI.Controllers
             IValidator<UserUpdateDTO> userUpdateValidator,
             IValidator<ChangeEmailRequest> emailValidator,
             IValidator<ChangePasswordRequest> changePasswordValidator,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            IAntiforgery antiforgery)
         {
             _userService = userService;
             _userValidator = userValidator;
@@ -39,9 +41,62 @@ namespace URLShortenerAPI.Controllers
             _emailValidator = emailValidator;
             _changePasswordValidator = changePasswordValidator;
             _webHostEnvironment = webHostEnvironment;
+            _antiforgery = antiforgery;
         }
 
-        [Authorize("AllUsers")]
+        [Authorize(Policy = "AllUsers")]
+        [HttpGet("antiforgery/token")]
+        [IgnoreAntiforgeryToken]
+        public IActionResult GetForgeryToken()
+        {
+            APIResponse<string> response;
+            try
+            {
+                var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
+                response = new()
+                { Success = true, Result = tokens.RequestToken };
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace?.ToString() ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpGet("GetRoles")]
+        public IActionResult GetUserProfile()
+        {
+            APIResponse<ClaimValue> response;
+            try
+            {
+                response = new()
+                {
+                    Success = true,
+                    Result = new()
+                    {
+                        Email = User.Claims.First(x => x.Type == ClaimTypes.Email).Value,
+                        Username = User.Claims.First(x => x.Type == ClaimTypes.Name).Value,
+                        Role = User.Claims.First(x => x.Type == ClaimTypes.Role).Value
+                    },
+                };
+
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response = new() { Success = false, ErrorMessage = e.Message };
+                return StatusCode(500, response);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
         [HttpGet("Profile/{userId}")]
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -190,6 +245,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
+        [IgnoreAntiforgeryToken]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
         {
@@ -205,14 +261,16 @@ namespace URLShortenerAPI.Controllers
                     HttpOnly = true, // Prevents access from JavaScript
                     Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
                     SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
-                    Secure = !_webHostEnvironment.IsDevelopment() // Use HTTPS
+                    Secure = true, // Use HTTPS
+                    Path = "/"
                 };
                 CookieOptions jwtCookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
                     Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
                     SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                    Secure = !_webHostEnvironment.IsDevelopment()
+                    Secure = true,
+                    Path = "/"
                 };
 
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
@@ -256,7 +314,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
-
+        [IgnoreAntiforgeryToken]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserCreateDTO userCreateDTO)
         {
@@ -304,6 +362,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
+        [IgnoreAntiforgeryToken]
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] string identifier)
         {
@@ -338,6 +397,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
+        [IgnoreAntiforgeryToken]
         [HttpPost("CheckResetCode")]
         public async Task<IActionResult> CheckPasswordResetCode([FromBody] CheckVerificationCode reqInfo)
         {
@@ -351,14 +411,14 @@ namespace URLShortenerAPI.Controllers
                     HttpOnly = true, // Prevents access from JavaScript
                     Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
                     SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
-                    Secure = !_webHostEnvironment.IsDevelopment() // Use HTTPS
+                    Secure = true // Use HTTPS
                 };
                 CookieOptions jwtCookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
                     Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
                     SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                    Secure = !_webHostEnvironment.IsDevelopment()
+                    Secure = true
                 };
 
                 Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
@@ -390,6 +450,7 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
+        [IgnoreAntiforgeryToken]
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest reqInfo)
@@ -612,10 +673,19 @@ namespace URLShortenerAPI.Controllers
                 {
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(-1), // Set expiration to the past
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax,
                     Secure = true, // Ensure it's HTTPS only if needed
-                    SameSite = SameSiteMode.Strict // You can set SameSite as per your requirements
                 });
-                response = new() { Success = true };
+                Response.Cookies.Append("jwt", "", new CookieOptions
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Expires = DateTime.UtcNow.AddMinutes(-1), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                    Secure = true
+                });
+
+                response = new()
+                { Success = true, Result = string.Empty };
                 return Ok(response);
             }
             catch (NotFoundException e)
@@ -640,7 +710,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
-
+        [IgnoreAntiforgeryToken]
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken()
         {
@@ -651,11 +721,20 @@ namespace URLShortenerAPI.Controllers
             }
             try
             {
-                var refrehToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
+                RefreshTokenDTO? refrehToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
                 string result = await _userService.TokenRefresher(refrehToken!.Token);
 
+                CookieOptions jwtCookieOptions = new()
+                {
+                    HttpOnly = true, // Prevents access from JavaScript
+                    Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
+                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                    Secure = true
+                };
+                Response.Cookies.Append("jwt", result, jwtCookieOptions);
+
                 response = new()
-                { Result = result, Success = true };
+                { Result = string.Empty, Success = true };
                 return Ok(response);
             }
             catch (NotFoundException e)
@@ -680,6 +759,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
@@ -696,18 +776,10 @@ namespace URLShortenerAPI.Controllers
                     CookieOptions jwtCookieOptions = new()
                     {
                         HttpOnly = true, // Prevents access from JavaScript
-                        Expires = DateTime.UtcNow.AddMinutes(30) // Set expiry for refresh token
+                        Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
+                        SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                        Secure = true
                     };
-                    if (_webHostEnvironment.IsDevelopment())
-                    {
-                        jwtCookieOptions.SameSite = SameSiteMode.None;
-                        jwtCookieOptions.Secure = false;
-                    }
-                    else
-                    {
-                        jwtCookieOptions.SameSite = SameSiteMode.Strict; // Prevents CSRF attacks
-                        jwtCookieOptions.Secure = true; // Use HTTPS
-                    }
                     Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
                 }
 
@@ -748,6 +820,7 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("Delete/{id:int}")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
