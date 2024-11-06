@@ -5,7 +5,7 @@ namespace URLShortenerAPI.Services.Interfaces
 {
     public interface IRedirectService
     {
-        public Task<bool> QuickLookup(string shortcode);
-        public Task<URLDTO> ResolveURL(string shortCode, IncomingRequestInfo requestInfo);
+        public Task<URLDTO> CheckURLExists(string shortcode, IncomingRequestInfo requestInfo);
+        public Task<URLDTO> ResolveURL(string shortCode);
     }
 }

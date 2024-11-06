@@ -12,14 +12,12 @@ namespace URLShortenerAPI.Services
     internal class RedirectService : IRedirectService
     {
         private readonly AppDbContext _context;
-        private readonly IIPInfoService _ipInfoService;
         private readonly ICacheService _cacheService;
         private readonly IRedisQueueService _redisQueueService;
         private readonly IMapper _mapper;
-        public RedirectService(AppDbContext context, IIPInfoService ipInfoService, ICacheService cacheService, IRedisQueueService redisQueueService, IMapper mapper)
+        public RedirectService(AppDbContext context, ICacheService cacheService, IRedisQueueService redisQueueService, IMapper mapper)
         {
             _context = context;
-            _ipInfoService = ipInfoService;
             _cacheService = cacheService;
             _redisQueueService = redisQueueService;
             _mapper = mapper;
@@ -31,7 +29,7 @@ namespace URLShortenerAPI.Services
         /// <param name="shortCode">short code of the URL.</param>
         /// <param name="requestInfo">information about the incoming get request such as IP address, user agent etc.</param>
         /// <returns> a string containing the Long URL.</returns>
-        public async Task<URLDTO> ResolveURL(string shortCode, IncomingRequestInfo requestInfo)
+        public async Task<URLDTO> ResolveURL(string shortCode)
         {
             // first we try to retrieve URL from cache
             URLModel? urlRecord = await ResolveURLFromCacheAsync(shortCode);
@@ -43,26 +41,38 @@ namespace URLShortenerAPI.Services
                 await _cacheService.SetAsync(shortCode, urlRecord);
             }
 
-            requestInfo.URL = urlRecord;
-
-            await _redisQueueService.EnqueueItem(requestInfo);
-
             return _mapper.Map<URLDTO>(urlRecord);
         }
 
-        public async Task<bool> QuickLookup(string shortcode)
+        /// <summary>
+        /// Checks if we have what user has entered.
+        /// </summary>
+        /// <param name="shortcode">user's input</param>
+        /// <param name="requestInfo">information about user's request.</param>
+        /// <returns> if found, an object containing info about the URL</returns>
+        /// <exception cref="NotFoundException"></exception>
+        public async Task<URLDTO> CheckURLExists(string shortcode, IncomingRequestInfo requestInfo)
         {
-            URLModel? url;
-            url = await ResolveURLFromCacheAsync(shortcode);
-            if (url != null)
-                return true;
+            // Attempt to resolve URL from cache
+            URLModel? url = await ResolveURLFromCacheAsync(shortcode);
 
-            url = await ResolveURLFromDatabaseAsync(shortcode);
-            if (url != null)
-                return true;
+            // If URL is not found in cache, attempt to resolve from the database
+            if (url == null)
+            {
+                url = await ResolveURLFromDatabaseAsync(shortcode);
+            }
 
-            return false;
+            // If URL is found in either cache or database, enqueue the request
+            if (url != null)
+            {
+                requestInfo.URL = url;
+                await _redisQueueService.EnqueueItem(requestInfo);
+                return _mapper.Map<URLDTO>(url);
+            }
+
+            throw new NotFoundException($"{shortcode} Not Found.");
         }
+
 
         /// <summary>
         /// this function fetches the LongURL from cache if it's cached there.

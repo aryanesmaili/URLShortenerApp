@@ -19,12 +19,22 @@ namespace URLShortenerAPI.Controllers
         }
 
         [HttpGet("{shortCode}")]
-        public async Task<IActionResult> QuickLookup([FromRoute] string shortCode)
+        public async Task<IActionResult> CheckURLExists([FromRoute] string shortCode)
         {
             try
             {
-                return await _redirectService.QuickLookup(shortCode) ? Redirect($"http://localhost:5083/RedirectURL/{shortCode}") : Redirect("http://localhost:5083/Notfound");
+                string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+                string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+
+                URLDTO result = await _redirectService.CheckURLExists(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, TimeClicked = DateTime.UtcNow });
+                return result.IsMonetized ? Redirect(result.LongURL) : Redirect($"http://localhost:7112/RedirectURL/{shortCode}");
             }
+
+            catch (NotFoundException)
+            {
+                return Redirect("http://localhost:7112/Notfound");
+            }
+
             catch (Exception e)
             {
                 DebugErrorResponse error =
@@ -44,10 +54,7 @@ namespace URLShortenerAPI.Controllers
             APIResponse<URLDTO> response;
             try
             {
-                string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
-                string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
-
-                URLDTO result = await _redirectService.ResolveURL(shortcode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, TimeClicked = DateTime.UtcNow });
+                URLDTO result = await _redirectService.ResolveURL(shortcode);
 
                 response = new()
                 { Success = true, Result = result };

@@ -11,6 +11,7 @@ namespace SharedDataModels.DTOs
         public int ClickCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+        public bool IsMonetized { get; set; }
 
         public int UserID { get; set; }
         public List<CategoryDTO>? Categories { get; set; }
