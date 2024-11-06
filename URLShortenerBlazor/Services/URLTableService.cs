@@ -6,13 +6,13 @@ using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class ProfileServices : IProfileServices
+    internal class URLTableService : IURLTableService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        public ProfileServices(IHttpClientFactory httpClientFactory)
+        public URLTableService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("Auth");
@@ -24,6 +24,13 @@ namespace URLShortenerBlazor.Services
             };
         }
 
+        /// <summary>
+        /// Gets the paginated result for the table to show.
+        /// </summary>
+        /// <param name="userID">ID of the user whose records we're going to load.</param>
+        /// <param name="pageNumber">the number of the page we're trying to load.</param>
+        /// <param name="pageSize">Count of Elements in each page.</param>
+        /// <returns></returns>
         public async Task<APIResponse<PagedResult<URLDTO>>> GetProfileURLList(int userID, int pageNumber, int pageSize)
         {
             HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Profile/{userID}?pageNumber={pageNumber}&pageSize={pageSize}");

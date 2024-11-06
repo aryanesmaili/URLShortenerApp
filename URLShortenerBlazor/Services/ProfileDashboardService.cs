@@ -22,7 +22,11 @@ namespace URLShortenerBlazor.Services
             };
         }
 
-
+        /// <summary>
+        /// Gets Dashboard's Required Data from backend.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns>a <see cref="UserDashboardDTO"/> object containing the required info for dashboard charts and sections.</returns>
         public async Task<APIResponse<UserDashboardDTO>> GetDashboardInfo(int userID)
         {
             HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Dashboard/{userID}");

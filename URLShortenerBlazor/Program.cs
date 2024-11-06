@@ -26,7 +26,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddTransient<IShortenerService, ShortenerService>();
-builder.Services.AddTransient<IProfileServices, ProfileServices>();
+builder.Services.AddTransient<IURLTableService, URLTableService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<IProfileDashboardService, ProfileDashboardService>();
 builder.Services.AddTransient<IProfileSettingsService, ProfileSettingsService>();

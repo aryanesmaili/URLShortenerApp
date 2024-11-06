@@ -25,6 +25,11 @@ namespace URLShortenerBlazor.Services
             };
         }
 
+        /// <summary>
+        /// Sends the request to backend to update user's info in database.
+        /// </summary>
+        /// <param name="userUpdate">The Object Containing User's New Info.</param>
+        /// <returns> a <see cref="UserDTO"/> Object showing the new Info. </returns>
         public async Task<APIResponse<UserDTO>> ChangeUserInfo(UserUpdateDTO userUpdate)
         {
             HttpRequestMessage req = new(HttpMethod.Put, "api/Users/UpdateUser")
@@ -46,6 +51,11 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
+        /// <summary>
+        /// Request starting a change password sequence.
+        /// </summary>
+        /// <param name="identifier">The identifier used to Find the user from database.</param>
+        /// <returns></returns>
         public async Task<APIResponse<string>> RequestChangePassword(string identifier)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "api/Users/ResetPassword")
@@ -62,6 +72,11 @@ namespace URLShortenerBlazor.Services
 
         }
 
+        /// <summary>
+        /// Sends the Verification code sent to user's email and provided by user to backend.
+        /// </summary>
+        /// <param name="reqInfo"></param>
+        /// <returns></returns>
         public async Task<APIResponse<UserDTO>> SendPasswordVerificationCode(CheckVerificationCode reqInfo)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "api/Users/CheckResetCode")
@@ -76,6 +91,11 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
+        /// <summary>
+        /// After the user is verified, they can send the new passwords using this function.
+        /// </summary>
+        /// <param name="request">the object containing the new info.</param>
+        /// <returns></returns>
         public async Task<APIResponse<UserDTO>> SendChangePassowrdRequest(ChangePasswordRequest request)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "api/Users/ChangePassword")
@@ -96,6 +116,11 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
+        /// <summary>
+        /// Starts the procedure of changing email. a code is sent to user's email if succesful.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
         public async Task<APIResponse<string>> RequestChangingEmail(int userID)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/ResetEmail/{userID}");
@@ -107,6 +132,12 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
+        /// <summary>
+        /// Sends the code provided by User to Backend.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="reqInfo"></param>
+        /// <returns></returns>
         public async Task<APIResponse<string>> SendEmailVerificationCode(int userID, CheckVerificationCode reqInfo)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/CheckEmailResetCode/{userID}")
@@ -121,6 +152,12 @@ namespace URLShortenerBlazor.Services
             return responseContent!;
         }
 
+        /// <summary>
+        /// After the user is verified, they can send the new Email using this function.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="reqInfo"> the Object containing new information.</param>
+        /// <returns></returns>
         public async Task<APIResponse<UserDTO>> SendChangeEmailRequest(int userID, ChangeEmailRequest reqInfo)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/ChangeEmail/{userID}")

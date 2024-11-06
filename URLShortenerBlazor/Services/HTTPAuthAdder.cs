@@ -26,30 +26,15 @@ namespace URLShortenerBlazor.Services
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            // Add JWT token to the request
+
+            // Read CSRF token to add to the request
             string? token = await _localStorage.GetItemAsync<string>("xsrf-token", CancellationToken.None);
 
+            // add the token to header of the request.
             if (!string.IsNullOrEmpty(token))
-            {
                 request.Headers.Add("X-XSRF-TOKEN", token); // setting the token in the header.
-            }
-
-            else
-            {
-                HttpRequestMessage req = new(HttpMethod.Get, "api/Users/antiforgery/token");
-                req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-                HttpResponseMessage tokenresponse = await _httpClient.SendAsync(req, cancellationToken);
-
-                APIResponse<string>? res = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await tokenresponse.Content.ReadAsStreamAsync(cancellationToken), _jsonSerializerOptions, cancellationToken: cancellationToken);
-                if (tokenresponse.IsSuccessStatusCode)
-                {
-                    await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!, cancellationToken);
-                }
-                else
-                {
-                    throw new Exception($"Failed Fetching CSRF Token : {res!.ErrorMessage}");
-                }
-            }
+            else // if we don't have the token, we get it from backend.
+                await GetCSRFTokenAsync();
 
             // Send the request
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
@@ -66,16 +51,42 @@ namespace URLShortenerBlazor.Services
             return response;
         }
 
-        public async Task RefreshTokenAsync()
+        /// <summary>
+        /// Sends a Request to Backend to refresh the JWT Token using the refresh token.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private async Task RefreshTokenAsync()
         {
-            // Make a request to your refresh token endpoint
+            // Send a request to your refresh token endpoint
             HttpRequestMessage req = new(HttpMethod.Post, "api/Users/RefreshToken");
-            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include); // include the cookies.
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<string>? result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
             if (!response.IsSuccessStatusCode)
                 throw new Exception(result!.ErrorMessage);
+        }
+
+        /// <summary>
+        /// Gets the CSRF Tokens from backend to prevent CSRF Attacks.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private async Task GetCSRFTokenAsync()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, "api/Users/antiforgery/token");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage tokenresponse = await _httpClient.SendAsync(req);
+
+            APIResponse<string>? res = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await tokenresponse.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            if (tokenresponse.IsSuccessStatusCode)
+                await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!);
+
+            else
+                throw new Exception($"Failed Fetching CSRF Token : {res!.ErrorMessage}");
         }
     }
 }

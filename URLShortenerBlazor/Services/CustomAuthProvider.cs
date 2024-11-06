@@ -27,9 +27,16 @@ namespace URLShortenerBlazor.Services
             _localStorage = localStorage;
         }
 
+        /// <summary>
+        /// Returns the authentication state of the user. first it checks the local variable for auth info
+        /// if there's none, it means that the user is either logged out or this is a new seesion.
+        /// if the user is logged in, but it's a new seesion, it will request user's roles from backend because there's a csrf token in local storage.
+        /// if the user is not logged in and it's a new session, it will return UnAuthenticated.
+        /// </summary>
+        /// <returns></returns>
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            if (_cachedUser == null && await _localStorage.ContainKeyAsync("xsrf-token"))
+            if (_cachedUser == null && await _localStorage.ContainKeyAsync("xsrf-token")) // it's a new seesion. the user has token but no auth data.
             {
                 try
                 {
@@ -38,55 +45,82 @@ namespace URLShortenerBlazor.Services
                 }
                 catch (Exception e)
                 {
+                    // if anything goes wrong
                     Console.WriteLine(e.Message);
                     _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
                 }
             }
             else
             {
+                // the user is not logged in and this is a new seesion, so we return empty.
                 _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
             }
 
             return new AuthenticationState(_cachedUser);
         }
 
+        /// <summary>
+        /// changes the user's authentication status to Authenticated. by setting the local auth info object to the given not nulled object.
+        /// </summary>
+        /// <param name="user"></param>
         public void MarkUserAsAuthenticated(ClaimsPrincipal user)
         {
+            ArgumentNullException.ThrowIfNull(user);
             _cachedUser = user;
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
         }
 
+        /// <summary>
+        /// Changes the user's authentication status to Not Authenticated.
+        /// </summary>
         public void MarkUserAsLoggedOut()
         {
             _cachedUser = null;
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
         }
 
+        /// <summary>
+        /// checks if a user has the given role.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
         public bool IsUserInRole(string role)
         {
-            return _cachedUser?.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value.ToLower() == role.ToLower()) ?? false;
+            return _cachedUser?.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value.Equals(role, StringComparison.CurrentCultureIgnoreCase)) ?? false;
         }
 
+        /// <summary>
+        /// Retireves user's Authentication data from backend to form a Authentication status.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         private async Task<ClaimsPrincipal> FetchUserRoles()
         {
             HttpRequestMessage req = new(HttpMethod.Get, "api/Users/GetRoles");// now we get the user's roles for authorization in blazor wasm.
             req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage res = await _httpClient.SendAsync(req); // we get the roles item
-            if (res.IsSuccessStatusCode)
+            try
             {
-                // deserialize the role info.
-                APIResponse<ClaimValue>? rawclaims = await JsonSerializer.DeserializeAsync<APIResponse<ClaimValue>>(await res.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
-                // Create claims identity based on fetched claims
-                List<Claim> claims =
-                        [
+                ClaimsPrincipal claim = new(new ClaimsIdentity());
+                if (res.IsSuccessStatusCode)
+                {
+                    // deserialize the role info.
+                    APIResponse<ClaimValue>? rawclaims = await JsonSerializer.DeserializeAsync<APIResponse<ClaimValue>>(await res.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+                    // Create claims identity based on fetched claims
+                    List<Claim> claims =
+                            [
                                 new Claim(ClaimTypes.Email, rawclaims!.Result!.Email),
                                 new Claim(ClaimTypes.Name, rawclaims.Result.Username),
                                 new Claim(ClaimTypes.Role, rawclaims.Result.Role)
-                        ];
-                ClaimsPrincipal claim = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
-                return claim;
+                            ];
+                    return new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+                }
+                return new ClaimsPrincipal(new ClaimsIdentity());
             }
-            throw new Exception("Error fetching User Roles.");
+            catch (Exception e)
+            {
+                throw new Exception($"Error fetching User Roles : {e.Message}");
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using URLShortenerBlazor.Services.Interfaces;
@@ -34,10 +33,15 @@ namespace URLShortenerBlazor.Services
             _stateProvider = stateProvider;
         }
 
+        /// <summary>
+        /// initiates a login process, first it sends the user's inputs to backend, if they're correct, it fetches the CSRF tokens for this user.
+        /// </summary>
+        /// <param name="loginInfo"> a <see cref="UserLoginDTO"/> object containing the info required for login.</param>
+        /// <returns>the response of API containing Info about the user.</returns>
         public async Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo)
         {
 
-            APIResponse<UserDTO> result = await VerifyUser(loginInfo);
+            APIResponse<UserDTO> result = await SendUserCredentials(loginInfo);
 
             if (result.Success) // if the login was succesful
             {
@@ -46,7 +50,12 @@ namespace URLShortenerBlazor.Services
             return result!; // we return the response to show errors if any.
         }
 
-        private async Task<APIResponse<UserDTO>> VerifyUser(UserLoginDTO loginInfo)
+        /// <summary>
+        /// The Login process sends user's info to api using this function. it basically sends the object to backend and then deserializes the response.
+        /// </summary>
+        /// <param name="loginInfo"> a <see cref="UserLoginDTO"/> object containing the info required for login.</param>
+        /// <returns>the response of API containing Info about the user.</returns>
+        private async Task<APIResponse<UserDTO>> SendUserCredentials(UserLoginDTO loginInfo)
         {
             HttpRequestMessage req = new(HttpMethod.Post, "/api/Users/Login")
             {
@@ -56,7 +65,7 @@ namespace URLShortenerBlazor.Services
 
             // we send user's login info to server to see if it's correct.
             HttpResponseMessage response = await _httpClient.SendAsync(req);
-            var s = await response.Content.ReadAsStringAsync();
+
             // then we desrialize the server's response.
             APIResponse<UserDTO>? result = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
 
@@ -66,6 +75,11 @@ namespace URLShortenerBlazor.Services
             return result!;
         }
 
+        /// <summary>
+        /// Fetches the CSRF tokens required for protecting against CSRF attacks. writes one of the tokens to localstorage.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception">Thrown if the fetching goes wrong.</exception>
         private async Task FetchCSRFTokens()
         {
             HttpRequestMessage req = new(HttpMethod.Get, "api/Users/antiforgery/token");
@@ -73,90 +87,83 @@ namespace URLShortenerBlazor.Services
             HttpResponseMessage tokenresponse = await _httpClient.SendAsync(req);
 
             APIResponse<string>? res = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await tokenresponse.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
             if (tokenresponse.IsSuccessStatusCode)
-            {
-                await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!);
-            }
+                await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!); // the token that will be included in the header of the requests.
             else
-            {
                 throw new Exception($"Failed Fetching CSRF Token : {res!.ErrorMessage}");
-            }
         }
 
-        private async Task FetchUserRoles()
-        {
-            HttpRequestMessage req = new(HttpMethod.Get, "api/Users/GetRoles");// now we get the user's roles for authorization in blazor wasm.
-            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage res = await _authedHttpClient.SendAsync(req); // we get the roles item
-            string s = await res.Content.ReadAsStringAsync();
-            if (res.IsSuccessStatusCode)
-            {
-                // deserialize the role info.
-                APIResponse<ClaimValue>? rawclaims = await JsonSerializer.DeserializeAsync<APIResponse<ClaimValue>>(await res.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
-                // Create claims identity based on fetched claims
-                List<Claim> claims =
-                        [
-                            new Claim(ClaimTypes.Email, rawclaims!.Result!.Email),
-                                new Claim(ClaimTypes.Name, rawclaims.Result.Username),
-                                new Claim(ClaimTypes.Role, rawclaims.Result.Role)
-                        ];
-                ClaimsPrincipal claim = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
-                _stateProvider.MarkUserAsAuthenticated(claim); // we update the auth state.
-                return;
-            }
-            throw new Exception("Error fetching User Roles.");
-        }
-
-        public async Task UpdateUserInfo(UserDTO user)
-        {
-            if (user == null)
-                return;
-            await _localStorage.SetItemAsync("user", user);
-        }
-
+        /// <summary>
+        /// This function first invalidates the tokens in backend, then cleans localstorage.
+        /// </summary>
+        /// <returns></returns>
         public async Task LogOutAsync()
         {
-            var client = _httpClientFactory.CreateClient("Auth");
+            await _authedHttpClient.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
 
-            await client.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
+            await ClearUserInfo(); // clear local storage 
 
-            await _localStorage.RemoveItemAsync("xsrf-token"); // Remove local token 
-            await _localStorage.RemoveItemAsync("user");
             _stateProvider.MarkUserAsLoggedOut();
         }
 
+        /// <summary>
+        /// Sends user input to backend to register them.
+        /// </summary>
+        /// <param name="userCreateDTO">User's input.</param>
+        /// <returns></returns>
         public async Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO)
         {
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Users/Register", userCreateDTO);
 
             APIResponse<UserDTO>? result = await response.Content.ReadFromJsonAsync<APIResponse<UserDTO>>();
 
+            // returned in case of errors.
             return result!;
         }
 
+        /// <summary>
+        /// Gets the User's ID from local storage.
+        /// </summary>
+        /// <returns>User's ID</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<int> GetUserIDAsync()
         {
-            int result = (await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist")).ID;
-            return result;
+            int userID = (await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist")).ID;
+            return userID;
         }
 
+        /// <summary>
+        /// Gets the User Info from localstorage.
+        /// </summary>
+        /// <returns>a <see cref="UserDTO"/> object containing user info.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<UserDTO> GetUserInfoAsync()
         {
-            UserDTO result = await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist");
-            return result;
+            UserDTO userInfo = await _localStorage.GetItemAsync<UserDTO>("user") ?? throw new ArgumentNullException("User Data Does Not Exist");
+            return userInfo;
         }
 
-        public async Task RefreshTokenAsync()
+        /// <summary>
+        /// updates the info stored in local storage.
+        /// </summary>
+        /// <param name="userInfo">new user info.</param>
+        /// <returns></returns>
+        public async Task UpdateUserInfo(UserDTO userInfo)
         {
-            // Make a request to your refresh token endpoint
-            HttpRequestMessage req = new(HttpMethod.Post, "api/Users/RefreshToken");
-            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage response = await _httpClient.SendAsync(req);
-
-            APIResponse<string>? result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(result!.ErrorMessage);
+            if (userInfo == null)
+                return;
+            await _localStorage.SetItemAsync("user", userInfo);
         }
 
+        /// <summary>
+        /// clears the userInfo from the local storage.
+        /// </summary>
+        /// <returns></returns>
+        public async Task ClearUserInfo()
+        {
+            await _localStorage.RemoveItemAsync("xsrf-token"); // Remove local token 
+            await _localStorage.RemoveItemAsync("user"); // remove user info
+        }
     }
 }
