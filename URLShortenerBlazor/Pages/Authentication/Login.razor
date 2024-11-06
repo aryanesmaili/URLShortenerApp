@@ -1,7 +1,4 @@
 ﻿@page "/Login"
-@using System.Text.Json
-@inject HttpClient client
-@inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
 @inject IAuthenticationService AuthService
 
@@ -51,19 +48,19 @@
 
 @code {
     private UserLoginDTO loginDTO = new();
-    private List<string>? errorMessage;
+    private List<string> errorMessage = new();
 
     private async Task HandleLogin()
     {
         try
         {
+            errorMessage.Clear();
+            StateHasChanged();
             APIResponse<UserDTO> response = await AuthService.Login(loginDTO);
 
             if (response.Success)
-            {
-                StateHasChanged();
                 Navigation.NavigateTo("/Profile", true);
-            }
+
             else
             {
                 if (response.ErrorType == ErrorType.ValidationException)

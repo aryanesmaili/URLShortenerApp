@@ -1,5 +1,4 @@
 ﻿@page "/SignUp"
-@using System.Text.Json
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 
@@ -67,15 +66,14 @@
             Password = string.Empty,
             ConfirmPassword = string.Empty
         };
-    private List<string>? errorMessage;
+    private List<string> errorMessage = new();
 
     private async Task HandleRegister()
     {
         try
         {
-            if (userInfo is null)
-                throw new ArgumentException($"Input cannot be null.");
-
+            errorMessage.Clear();
+            StateHasChanged();
             APIResponse<UserDTO> response = await AuthService.Register(userInfo);
 
             if (response.Success)

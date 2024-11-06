@@ -3,7 +3,7 @@
 @inject IShortenerService ShortenerService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
-@inject IProfileServices ProfileService
+@inject IURLTableService TableService
 
 @if (errorMessage?.Count != 0 && errorMessage is not null)
 {
@@ -193,7 +193,7 @@
 
     private async Task GetTableURLs(int userID, int pageNumber = 1, int pageSize = 10)
     {
-        APIResponse<PagedResult<URLDTO>> response = await ProfileService.GetProfileURLList(userID, pageNumber, pageSize);
+        APIResponse<PagedResult<URLDTO>> response = await TableService.GetProfileURLList(userID, pageNumber, pageSize);
         try
         {
             List<TRow> listToAdd = new();

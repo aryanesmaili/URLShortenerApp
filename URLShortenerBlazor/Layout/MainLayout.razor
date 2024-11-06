@@ -7,9 +7,6 @@
 <div class="page">
     <nav class="navbar navbar-expand-lg navigationbar">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <img src="https://picsum.photos/700/400" alt="WebsiteLogo" class="logo" width="30" height="30">
-            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -22,10 +19,10 @@
                     @if (isLoggedIn)
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="/URLShortener">Shortener</a>
+                            <a class="nav-link" href="/Profile">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Profile">Profile</a>
+                            <a class="nav-link" href="/URLShortener">Shortener</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" @onclick="Logout">Logout</a>
@@ -100,9 +97,11 @@
             }
             catch (ArgumentNullException)
             {
+                await AuthService.ClearUserInfo();
+                AuthProvider.MarkUserAsLoggedOut();
                 ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
                 await Task.Delay(2000);
-                Navigation.NavigateTo("/Login");
+                Navigation.NavigateTo("/Login", true);
             }
         }
     }

@@ -1,10 +1,6 @@
 ﻿@page "/Profile"
-@inject Blazored.Toast.Services.IToastService ToastClient
-@inject IJSRuntime JSRuntime
-@inject IShortenerService ShortenerService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
-@inject IProfileServices ProfileService
 
 <main>
     <div class="container">
@@ -123,15 +119,9 @@
             isLoading = false;
             await base.OnInitializedAsync();
         }
-        catch (ArgumentNullException)
+        catch (Exception)
         {
-            ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
-            await Task.Delay(2000);
-            Navigation.NavigateTo("/Login");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
+            
         }
     }
 
