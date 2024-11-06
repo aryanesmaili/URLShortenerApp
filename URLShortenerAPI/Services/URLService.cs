@@ -48,7 +48,7 @@ namespace URLShortenerAPI.Services
             // Check if the user has already shortened this URL. returns answer if yes.
             URLModel? url = await IsURLAlreadyAsync(createDTO.LongURL, createDTO.UserID);
 
-            URLShortenResponse shortenResponse; // the object that will hold the answer.
+            URLShortenResponse shortenResponse; // the object that will hold the result.
 
             if (url != null) // means we already have this URL.
             {
@@ -135,12 +135,48 @@ namespace URLShortenerAPI.Services
         }
 
         /// <summary>
+        /// Adds a new URL with a custom URL Shortcode (for telegram users only).
+        /// </summary>
+        /// <param name="createDTO"></param>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        public async Task<URLShortenResponse> AddCustomURL(URLCreateDTO createDTO, string username)
+        {
+            // Authorize user access. This throws an exception if the user is not authorized.
+            UserModel user = await _authService.AuthorizeUserAccessAsync(createDTO.UserID, username, true);
+
+            // Check if the user has already shortened this URL. returns result if yes.
+            URLModel? url = await IsURLAlreadyAsync(createDTO.LongURL, createDTO.UserID);
+
+            URLShortenResponse shortenResponse; // the object that will hold the result.
+
+            if (url != null) // means we already have this URL.
+            {
+                shortenResponse = new URLShortenResponse() { URL = URLModelToDTO(url), IsNew = false };
+                return shortenResponse;
+            }
+
+            // Create a new URLModel object to be added to the database and we set Custom to true.
+            URLModel newRecord = await CreateNewURLRecord(createDTO, user, true);
+            // Save the new record to the database using a transaction for atomicity.
+            await SaveURLRecordWithTransaction(newRecord);
+
+            // We immediately cache it in Redis.
+            await _cacheService.SetAsync(newRecord.ShortCode, newRecord);
+
+            shortenResponse = new()
+            { URL = URLModelToDTO(newRecord), IsNew = true };
+
+            return shortenResponse;
+        }
+
+        /// <summary>
         /// Creates a new URLModel DB record.
         /// </summary>
         /// <param name="url">The object containing the new URL's information.</param>
         /// <param name="user">The owner of this URL.</param>
         /// <returns>A new <see cref="URLModel"/> object.</returns>
-        private async Task<URLModel> CreateNewURLRecord(URLCreateDTO url, UserModel user)
+        private async Task<URLModel> CreateNewURLRecord(URLCreateDTO url, UserModel user, bool isCustom = false)
         {
             // Map the DTO to a new URLModel object.
             URLModel newRecord = _mapper.Map<URLModel>(url);
@@ -149,7 +185,7 @@ namespace URLShortenerAPI.Services
             newRecord.User = user;
 
             // Generate a short code for this URL.
-            newRecord.ShortCode = await ShortURLGenerator(url.LongURL);
+            newRecord.ShortCode = isCustom ? await CheckCustomShortCodeInUse(url.CustomShortCode) : await ShortURLGenerator(url.LongURL);
 
             // If a category is specified, resolve or create it.
             if (!string.IsNullOrEmpty(url.Categories))
@@ -297,13 +333,54 @@ namespace URLShortenerAPI.Services
             // first we update db
             URLModel url = await _authService.AuthorizeURLAccessAsync(URLID, reqUsername);
             url.IsActive = !url.IsActive;
+
+            _context.Update(url);
             await _context.SaveChangesAsync();
+
             // now we update cache:
             if (!url.IsActive) // if the url is no longer active
                 await _cacheService.RemoveAsync<URLModel>(url.ShortCode); // we remove the old record.
             else // if it is active now:
                 await _cacheService.SetAsync(url.ShortCode, url); // we cache it.
+
             return;
+        }
+
+        /// <summary>
+        /// Activate or Deactivates the Monetization for this URL.
+        /// </summary>
+        /// <param name="URLID"></param>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        public async Task ToggleMonetization(int URLID, string username)
+        {
+            // first we update db
+            URLModel url = await _authService.AuthorizeURLAccessAsync(URLID, username);
+            url.IsMonetized = !url.IsMonetized;
+
+            _context.Update(url);
+            await _context.SaveChangesAsync();
+
+            // now we update cache:
+            if (!url.IsMonetized) // if the url is no longer active
+                await _cacheService.RemoveAsync<URLModel>(url.ShortCode); // we remove the old record.
+            else // if it is active now:
+                await _cacheService.SetAsync(url.ShortCode, url); // we cache it.
+
+            return;
+        }
+
+        /// <summary>
+        /// Checks whether this custom shortcode is in use by any other user.
+        /// </summary>
+        /// <param name="shortcode"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private async Task<string> CheckCustomShortCodeInUse(string shortcode)
+        {
+            if (await _context.URLs.AnyAsync(x => x.ShortCode == shortcode))
+                throw new ArgumentException("Custom ShortCode is Already in Use");
+            return shortcode;
         }
 
         /// <summary>
@@ -311,12 +388,12 @@ namespace URLShortenerAPI.Services
         /// </summary>
         /// <param name="longURL">URL to be converted.</param>
         /// <returns>a string containing the shortened version of the URL.</returns>
-        public async Task<string> ShortURLGenerator(string longURL)
+        private async Task<string> ShortURLGenerator(string longURL)
         {
             string shortenedURL = _shortenerService.HashURL(longURL);
 
             // checking if we have any collisions
-            if (await _context.URLs.FirstOrDefaultAsync(x => x.ShortCode == shortenedURL) != null)
+            if (await _context.URLs.AnyAsync(x => x.ShortCode == shortenedURL))
                 shortenedURL = await ResolveCollision(shortenedURL);
 
             return shortenedURL;

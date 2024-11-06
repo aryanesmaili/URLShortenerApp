@@ -148,9 +148,99 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "TelegramBot")]
+        [HttpPost("AddCsutomURL")]
+        public async Task<IActionResult> AddCustomURL(URLCreateDTO createDTO)
+        {
+            APIResponse<URLShortenResponse> response;
+            var username = HttpContext.User.Identity?.Name;
+            try
+            {
+                await _validator.ValidateAndThrowAsync(createDTO);
+
+                URLShortenResponse result = await _urlService.AddCustomURL(createDTO, username!);
+                response = new()
+                { Success = true, Result = result };
+                return Ok(response);
+            }
+
+            catch (ValidationException e)
+            {
+                List<string> errors = [];
+
+                foreach (var error in e.Errors)
+                {
+                    errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
+                }
+                response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+
+                return BadRequest(response);
+            }
+            catch (NotFoundException e)
+            {
+                response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+            catch (ArgumentException e)
+            {
+                response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+            catch (NotAuthorizedException e)
+            {
+                response = new() { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return Unauthorized(response);
+            }
+            catch (Exception e)
+            {
+                var error = new DebugErrorResponse
+                { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+                return StatusCode(500, error);
+            }
+        }
+
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleActivation/{id:int}")]
         public async Task<IActionResult> ToggleActivation(int id)
+        {
+            APIResponse<string> response;
+            var username = HttpContext.User.Identity?.Name;
+            try
+            {
+                await _urlService.ToggleActivation(id, username!);
+                response = new()
+                { Success = true, };
+                return Ok(response);
+            }
+            catch (ArgumentException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+            catch (NotFoundException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return Unauthorized(response);
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpPost("ToggleMonetization/{id:int}")]
+        public async Task<IActionResult> ToggleMonetization(int id)
         {
             APIResponse<string> response;
             var username = HttpContext.User.Identity?.Name;
