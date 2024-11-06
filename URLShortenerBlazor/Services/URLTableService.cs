@@ -1,4 +1,5 @@
-﻿using SharedDataModels.CustomClasses;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Text.Json;
@@ -34,7 +35,7 @@ namespace URLShortenerBlazor.Services
         public async Task<APIResponse<PagedResult<URLDTO>>> GetProfileURLList(int userID, int pageNumber, int pageSize)
         {
             HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Profile/{userID}?pageNumber={pageNumber}&pageSize={pageSize}");
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<PagedResult<URLDTO>>? result = await JsonSerializer.DeserializeAsync<APIResponse<PagedResult<URLDTO>>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);

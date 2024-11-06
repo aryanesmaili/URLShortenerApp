@@ -45,7 +45,7 @@ namespace URLShortenerBlazor.Services
 
             if (result.Success) // if the login was succesful
             {
-                await FetchCSRFTokens(); // we fetch the csrf token.
+                await _stateProvider.FetchCSRFTokens(); // we fetch the csrf token.
             }
             return result!; // we return the response to show errors if any.
         }
@@ -73,25 +73,6 @@ namespace URLShortenerBlazor.Services
                 await _localStorage.SetItemAsync("user", result!.Result); // we store the user data to local storage.
 
             return result!;
-        }
-
-        /// <summary>
-        /// Fetches the CSRF tokens required for protecting against CSRF attacks. writes one of the tokens to localstorage.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Exception">Thrown if the fetching goes wrong.</exception>
-        private async Task FetchCSRFTokens()
-        {
-            HttpRequestMessage req = new(HttpMethod.Get, "api/Users/antiforgery/token");
-            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage tokenresponse = await _httpClient.SendAsync(req);
-
-            APIResponse<string>? res = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await tokenresponse.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
-
-            if (tokenresponse.IsSuccessStatusCode)
-                await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!); // the token that will be included in the header of the requests.
-            else
-                throw new Exception($"Failed Fetching CSRF Token : {res!.ErrorMessage}");
         }
 
         /// <summary>

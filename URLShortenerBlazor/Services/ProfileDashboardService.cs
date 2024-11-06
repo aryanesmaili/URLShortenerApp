@@ -1,4 +1,5 @@
-﻿using SharedDataModels.DTOs;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Text.Json;
 using URLShortenerBlazor.Services.Interfaces;
@@ -30,7 +31,7 @@ namespace URLShortenerBlazor.Services
         public async Task<APIResponse<UserDashboardDTO>> GetDashboardInfo(int userID)
         {
             HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Dashboard/{userID}");
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<UserDashboardDTO>? result = await JsonSerializer.DeserializeAsync<APIResponse<UserDashboardDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);

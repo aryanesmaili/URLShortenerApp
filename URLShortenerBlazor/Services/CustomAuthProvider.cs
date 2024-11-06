@@ -5,6 +5,7 @@ using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
+
 namespace URLShortenerBlazor.Services
 {
     public class CustomAuthProvider : AuthenticationStateProvider
@@ -14,6 +15,7 @@ namespace URLShortenerBlazor.Services
         private ClaimsPrincipal? _cachedUser;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly ILocalStorageService _localStorage;
+
         public CustomAuthProvider(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage)
         {
             _httpClientFactory = httpClientFactory;
@@ -40,6 +42,8 @@ namespace URLShortenerBlazor.Services
             {
                 try
                 {
+                    await FetchCSRFTokens(); // get the httponly cookie of csrf 
+
                     // If the user object is null and does not contain claims, we try to fill it from backend.
                     _cachedUser = await FetchUserRoles();
                 }
@@ -121,6 +125,25 @@ namespace URLShortenerBlazor.Services
             {
                 throw new Exception($"Error fetching User Roles : {e.Message}");
             }
+        }
+
+        /// <summary>
+        /// Fetches the CSRF tokens required for protecting against CSRF attacks. writes one of the tokens to localstorage.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception">Thrown if the fetching goes wrong.</exception>
+        public async Task FetchCSRFTokens()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, "api/Users/antiforgery/token");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage tokenresponse = await _httpClient.SendAsync(req);
+
+            APIResponse<string>? res = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await tokenresponse.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            if (tokenresponse.IsSuccessStatusCode)
+                await _localStorage.SetItemAsStringAsync("xsrf-token", res!.Result!); // the token that will be included in the header of the requests.
+            else
+                throw new Exception($"Failed Fetching CSRF Token : {res!.ErrorMessage}");
         }
     }
 }

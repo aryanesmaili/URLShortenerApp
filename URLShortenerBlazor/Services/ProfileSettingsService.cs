@@ -1,4 +1,5 @@
-﻿using SharedDataModels.DTOs;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Net;
 using System.Text;
@@ -36,7 +37,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(userUpdate), Encoding.UTF8, "application/json")
             };
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
             APIResponse<UserDTO>? responseContent;
 
@@ -124,6 +125,7 @@ namespace URLShortenerBlazor.Services
         public async Task<APIResponse<string>> RequestChangingEmail(int userID)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/ResetEmail/{userID}");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<string>? responseContent;
@@ -144,6 +146,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(reqInfo), Encoding.UTF8, "application/json")
             };
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<string>? responseContent;
