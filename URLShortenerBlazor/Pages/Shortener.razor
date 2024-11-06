@@ -60,9 +60,15 @@
                                                placeholder="These URLs are related to the Lord Of The Rings Trilogy." />
                                 <ValidationMessage For="() => urlCreate.Description" />
                             </div>
-                            <div class="mb-3 form-check">
-                                <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="active" />
-                                <label class="form-check-label" for="active">Active</label>
+                            <div class="mb-3 d-flex gap-3">
+                                <div class="form-check">
+                                    <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="active" />
+                                    <label class="form-check-label" for="active">Active</label>
+                                </div>
+                                <div class="form-check">
+                                    <InputCheckbox @bind-Value="urlCreate.IsMonetized" class="form-check-input" id="monetize" />
+                                    <label class="form-check-label" for="monetize">Monetize</label>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-purple">Shorten!</button>
                         </EditForm>
@@ -89,9 +95,15 @@
                                 <InputTextArea @bind-Value="urlCreate.Description" class="form-control" id="batchDescription"
                                                rows="3" placeholder="These URLs are related to the Lord Of The Rings Trilogy." />
                             </div>
-                            <div class="mb-3 form-check">
-                                <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="batchActive" />
-                                <label class="form-check-label" for="batchActive">Active</label>
+                            <div class="mb-3 d-flex gap-3">
+                                <div class="form-check">
+                                    <InputCheckbox @bind-Value="urlCreate.IsActive" class="form-check-input" id="active" />
+                                    <label class="form-check-label" for="active">Active</label>
+                                </div>
+                                <div class="form-check">
+                                    <InputCheckbox @bind-Value="urlCreate.IsMonetized" class="form-check-input" id="monetize" />
+                                    <label class="form-check-label" for="monetize">Monetize</label>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-purple">Shorten Batch!</button>
                         </EditForm>
@@ -142,9 +154,17 @@
                                         }
                                 </td>
                                 <td>
+                                    <!-- Activation Toggle Button -->
                                     <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
                                         <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
-                                            @(item.URL.IsActive ? "Active" : "InActive")
+                                            @(item.URL.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </button>
+
+                                    <!-- Monetization Toggle Button -->
+                                    <button type="button" class="status-toggle ms-2" @onclick="() => ToggleMonetization(item.URL.ID, item.URL.IsMonetized)">
+                                        <span class="status-badge @(item.URL.IsMonetized ? "active" : "inactive")">
+                                            @(item.URL.IsMonetized ? "Monetized" : "Not Monetized")
                                         </span>
                                     </button>
                                 </td>
@@ -240,7 +260,8 @@
                 UserID = userID,
                 Categories = string.Empty,
                 Description = string.Empty,
-                IsActive = true
+                IsActive = true,
+                IsMonetized = true,
             };
         URLs = string.Empty;  // Clear the batch URLs
     }
@@ -441,4 +462,26 @@
         }
     }
 
+    private async Task ToggleMonetization(int urlID, bool isMonetized)
+    {
+        APIResponse<string> response = await ShortenerService.ToggleMonetization(urlID);
+
+        if (response.Success)
+        {
+            var url = TableURLs.First(x => x.URL.ID == urlID);
+            url.URL.IsMonetized = !isMonetized;
+
+            string newState = isMonetized ? "No Longer Monetized" : "Is Now Monetized";
+            StateHasChanged();
+            ToastClient.ShowInfo($"{newState}", settings =>
+            {
+                settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter;
+                settings.Timeout = 2;
+            });
+        }
+        else
+        {
+            ToastClient.ShowError($"There was an error processing your request:\n{response.ErrorMessage}");
+        }
+    }
 }

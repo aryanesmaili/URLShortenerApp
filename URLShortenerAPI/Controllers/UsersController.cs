@@ -112,8 +112,6 @@ namespace URLShortenerAPI.Controllers
 
                 PagedResult<URLDTO> result = await _userService.GetPagedResult(userId, pageNumber, pageSize, username!);
 
-                if (result.Items.Count == 0)
-                    throw new NotFoundException("No URLs found for the specified user.");
                 response = new()
                 { Result = result, Success = true };
                 return Ok(response);

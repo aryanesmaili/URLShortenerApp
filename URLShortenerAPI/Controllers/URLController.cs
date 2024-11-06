@@ -209,7 +209,7 @@ namespace URLShortenerAPI.Controllers
             {
                 await _urlService.ToggleActivation(id, username!);
                 response = new()
-                { Success = true, };
+                { Success = true, Result = string.Empty};
                 return Ok(response);
             }
             catch (ArgumentException e)
@@ -246,9 +246,9 @@ namespace URLShortenerAPI.Controllers
             var username = HttpContext.User.Identity?.Name;
             try
             {
-                await _urlService.ToggleActivation(id, username!);
+                await _urlService.ToggleMonetization(id, username!);
                 response = new()
-                { Success = true, };
+                { Success = true, Result = string.Empty };
                 return Ok(response);
             }
             catch (ArgumentException e)

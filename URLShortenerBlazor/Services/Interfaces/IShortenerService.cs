@@ -10,5 +10,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO);
         public Task<APIResponse<URLShortenResponse>> ShortenSingle(URLCreateDTO createDTO);
         Task<APIResponse<string>> ToggleActivation(int urlID);
+        Task<APIResponse<string>> ToggleMonetization(int urlID);
     }
 }

@@ -45,12 +45,21 @@
                             }
                     </td>
                     <td>
+                        <!-- Activation Toggle Button -->
                         <button type="button" class="status-toggle" @onclick="() => ToggleActivation(item.URL.ID, item.URL.IsActive)">
                             <span class="status-badge @(item.URL.IsActive ? "active" : "inactive")">
-                                @(item.URL.IsActive ? "Active" : "InActive")
+                                @(item.URL.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </button>
+
+                        <!-- Monetization Toggle Button -->
+                        <button type="button" class="status-toggle ms-2" @onclick="() => ToggleMonetization(item.URL.ID, item.URL.IsMonetized)">
+                            <span class="status-badge @(item.URL.IsMonetized ? "active" : "inactive")">
+                                @(item.URL.IsMonetized ? "Monetized" : "Not Monetized")
                             </span>
                         </button>
                     </td>
+
                     <td>
                         <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
                             <Icon Name="IconName.Copy"></Icon>
@@ -186,7 +195,11 @@
         else
         {
             await GetTableURLs(UserID, pageNumber);
-            currentPageRows = rows[pageNumber];
+            if (rows.ContainsKey(pageNumber))  // Double-check after fetching
+            {
+                currentPageRows = rows[pageNumber];
+            }
+            //currentPageRows = rows[pageNumber];
         }
         StateHasChanged();
     }
@@ -210,7 +223,8 @@
                 listToAdd.Add(row);
                 Index++;
             }
-            rows[currentpageNumber] = listToAdd;
+
+            rows.Add(currentpageNumber, listToAdd);
         }
         catch (Exception)
         {
@@ -283,6 +297,29 @@
             url.URL.IsActive = !isActive;
 
             string newState = isActive ? "DeActivated" : "Activated";
+            StateHasChanged();
+            ToastClient.ShowInfo($"{newState}", settings =>
+            {
+                settings.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter;
+                settings.Timeout = 2;
+            });
+        }
+        else
+        {
+            ToastClient.ShowError($"There was an error processing your request:\n{response.ErrorMessage}");
+        }
+    }
+
+    private async Task ToggleMonetization(int urlID, bool isMonetized)
+    {
+        APIResponse<string> response = await ShortenerService.ToggleMonetization(urlID);
+
+        if (response.Success)
+        {
+            var url = rows[currentpageNumber].First(x => x.URL.ID == urlID);
+            url.URL.IsMonetized = !isMonetized;
+
+            string newState = isMonetized ? "No Longer Monetized" : "Monetization Activated";
             StateHasChanged();
             ToastClient.ShowInfo($"{newState}", settings =>
             {

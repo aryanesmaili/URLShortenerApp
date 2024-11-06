@@ -1,4 +1,5 @@
-﻿using SharedDataModels.DTOs;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using Standart.Hash.xxHash;
 using System.Net;
@@ -38,7 +39,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(createDTO), Encoding.UTF8, "application/json")
             };
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _authClient.SendAsync(req);
 
             APIResponse<URLShortenResponse>? responseContent;
@@ -60,12 +61,12 @@ namespace URLShortenerBlazor.Services
         /// <exception cref="Exception"></exception>
         public async Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO)
         {
-            HttpRequestMessage request = new(HttpMethod.Post, "/api/URL/AddBatchURL")
+            HttpRequestMessage req = new(HttpMethod.Post, "/api/URL/AddBatchURL")
             {
                 Content = new StringContent(JsonSerializer.Serialize(createDTO), Encoding.UTF8, "application/json"),
             };
-
-            HttpResponseMessage? response = await _authClient.SendAsync(request);
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage? response = await _authClient.SendAsync(req);
 
             APIResponse<List<URLShortenResponse>> result;
 
@@ -91,7 +92,7 @@ namespace URLShortenerBlazor.Services
         public async Task<APIResponse<string>> DeleteURL(int urlID)
         {
             HttpRequestMessage req = new(HttpMethod.Delete, $"/api/URL/Delete/{urlID}");
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _authClient.SendAsync(req);
             APIResponse<string>? result;
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -110,8 +111,28 @@ namespace URLShortenerBlazor.Services
         public async Task<APIResponse<string>> ToggleActivation(int urlID)
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"/api/URL/ToggleActivation/{urlID}");
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _authClient.SendAsync(req);
+            APIResponse<string>? result;
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                result = new() { ErrorType = ErrorType.NotAuthorizedException };
+            else
+                result = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return result!;
+        }
+
+        /// <summary>
+        /// Activate or Deactivates a URL's Monetization based on it's current situation.
+        /// </summary>
+        /// <param name="urlID">ID Of the URL to be toggled.</param>
+        /// <returns></returns>
+        public async Task<APIResponse<string>> ToggleMonetization(int urlID)
+        {
+            HttpRequestMessage req = new(HttpMethod.Post, $"/api/URL/ToggleMonetization/{urlID}");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage response = await _authClient.SendAsync(req);
+
             APIResponse<string>? result;
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 result = new() { ErrorType = ErrorType.NotAuthorizedException };
