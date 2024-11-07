@@ -101,6 +101,121 @@ namespace URLShortenerAPI.Services
         }
 
         /// <summary>
+        /// Gets the four elements needed to show in user stats.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        public async Task<UserStats> GetUserStats(int userID, string username)
+        {
+            UserModel user = await _authService.AuthorizeUserAccessAsync(userID, username, true);
+            // lookup cache first
+            UserStats? stats = await _cacheService.GetValueAsync<UserStats>($"UserStats_" + userID);
+            if (stats != null)
+                return stats;
+
+            stats = new()
+            {
+                WeeklyGrowth = await GetClickGrowthFromLastWeek(userID),
+                TotalURLsCount = user.URLs!.Count,
+                ClicksYesterdayCount = await GetYesterdayClicks(userID),
+                AverageClicksPerURL = await GetAverageClicksPerURL(userID)
+            };
+
+            // cache the results
+            await _cacheService.SetAsync($"UserStats_" + userID, stats, TimeSpan.FromMinutes(30));
+            return stats;
+        }
+
+        /// <summary>
+        /// Calculates the average clicks per url for user.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private async Task<double> GetAverageClicksPerURL(int userID)
+        {
+            int totalURLs = await _context.URLs
+                .AsNoTracking()
+                .Where(url => url.UserID == userID)
+                .CountAsync();
+
+            int totalClicks = await _context.Clicks
+                .Include(x => x.URL)
+                .AsNoTracking()
+                .Where(click => click.URL.UserID == userID)
+                .CountAsync();
+
+            if (totalURLs == 0)
+                return 0; // Prevent division by zero
+
+            return Math.Round((double)totalClicks / totalURLs, 2);
+        }
+
+        /// <summary>
+        /// Gets the amount of clicks that happened yesterday.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private async Task<int> GetYesterdayClicks(int userID)
+        {
+            // Get the current date in the Tehran time zone.
+            TimeZoneInfo tehranTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Iran Standard Time");
+            DateTime currentDateUtc = DateTime.UtcNow;
+            DateTime currentDateTehran = TimeZoneInfo.ConvertTimeFromUtc(currentDateUtc, tehranTimeZone);
+
+            // Calculate the start and end of yesterday in Tehran time.
+            DateTime startOfYesterdayTehran = currentDateTehran.AddDays(-1).Date;  // 00:00 of yesterday in Tehran time
+            DateTime endOfYesterdayTehran = startOfYesterdayTehran.AddDays(1).AddSeconds(-1); // 23:59:59 of yesterday in Tehran time
+
+            // Convert the Tehran times to UTC
+            DateTime startOfYesterdayUtc = TimeZoneInfo.ConvertTimeToUtc(startOfYesterdayTehran, tehranTimeZone);
+            DateTime endOfYesterdayUtc = TimeZoneInfo.ConvertTimeToUtc(endOfYesterdayTehran, tehranTimeZone);
+
+            // Query the database to count the clicks on the user's URLs during yesterday (in UTC)
+            int yesterdayClicksCount = await _context.Clicks
+                .AsNoTracking()
+                .Include(x => x.URL)
+                .Where(click => click.URL.UserID == userID &&
+                               click.ClickedAt >= startOfYesterdayUtc &&
+                               click.ClickedAt <= endOfYesterdayUtc)
+                .CountAsync();
+
+            return yesterdayClicksCount;
+        }
+
+
+        /// <summary>
+        /// Calculates how the clicks have grown since last week.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private async Task<double> GetClickGrowthFromLastWeek(int userID)
+        {
+            DateTime now = DateTime.UtcNow;
+            DateTime startOfThisWeek = now.AddDays(-(int)now.DayOfWeek);
+            DateTime startOfLastWeek = startOfThisWeek.AddDays(-7);
+
+            // Fetch click counts for last week and this week
+            int thisWeekClicks = await _context.Clicks.AsNoTracking()
+                .Where(c => c.URL.UserID == userID && c.ClickedAt >= startOfThisWeek)
+                .CountAsync();
+
+            int lastWeekClicks = await _context.Clicks.AsNoTracking()
+                .Where(c => c.URL.UserID == userID && c.ClickedAt >= startOfLastWeek && c.ClickedAt < startOfThisWeek)
+                .CountAsync();
+
+            double growth = 0;
+            if (lastWeekClicks == 0 && thisWeekClicks == 0)
+                return growth;
+            else if (lastWeekClicks == 0)
+                return 100;
+            // Calculate growth percentage
+            growth = ((double)(thisWeekClicks - lastWeekClicks) / lastWeekClicks) * 100;
+
+            return Math.Round(growth, 2);
+        }
+
+        /// <summary>
         /// Gets the info required for dashboard from database.
         /// </summary>
         /// <param name="userID">ID Of the user</param>
@@ -171,6 +286,7 @@ namespace URLShortenerAPI.Services
 
             return recentURLs;
         }
+
         /// <summary>
         /// Gets the 5 top countries the user's urls are clicked from.
         /// </summary>
@@ -201,6 +317,7 @@ namespace URLShortenerAPI.Services
                 await _cacheService.SetAsync("TopCountry_" + userID.ToString(), topLocations);
             return topLocations;
         }
+
         /// <summary>
         /// Gets the 5most used OS by the users.
         /// </summary>
@@ -273,7 +390,6 @@ namespace URLShortenerAPI.Services
             return ClicksInDay;
         }
 
-
         /// <summary>
         /// Gets the statistics about the clicks on the current month.
         /// </summary>
@@ -321,7 +437,6 @@ namespace URLShortenerAPI.Services
 
             return clicksinMonth;
         }
-
 
         /// <summary>
         /// logs a user in and gives them respective tokens to surf across webpages.
@@ -716,4 +831,5 @@ namespace URLShortenerAPI.Services
             return _context.Users.AsNoTracking().Any(x => x.Email == email);
         }
     }
+
 }

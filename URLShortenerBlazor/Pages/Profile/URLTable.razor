@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject IURLTableService TableService
 
+<PageTitle>Links</PageTitle>
 @if (errorMessage?.Count != 0 && errorMessage is not null)
 {
     <div class="alert alert-danger mt-1 mb-2 py-1">
@@ -23,7 +24,7 @@
                 <th>ID</th>
                 <th>Description</th>
                 <th>Short Code</th>
-                <th>Long URL</th>
+                <th>Original Link</th>
                 <th>Category</th>
                 <th>Status</th>
                 <th></th>
@@ -61,10 +62,10 @@
                     </td>
 
                     <td>
-                        <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
+                        <button class="btn btn-icon" title="Copy Short Link" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
                             <Icon Name="IconName.Copy"></Icon>
                         </button>
-                        <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                        <button class="btn btn-icon" style="color:orangered;" title="Delete Link" @onclick="() => DeleteURL(item.URL.ID)">
                             <Icon Name="IconName.Delete"></Icon>
                         </button>
                     </td>

@@ -1,7 +1,9 @@
 ﻿@page "/Profile"
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
+@inject IProfileDashboardService ProfileService
 
+<PageTitle>Profile</PageTitle>
 <main>
     <div class="container">
         <div class="card">
@@ -10,49 +12,53 @@
                     <div class="col-md-6 text-center text-md-start">
                         <Icon Name="IconName.UserCircle" IconSize="IconSize.x4" Class="mb-2"></Icon>
                         <h1 class="my-2">@userinfo.Name</h1>
+                        <h5 class="">@@@userinfo.Username.ToLower()</h5>
                     </div>
                     <div class="col-md-6 text-center text-md-end">
                         <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
                         <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Calendar"></Icon> @((DateTime.Now.Date - userinfo.CreatedAt.Date).Days) Days</p>
                     </div>
                 </div>
-                <div class="stats-container mt-2">
+                <div class="stats-container">
                     <div class="header-container">
                         <span class="stats-title">Stats</span>
-                        <a class="see-all" @onclick="() => SetActiveTab(Pages.Dashboard)">See All</a>
+                        @if (activeTab != Pages.Dashboard)
+                        {
+                            <a class="see-all" @onclick="() => SetActiveTab(Pages.Dashboard)">See All</a>
+                        }
                     </div>
 
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <Icon Name="IconName.Link" class="stat-icon" />
-                                <div class="stat-value">71</div>
+                                <div class="stat-value">@stats.TotalURLsCount</div>
                             </div>
                             <div class="stat-label mx-4">Links</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-header">
-                                <Icon Name="IconName.Eye" class="stat-icon" />
-                                <div class="stat-value">249</div>
+                                <Icon Name="IconName.Mouse" class="stat-icon" />
+                                <div class="stat-value">@stats.AverageClicksPerURL</div>
                             </div>
-                            <div class="stat-label mx-4">Clicks</div>
+                            <div class="stat-label mx-4">Average Clicks Per Link</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-header">
-                                <Icon Name="IconName.Globe" class="stat-icon" />
-                                <div class="stat-value">Germany</div>
+                                <Icon Name="IconName.History" class="stat-icon" />
+                                <div class="stat-value">@stats.ClicksYesterdayCount</div>
                             </div>
-                            <div class="stat-label mx-4">Top Country</div>
+                            <div class="stat-label mx-4">Clicks Yesterday</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-header">
-                                <Icon Name="IconName.Smartphone" class="stat-icon" />
-                                <div class="stat-value">Android</div>
+                                <Icon Name="IconName.ChartLine" class="stat-icon" />
+                                <div class="stat-value">@stats.WeeklyGrowth%</div>
                             </div>
-                            <div class="stat-label mx-4">Top Device</div>
+                            <div class="stat-label mx-4">Weekly Growth</div>
                         </div>
                     </div>
                 </div>
@@ -93,6 +99,7 @@
 
 @code {
     private bool isLoading = true;
+    private string? errorMessage = string.Empty;
 
     private enum Pages
     {
@@ -108,6 +115,8 @@
             Username = string.Empty
         };
 
+    private UserStats stats = new();
+
     private Pages activeTab = Pages.Dashboard;
     private int urlCount = 0;
 
@@ -116,12 +125,38 @@
         try
         {
             userinfo = await AuthService.GetUserInfoAsync();
+            await GetUserStats(userinfo.ID);
             isLoading = false;
             await base.OnInitializedAsync();
         }
         catch (Exception)
         {
-            
+
+        }
+    }
+
+    private async Task GetUserStats(int userID)
+    {
+        try
+        {
+            errorMessage = string.Empty;
+            StateHasChanged();
+            APIResponse<UserStats> response = await ProfileService.GetUserStats(userID);
+
+            if (response.Success)
+            {
+                stats = response.Result!;
+                return;
+            }
+            errorMessage = response.ErrorMessage;
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 

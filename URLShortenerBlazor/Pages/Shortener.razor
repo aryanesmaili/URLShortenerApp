@@ -1,21 +1,22 @@
-﻿@page "/URLShortener"
+﻿@page "/LinkShortener"
 @inject IAuthenticationService AuthService
 @inject IShortenerService ShortenerService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject Blazored.Toast.Services.IToastService ToastClient
 
+<PageTitle>Link Shortener</PageTitle>
 <body class="pt-5 bg-light">
     <div class="container py-5">
         <header class="text-center mb-5">
-            <h1 class="display-4 text-purple">URL Shortener</h1>
+            <h1 class="display-4 text-purple">Link Shortener</h1>
             <p class="lead">Simplify your links with ease!</p>
         </header>
 
         <div class="card shadow-sm">
             <div class="card-header bg-purple text-white py-3">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">Shorten Your URLs</h2>
+                    <h2 class="h5 mb-0">Shorten Your Links</h2>
                     <div class="d-flex justify-content-center align-items-center">
                         <label class="me-2">Single Mode</label>
                         <div class="form-check form-switch">
@@ -43,13 +44,13 @@
                         <EditForm Model="@urlCreate" OnValidSubmit="HandleSingleSubmit">
                             <DataAnnotationsValidator />
                             <div class="mb-3">
-                                <label for="longUrl" class="form-label">Long URL <span style="color:red;">*</span></label>
+                                <label for="longUrl" class="form-label">Link<span style="color:red;">*</span></label>
                                 <InputText @bind-Value="urlCreate.LongURL" type="text" class="form-control" id="longUrl"
                                            placeholder="https://www.example.com" required />
                                 <ValidationMessage For="() => urlCreate.LongURL" />
                             </div>
                             <div class="mb-3">
-                                <label for="categories" class="form-label">URL Categories (Comma Separated)</label>
+                                <label for="categories" class="form-label">Link Categories (Comma Separated)</label>
                                 <InputText @bind-Value="urlCreate.Categories" type="text" class="form-control" id="categories"
                                            placeholder="LordOfTheRings, Western-Cinema, Telegram_Channel" />
                                 <ValidationMessage For="() => urlCreate.Categories" />
@@ -80,13 +81,13 @@
                         <EditForm Model="urlCreate" OnValidSubmit="HandleBatchSubmit">
                             <div class="mb-3">
                                 <label for="batchURLs" class="form-label">
-                                    List of URLs <span style="color:red;">*</span>
+                                    List of Links <span style="color:red;">*</span>
                                 </label>
                                 <InputTextArea @bind-Value="URLs" class="form-control batch-url-area" id="batchURLs"
                                                rows="5" required />
                             </div>
                             <div class="mb-3">
-                                <label for="batchCategories" class="form-label">URL Categories (Comma Separated)</label>
+                                <label for="batchCategories" class="form-label">Link Categories (Comma Separated)</label>
                                 <InputText @bind-Value="urlCreate.Categories" type="text" class="form-control" id="batchCategories"
                                            placeholder="LordOfTheRings, Western-Cinema, Telegram_Channel" />
                             </div>
@@ -114,20 +115,20 @@
         @if (!(TableURLs.Count == 0))
         {
             <div class="mt-5">
-                <h2 class="h4 mb-3">Preview of Shortened URLs</h2>
+                <h2 class="h4 mb-3">Preview of Shortened Links</h2>
                 <table class="table-responsive table table-hover">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Description</th>
                             <th>Short Code</th>
-                            <th>Long URL</th>
+                            <th>Original Links</th>
                             <th>Category</th>
                             <th>Status</th>
                             @if (TableURLs.Count > 1)
                             {
                                 <th>
-                                    <button class="btn btn-icon" title="Copy ALl Shortened URLs at Once!" @onclick="() => CopyAllToClipboard()">
+                                    <button class="btn btn-icon" title="Copy ALl Shortened Links at Once!" @onclick="() => CopyAllToClipboard()">
                                         <Icon Name="IconName.Copy" IconSize="IconSize.Large" Style="color:White;"></Icon>
                                     </button>
                                 </th>
@@ -169,10 +170,10 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
+                                    <button class="btn btn-icon" title="Copy Short Link" @onclick="() => CopyToClipboard(item.URL.ShortCode!)">
                                         <Icon Name="IconName.Copy"></Icon>
                                     </button>
-                                    <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.URL.ID)">
+                                    <button class="btn btn-icon" style="color:orangered;" title="Delete Link" @onclick="() => DeleteURL(item.URL.ID)">
                                         <Icon Name="IconName.Delete"></Icon>
                                     </button>
                                 </td>
