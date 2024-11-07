@@ -109,7 +109,7 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        Top Clicked URLs
+                        Top Clicked Links
                     </div>
                     <div class="card-body p-0">
                         @if (!isLoading)
@@ -146,7 +146,7 @@
                             <table class="table table-borderless custom-table">
                                 <thead>
                                     <tr>
-                                        <th>Long URL</th>
+                                        <th>Original Link</th>
                                         <th>Short Code</th>
                                         <th>Date Created</th>
                                         <th>Actions</th>
@@ -160,10 +160,10 @@
                                             <td><a class="text-decoration-none" href="https://localhost:5261/@item.ShortCode">@item.ShortCode</a></td>
                                             <td>@ConvertToPersianDateTime(@item.CreatedAt)</td>
                                             <td>
-                                                <button class="btn btn-icon" title="Copy URL" @onclick="() => CopyToClipboard(item.ShortCode!)">
+                                                <button class="btn btn-icon" title="Copy Short Link" @onclick="() => CopyToClipboard(item.ShortCode!)">
                                                     <Icon Name="IconName.Copy"></Icon>
                                                 </button>
-                                                <button class="btn btn-icon" style="color:orangered;" title="Delete URL" @onclick="() => DeleteURL(item.ID)">
+                                                <button class="btn btn-icon" style="color:orangered;" title="Delete Link" @onclick="() => DeleteURL(item.ID)">
                                                     <Icon Name="IconName.Delete"></Icon>
                                                 </button>
                                             </td>

@@ -2,9 +2,9 @@
 @inject IProfileSettingsService SettingsService
 @inject Blazored.Toast.Services.IToastService ToastClient
 
+<PageTitle>Settings</PageTitle>
 <div class="mt-4">
     <div class="row">
-
         <!-- Error Section -->
         <div class="col-md-12">
             @if (errorMessages?.Count != 0 && errorMessages is not null)
@@ -197,6 +197,7 @@
             if (string.IsNullOrEmpty(userUpdateInfo?.Username?.Trim()) && string.IsNullOrEmpty(userUpdateInfo?.Name?.Trim()))
             {
                 errorMessages.Clear();
+                StateHasChanged();
                 return;
             }
 

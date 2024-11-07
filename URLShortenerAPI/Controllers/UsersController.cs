@@ -97,7 +97,7 @@ namespace URLShortenerAPI.Controllers
         }
 
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("Profile/{userId}")]
+        [HttpGet("Profile/URLTable/{userId}")]
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             APIResponse<PagedResult<URLDTO>> response;
@@ -171,6 +171,50 @@ namespace URLShortenerAPI.Controllers
                     Message = e.Message,
                     InnerException = e.InnerException?.ToString() ?? "",
                     StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
+        [HttpGet("Profile/{id:int}")]
+        public async Task<IActionResult> GetStats(int id)
+        {
+            APIResponse<UserStats> response;
+            var username = HttpContext.User.Identity?.Name;
+            try
+            {
+                UserStats result = await _userService.GetUserStats(id, username!);
+
+                response = new()
+                { Result = result, Success = true };
+                return Ok(response);
+            }
+            catch (NotFoundException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+            catch (ArgumentException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace?.ToString() ?? ""
                 };
                 return StatusCode(500, errorResponse);
             }

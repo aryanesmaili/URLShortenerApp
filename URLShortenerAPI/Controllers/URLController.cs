@@ -209,7 +209,7 @@ namespace URLShortenerAPI.Controllers
             {
                 await _urlService.ToggleActivation(id, username!);
                 response = new()
-                { Success = true, Result = string.Empty};
+                { Success = true, Result = string.Empty };
                 return Ok(response);
             }
             catch (ArgumentException e)

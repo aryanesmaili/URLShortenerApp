@@ -38,5 +38,22 @@ namespace URLShortenerBlazor.Services
 
             return result!;
         }
+
+        /// <summary>
+        /// Gets the info required to be shown in profile stats.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns> a <see cref="UserStats"/> object containing 4 needed elements.</returns>
+        public async Task<APIResponse<UserStats>> GetUserStats(int userID)
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Profile/{userID}");
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            HttpResponseMessage response = await _httpClient.SendAsync(req);
+
+            APIResponse<UserStats>? result = await JsonSerializer.DeserializeAsync<APIResponse<UserStats>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return result!;
+        }
+
     }
 }

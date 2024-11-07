@@ -198,5 +198,13 @@ namespace SharedDataModels.DTOs
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
     }
+
+    public class UserStats
+    {
+        public int TotalURLsCount { get; set; }
+        public int ClicksYesterdayCount { get; set; }
+        public double WeeklyGrowth { get; set; }
+        public double AverageClicksPerURL { get; set; }
+    }
 }
 

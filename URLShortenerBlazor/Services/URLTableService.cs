@@ -34,7 +34,7 @@ namespace URLShortenerBlazor.Services
         /// <returns></returns>
         public async Task<APIResponse<PagedResult<URLDTO>>> GetProfileURLList(int userID, int pageNumber, int pageSize)
         {
-            HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Profile/{userID}?pageNumber={pageNumber}&pageSize={pageSize}");
+            HttpRequestMessage req = new(HttpMethod.Get, $"api/Users/Profile/URLTable/{userID}?pageNumber={pageNumber}&pageSize={pageSize}");
             req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
