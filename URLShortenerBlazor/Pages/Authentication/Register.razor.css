@@ -7,24 +7,40 @@
 }
 
 .card {
-    /* Card styles */
-    width: 350px; /* Set a fixed width for the card */
-    background-color: #6f42c1; /* Purple background for the card */
-    color: white; /* White text color */
+    margin-top: 1.2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px 5px rgba(0, 0, 0, 0.15); /* Larger, softer shadow for separation */
+    width: 20%;
 }
 
-.custom-shadow {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Dense shadow */
-}
-
-.card a {
-    color: white; /* White link color */
-    text-decoration: none; /* Remove underline */
-}
-
-    .card a:hover {
-        color: black; /* Change link color on hover */
+    .card a {
+        text-decoration: none;
     }
+
+.card-header {
+    background: linear-gradient(135deg, #6f42c1, #8250df);
+    border-bottom: none;
+    padding: 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.card-body {
+    background: #f7f9fc;
+    position: relative;
+    border: 1px solid transparent;
+    border-top: none;
+    border-image: linear-gradient(135deg, rgba(111, 66, 193, 0.3), rgba(130, 80, 223, 0.3));
+    border-image-slice: 1;
+}
+
+.card-header h1 {
+    font-weight: 600;
+    margin: 0 !important;
+    color: white;
+}
 
 .alert {
     padding: 0 !important;
@@ -33,4 +49,36 @@
 .list-group-item {
     border: none !important;
     padding: 0 !important;
+}
+
+/* Style for form labels */
+.form-label {
+    font-size: 1rem; /* Sets font size */
+    font-weight: 500; /* Makes the text bold */
+    color: #495057; /* Sets label color to a dark gray */
+    margin-bottom: 0.5rem; /* Adds space below the label */
+    display: block; /* Ensures the label takes full width */
+}
+
+/* Style for input placeholders */
+input::placeholder {
+    font-style: italic; /* Makes the placeholder text italic */
+    color: #6c757d; /* Sets a light gray color for the placeholder */
+}
+
+/* Add focus effect on labels */
+input:focus + .form-label, textarea:focus + .form-label {
+    color: #0d6efd; /* Changes label color to blue when input is focused */
+}
+
+/* Style for small form text (e.g., instructions) */
+.form-text {
+    font-size: 0.875rem; /* Smaller text size */
+    color: #dc3545; /* Red color for error or instruction text */
+}
+
+/* Error message styling */
+.validation-message {
+    font-size: 0.875rem; /* Smaller text for validation messages */
+    color: #dc3545; /* Red color for error messages */
 }

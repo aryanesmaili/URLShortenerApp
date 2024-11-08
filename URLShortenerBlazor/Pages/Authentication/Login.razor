@@ -5,43 +5,47 @@
 <PageTitle>Login</PageTitle>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card custom-shadow p-4" style="width: 350px;background-color: #6f42c1; color:white;">
-        <h3 class="text-center mb-4">Login</h3>
+    <div class="card">
 
-        @if (errorMessage?.Count != 0 && errorMessage is not null)
-        {
-            <div class="alert alert-danger mt-1 mb-2 py-1">
-                <ul class="list-group list-group-flush">
-                    @foreach (var error in errorMessage)
-                    {
-                        <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
-                    }
-                </ul>
-            </div>
-        }
-        <EditForm Model="@loginDTO" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <div class="mb-3">
-                <label for="identifier" class="form-label">Email address Or Username</label>
-                <InputText @bind-Value="loginDTO.Identifier" type="text" class="form-control" id="identifier" placeholder="Email or username" required />
-                <ValidationMessage For="() => loginDTO.Identifier" />
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <InputText @bind-Value="loginDTO.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
-                <ValidationMessage For="() => loginDTO.Password" />
-            </div>
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Login</button>
-            </div>
-            <div class="mt-3 text-center">
-                <small><a href="#">Forgot password?</a></small>
-            </div>
-            <div class="mt-2 text-center">
-                <small>Don't have an account? <a href="/Signup">Sign up</a></small>
-            </div>
+        <div Class="card-header">
+            <h1 class="h3 text-center">Login</h1>
+        </div>
 
-        </EditForm>
+        <div class="card-body">
+            @if (errorMessage?.Count != 0 && errorMessage is not null)
+            {
+                <div class="alert alert-danger mt-1 mb-2 py-1">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var error in errorMessage)
+                        {
+                            <li class="list-group-item list-group-item-danger mx-3 my-2">@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <EditForm Model="@loginDTO" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="identifier" class="form-label">Email or Username</label>
+                    <InputText @bind-Value="loginDTO.Identifier" type="text" class="form-control" id="identifier" placeholder="Email or username" required />
+                    <ValidationMessage For="() => loginDTO.Identifier" />
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText @bind-Value="loginDTO.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
+                    <ValidationMessage For="() => loginDTO.Password" />
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+                <div class="mt-3 text-center">
+                    <small><a href="/ForgetPassword">Forgot password?</a></small>
+                </div>
+                <div class="mt-2 text-center">
+                    <small>Don't have an account? <a href="/Signup">Sign up</a></small>
+                </div>
+            </EditForm>
+        </div>
     </div>
 </div>
 

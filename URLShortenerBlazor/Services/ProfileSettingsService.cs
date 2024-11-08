@@ -11,19 +11,21 @@ namespace URLShortenerBlazor.Services
     public class ProfileSettingsService : IProfileSettingsService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _authedHttpClient;
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        public ProfileSettingsService(IHttpClientFactory httpClientFactory)
+        public ProfileSettingsService(IHttpClientFactory httpClientFactory, HttpClient httpClient)
         {
             _httpClientFactory = httpClientFactory;
-            _httpClient = _httpClientFactory.CreateClient("Auth");
+            _authedHttpClient = _httpClientFactory.CreateClient("Auth");
             _jsonSerializerOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,  // Make property name matching case-insensitive
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
             };
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -38,7 +40,7 @@ namespace URLShortenerBlazor.Services
                 Content = new StringContent(JsonSerializer.Serialize(userUpdate), Encoding.UTF8, "application/json")
             };
             req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage response = await _httpClient.SendAsync(req);
+            HttpResponseMessage response = await _authedHttpClient.SendAsync(req);
             APIResponse<UserDTO>? responseContent;
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -84,7 +86,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(reqInfo), Encoding.UTF8, "application/json")
             };
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
             APIResponse<UserDTO>? responseContent;
             responseContent = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
@@ -103,7 +105,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
             };
-
+            req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             HttpResponseMessage response = await _httpClient.SendAsync(req);
 
             APIResponse<UserDTO>? responseContent;
@@ -126,7 +128,7 @@ namespace URLShortenerBlazor.Services
         {
             HttpRequestMessage req = new(HttpMethod.Post, $"api/Users/ResetEmail/{userID}");
             req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage response = await _httpClient.SendAsync(req);
+            HttpResponseMessage response = await _authedHttpClient.SendAsync(req);
 
             APIResponse<string>? responseContent;
             responseContent = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
@@ -147,7 +149,7 @@ namespace URLShortenerBlazor.Services
                 Content = new StringContent(JsonSerializer.Serialize(reqInfo), Encoding.UTF8, "application/json")
             };
             req.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            HttpResponseMessage response = await _httpClient.SendAsync(req);
+            HttpResponseMessage response = await _authedHttpClient.SendAsync(req);
 
             APIResponse<string>? responseContent;
             responseContent = await JsonSerializer.DeserializeAsync<APIResponse<string>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
@@ -167,7 +169,7 @@ namespace URLShortenerBlazor.Services
             {
                 Content = new StringContent(JsonSerializer.Serialize(reqInfo), Encoding.UTF8, "application/json")
             };
-            HttpResponseMessage response = await _httpClient.SendAsync(req);
+            HttpResponseMessage response = await _authedHttpClient.SendAsync(req);
 
             APIResponse<UserDTO>? responseContent;
             responseContent = await JsonSerializer.DeserializeAsync<APIResponse<UserDTO>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
