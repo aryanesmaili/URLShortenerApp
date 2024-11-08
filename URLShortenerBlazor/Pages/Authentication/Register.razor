@@ -96,6 +96,15 @@
 
     private bool captchaSuccess = false;
 
+    [CascadingParameter] public Task<AuthenticationState> authStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await authStateTask).User;
+        if (user.Identity.IsAuthenticated)
+            Navigation.NavigateTo("/");
+    }
+
     private async Task TurnstileCallback(string token)
     {
         APIResponse<CaptchaVerificationResponse> captchaResult = await AuthService.VerifyCaptcha(token);

@@ -1,4 +1,5 @@
 ﻿@page "/Profile"
+@attribute [Authorize]
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject IProfileDashboardService ProfileService

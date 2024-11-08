@@ -1,0 +1,66 @@
+﻿body {
+    background-color: #f0f0f0;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+}
+
+.lead {
+    font-size: 1.3em;
+    font-weight: 500;
+    color: #555;
+}
+
+.btn-primary {
+    background-color: #333 !important;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: #555 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+.typewriter {
+    color: #333;
+    font-size: 2.5em;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 2px solid #333;
+    width: 0;
+    margin: 0 auto;
+    animation: typing 3s steps(14, end) forwards, blink-cursor 0.5s step-end 5 alternate, removeCursor 0.1s 3.5s forwards;
+}
+
+@keyframes typing {
+    from {
+        width: 0
+    }
+
+    to {
+        width: 14ch
+    }
+}
+
+@keyframes blink-cursor {
+    50% {
+        border-right-color: transparent
+    }
+}
+
+@keyframes removeCursor {
+    to {
+        border-right: none
+    }
+}
+
+@media (max-width: 576px) {
+    .typewriter {
+        font-size: 2em;
+    }
+}

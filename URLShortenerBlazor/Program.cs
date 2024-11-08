@@ -23,13 +23,13 @@ builder.Services.AddScoped<CustomAuthProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
 builder.Services.AddAuthorizationCore();
 
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-builder.Services.AddTransient<IShortenerService, ShortenerService>();
-builder.Services.AddTransient<IURLTableService, URLTableService>();
-builder.Services.AddTransient<IRedirectService, RedirectService>();
-builder.Services.AddTransient<IProfileDashboardService, ProfileDashboardService>();
-builder.Services.AddTransient<IProfileSettingsService, ProfileSettingsService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IShortenerService, ShortenerService>();
+builder.Services.AddScoped<IURLTableService, URLTableService>();
+builder.Services.AddScoped<IRedirectService, RedirectService>();
+builder.Services.AddScoped<IProfileDashboardService, ProfileDashboardService>();
+builder.Services.AddScoped<IProfileSettingsService, ProfileSettingsService>();
 
 builder.Services
     .AddBlazorise(options => options.Immediate = true)
@@ -39,6 +39,5 @@ builder.Services
 builder.Services.AddBlazoredToast();
 
 builder.Services.AddScoped<HTTPAuthAdder>();
-
 
 await builder.Build().RunAsync();
