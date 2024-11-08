@@ -12,5 +12,6 @@ namespace URLShortenerBlazor.Services.Interfaces
         public Task<UserDTO> GetUserInfoAsync();
         public Task UpdateUserInfo(UserDTO user);
         public Task ClearUserInfo();
+        Task<APIResponse<CaptchaVerificationResponse>> VerifyCaptcha(string token);
     }
 }

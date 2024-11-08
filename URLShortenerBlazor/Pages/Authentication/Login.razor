@@ -1,4 +1,5 @@
 ﻿@page "/Login"
+@using BlazorTurnstile
 @inject NavigationManager Navigation
 @inject IAuthenticationService AuthService
 
@@ -35,6 +36,19 @@
                     <InputText @bind-Value="loginDTO.Password" type="password" class="form-control" id="password" placeholder="Enter your password" required />
                     <ValidationMessage For="() => loginDTO.Password" />
                 </div>
+
+                <!----
+                <div class="d-grid gap-2">
+                    <Turnstile @bind-Token="@_turnstileToken"
+                               SiteKey="0x4AAAAAAAzgVfFysbsqJ1AU"
+                               Appearance="@TurnstileAppearance.InteractionOnly"
+                               Execution="@TurnstileExecution.Render"
+                               Theme="@TurnstileTheme.Light"
+                               OnCallback="@TurnstileCallback"
+                               OnErrorCallback="@TurnstileErrorCallback"
+                               ResponseField="@false" />
+                </div>
+                ---->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
@@ -54,12 +68,50 @@
     private UserLoginDTO loginDTO = new();
     private List<string> errorMessage = new();
 
+    private Turnstile turnstile = default!;
+
+    private string? _turnstileToken;
+
+    private bool captchaSuccess = false;
+
+    private async Task TurnstileCallback(string token)
+    {
+        APIResponse<CaptchaVerificationResponse> captchaResult = await AuthService.VerifyCaptcha(token);
+        if (captchaResult.Success)
+        {
+            captchaSuccess = true;
+            return;
+        }
+        await ResetTurnstile();
+        errorMessage = new() { captchaResult.ErrorMessage };
+        StateHasChanged();
+    }
+
+    private void TurnstileErrorCallback(string message)
+    {
+        errorMessage = new() { message };
+        StateHasChanged();
+    }
+
+    private async Task ResetTurnstile()
+    {
+        await turnstile.ResetAsync();
+    }
+
     private async Task HandleLogin()
     {
         try
         {
+            // if (!captchaSuccess)
+            // {
+            //     errorMessage = new() { "Captcha Has Not Been Verified Yet" };
+            //     return;
+            // }
+
+            // captchaSuccess = false;
             errorMessage.Clear();
             StateHasChanged();
+
             APIResponse<UserDTO> response = await AuthService.Login(loginDTO);
 
             if (response.Success)
@@ -81,6 +133,10 @@
         catch (Exception ex)
         {
             errorMessage = new() { ex.Message };
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 }

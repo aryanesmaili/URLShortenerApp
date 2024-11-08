@@ -22,8 +22,8 @@ namespace URLShortenerBlazor.Services
         {
             _localStorage = localStorage;
             _httpClientFactory = httpClientFactory;
-            _httpClient = httpClient;
             _authedHttpClient = _httpClientFactory.CreateClient("Auth");
+            _httpClient = httpClient;
             _jsonSerializerOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,  // Make property name matching case-insensitive
@@ -31,6 +31,19 @@ namespace URLShortenerBlazor.Services
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase  // Handle camelCase JSON property names
             };
             _stateProvider = stateProvider;
+        }
+
+        /// <summary>
+        /// Sends the captcha token to backend to be verified there.
+        /// </summary>
+        /// <param name="token">the token to be sent to backend</param>
+        /// <returns></returns>
+        public async Task<APIResponse<CaptchaVerificationResponse>> VerifyCaptcha(string token)
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/Users/Captcha", token);
+            APIResponse<CaptchaVerificationResponse>? result = await JsonSerializer.DeserializeAsync<APIResponse<CaptchaVerificationResponse>>(await response.Content.ReadAsStreamAsync(), _jsonSerializerOptions);
+
+            return result!;
         }
 
         /// <summary>

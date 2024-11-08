@@ -1,5 +1,6 @@
 ﻿using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
+using SharedDataModels.Responses;
 
 namespace URLShortenerAPI.Services.Interfaces
 {
@@ -28,5 +29,6 @@ namespace URLShortenerAPI.Services.Interfaces
         public bool IsEmailTaken(string email);
         public bool IsAdmin(int id);
         public bool IsAdmin(string username);
+        Task<CaptchaVerificationResponse> VerifyCaptcha(string token, string userIP);
     }
 }

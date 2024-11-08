@@ -1,6 +1,7 @@
 ﻿@page "/SignUp"
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
+@using BlazorTurnstile;
 
 <PageTitle>Register</PageTitle>
 
@@ -54,6 +55,18 @@
                         <ValidationMessage For="() => userInfo.ConfirmPassword" />
                     </div>
                 </div>
+                <!----
+                <div class="d-grid gap-2">
+                    <Turnstile @bind-Token="@_turnstileToken"
+                               SiteKey="0x4AAAAAAAzgVfFysbsqJ1AU"
+                               Appearance="@TurnstileAppearance.InteractionOnly"
+                               Execution="@TurnstileExecution.Render"
+                               Theme="@TurnstileTheme.Light"
+                               OnCallback="@TurnstileCallback"
+                               OnErrorCallback="@TurnstileErrorCallback"
+                               ResponseField="@false" />
+                </div>
+                ---->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Register</button>
                 </div>
@@ -77,12 +90,50 @@
         };
     private List<string> errorMessage = new();
 
+    private Turnstile turnstile = default!;
+
+    private string? _turnstileToken;
+
+    private bool captchaSuccess = false;
+
+    private async Task TurnstileCallback(string token)
+    {
+        APIResponse<CaptchaVerificationResponse> captchaResult = await AuthService.VerifyCaptcha(token);
+        if (captchaResult.Success)
+        {
+            captchaSuccess = true;
+            return;
+        }
+        await ResetTurnstile();
+        errorMessage = new() { captchaResult.ErrorMessage };
+        StateHasChanged();
+    }
+
+    private void TurnstileErrorCallback(string message)
+    {
+        errorMessage = new() { message };
+        StateHasChanged();
+    }
+
+    private async Task ResetTurnstile()
+    {
+        await turnstile.ResetAsync();
+    }
+
     private async Task HandleRegister()
     {
         try
         {
+            // if (!captchaSuccess)
+            // {
+            //     errorMessage = new() { "Captcha Has Not Been Verified Yet" };
+            //     return;
+            // }
+
+            //captchaSuccess = false;
             errorMessage.Clear();
             StateHasChanged();
+
             APIResponse<UserDTO> response = await AuthService.Register(userInfo);
 
             if (response.Success)
@@ -104,6 +155,10 @@
         catch (Exception ex)
         {
             errorMessage = new() { ex.Message };
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 }

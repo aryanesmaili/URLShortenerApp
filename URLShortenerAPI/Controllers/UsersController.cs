@@ -288,6 +288,33 @@ namespace URLShortenerAPI.Controllers
         }
 
         [IgnoreAntiforgeryToken]
+        [HttpPost("Captcha")]
+        public async Task<IActionResult> VerifyCaptcha([FromBody] string token)
+        {
+            APIResponse<CaptchaVerificationResponse> response;
+            try
+            {
+                string IPAddress = HttpContext.Connection.RemoteIpAddress!.MapToIPv4().ToString();
+                CaptchaVerificationResponse result = await _userService.VerifyCaptcha(token, IPAddress);
+
+                response = new()
+                { Success = result.Success, Result = result };
+                return Ok(response);
+
+            }
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [IgnoreAntiforgeryToken]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
         {

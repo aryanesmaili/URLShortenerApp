@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
+using SharedDataModels.Responses;
+using System.Text.Json;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URL;
@@ -13,13 +15,21 @@ using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services
 {
-    internal class UserService(AppDbContext context, IAuthService authorizationService, IMapper mapper, IEmailService emailService, ICacheService cacheService) : IUserService
+    internal class UserService(AppDbContext context,
+                               IAuthService authorizationService,
+                               IMapper mapper,
+                               IEmailService emailService,
+                               ICacheService cacheService,
+                               IConfiguration settings,
+                               HttpClient httpClient) : IUserService
     {
         private readonly AppDbContext _context = context;
         private readonly IAuthService _authService = authorizationService;
         private readonly IMapper _mapper = mapper;
         private readonly IEmailService _emailService = emailService;
         private readonly ICacheService _cacheService = cacheService;
+        private readonly string _secretKey = settings["TurnstileSecret"]!;
+        private readonly HttpClient _httpClient = httpClient;
 
         /// <summary>
         /// gets a user's info by their ID asynchronously.
@@ -182,7 +192,6 @@ namespace URLShortenerAPI.Services
 
             return yesterdayClicksCount;
         }
-
 
         /// <summary>
         /// Calculates how the clicks have grown since last week.
@@ -765,6 +774,35 @@ namespace URLShortenerAPI.Services
             UserModel user = await _context.Users.FindAsync(id) ?? throw new NotFoundException($"User {id} Does not Exist");
             _context.Remove(user);
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// sends the token generated in front-end to cloudflare to verify if the captcha is valid.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="userIP"></param>
+        /// <returns></returns>
+        public async Task<CaptchaVerificationResponse> VerifyCaptcha(string token, string userIP)
+        {
+            const string cloudflareURL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+            FormUrlEncodedContent formData = new(
+            [
+            new KeyValuePair<string, string>("secret", _secretKey),
+            new KeyValuePair<string, string>("response", token),
+            new KeyValuePair<string, string>("remoteip", userIP ?? string.Empty) // Optional IP
+        ]);
+
+            HttpResponseMessage response = await _httpClient.PostAsync(cloudflareURL, formData);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new CaptchaVerificationResponse { Success = false, ErrorCodes = ["bad-request"] };
+            }
+
+            CaptchaVerificationResponse? captchaResponse = await JsonSerializer.DeserializeAsync<CaptchaVerificationResponse>(await response.Content.ReadAsStreamAsync());
+
+            return captchaResponse ?? new CaptchaVerificationResponse { Success = false, ErrorCodes = ["internal-error"] };
         }
 
         /// <summary>
