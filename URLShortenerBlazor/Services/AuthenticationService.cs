@@ -92,9 +92,10 @@ namespace URLShortenerBlazor.Services
         /// This function first invalidates the tokens in backend, then cleans localstorage.
         /// </summary>
         /// <returns></returns>
-        public async Task LogOutAsync()
+        public async Task LogOutAsync(bool backendLogout = true)
         {
-            await _authedHttpClient.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
+            if (backendLogout)
+                await _authedHttpClient.PostAsync("/api/Users/Logout", null); // Send null as there’s no content
 
             await ClearUserInfo(); // clear local storage 
 

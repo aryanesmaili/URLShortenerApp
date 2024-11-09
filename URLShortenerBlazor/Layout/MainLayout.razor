@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject IAuthenticationService AuthService
-@inject CustomAuthProvider AuthProvider
  @inject Blazored.Toast.Services.IToastService ToastClient
 
 <div class="page">
@@ -84,9 +83,11 @@
     private bool isLoggedIn;
     private ClaimsPrincipal? _user;
     private int userID;
+
+    [CascadingParameter] public Task<AuthenticationState>? authStateTask { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        _user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        _user = (await authStateTask!).User;
         if (_user != null)
         {
             isLoggedIn = _user.Identity!.IsAuthenticated;
@@ -97,8 +98,7 @@
             }
             catch (ArgumentNullException)
             {
-                await AuthService.ClearUserInfo();
-                AuthProvider.MarkUserAsLoggedOut();
+                await AuthService.LogOutAsync(backendlogout: false);
                 ToastClient.ShowError("You are Not Logged in! Redirecting...", options => options.Position = Blazored.Toast.Configuration.ToastPosition.BottomCenter);
                 await Task.Delay(2000);
                 Navigation.NavigateTo("/Login", true);
@@ -111,6 +111,6 @@
         await AuthService.LogOutAsync();
         isLoggedIn = false;
         StateHasChanged();
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/", true);
     }
 }
