@@ -1,6 +1,6 @@
 ﻿namespace SharedDataModels.Responses
 {
-    public class APIResponse<T> where T : class
+    public class APIResponse<T>
     {
         public bool Success { get; set; } = false;
         public ErrorType? ErrorType { get; set; }

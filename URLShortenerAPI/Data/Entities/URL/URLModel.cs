@@ -1,5 +1,6 @@
 ﻿using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
+using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 
@@ -26,5 +27,8 @@ namespace URLShortenerAPI.Data.Entities.URL
 
         public int URLAnalyticsID { get; set; }
         public URLAnalyticsModel? URLAnalytics { get; set; }
+
+        public int? PurchaseID { get; set; }
+        public PurchaseModel? Purchase { get; set; }
     }
 }

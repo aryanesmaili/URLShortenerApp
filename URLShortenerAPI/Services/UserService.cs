@@ -111,6 +111,23 @@ namespace URLShortenerAPI.Services
         }
 
         /// <summary>
+        /// Gets User's Account Balance.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        public async Task<double> GetUserBalance(int userID, string username)
+        {
+            await _authService.AuthorizeUserAccessAsync(userID, username);
+
+            double balance = (await _context.Users
+                 .Include(x => x.FinancialRecord).ThenInclude(x => x.Deposits)
+                 .Include(x => x.FinancialRecord).ThenInclude(x => x.Purchases)
+                 .AsNoTracking()
+                 .FirstAsync(x => x.ID == userID)).FinancialRecord.Balance;
+            return balance;
+        }
+
+        /// <summary>
         /// Gets the four elements needed to show in user stats.
         /// </summary>
         /// <param name="userID"></param>
@@ -497,6 +514,7 @@ namespace URLShortenerAPI.Services
         {
             UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUserInfo.Password); // Hashing user's password to ensure security
+            newUser.FinancialRecord = new() { User = newUser };
 
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
@@ -746,7 +764,8 @@ namespace URLShortenerAPI.Services
                 CreatedAt = user.CreatedAt,
                 URLs = user.URLs != null ? new List<URLModel>(user.URLs) : null,
                 URLCategories = user.URLCategories != null ? new List<URLCategoryModel>(user.URLCategories) : null,
-                RefreshTokens = user.RefreshTokens != null ? new List<RefreshToken>(user.RefreshTokens) : null
+                RefreshTokens = user.RefreshTokens != null ? new List<RefreshToken>(user.RefreshTokens) : null,
+                FinancialRecord = user.FinancialRecord
             };
 
             user = _mapper.Map(newUserInfo, user);

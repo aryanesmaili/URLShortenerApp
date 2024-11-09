@@ -1,4 +1,5 @@
 ﻿using SharedDataModels.DTOs;
+using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 
@@ -19,6 +20,9 @@ namespace URLShortenerAPI.Data.Entities.User
         public ICollection<URLModel>? URLs { get; set; }
         public ICollection<URLCategoryModel>? URLCategories { get; set; }
         public ICollection<RefreshToken>? RefreshTokens { get; set; }
+
+        public int FinancialID { get; set; }
+        public required FinancialRecord FinancialRecord { get; set; }
     }
 
     internal class RefreshToken

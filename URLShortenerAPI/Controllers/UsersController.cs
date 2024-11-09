@@ -221,6 +221,53 @@ namespace URLShortenerAPI.Controllers
         }
 
         [Authorize(Policy = "AllUsers")]
+        [HttpGet("Balance/{id:int}")]
+        public async Task<IActionResult> GetUserBalance([FromRoute] int id)
+        {
+            APIResponse<double> response;
+            var username = HttpContext.User.Identity?.Name;
+            try
+            {
+                double result = await _userService.GetUserBalance(id, username!);
+                response = new()
+                { Success = true, Result = result };
+                return Ok(response);
+            }
+
+            catch (ArgumentException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (NotFoundException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+                return NotFound(response);
+            }
+
+            catch (NotAuthorizedException e)
+            {
+                response = new()
+                { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+                return BadRequest(response);
+            }
+
+            catch (Exception e)
+            {
+                DebugErrorResponse errorResponse = new()
+                {
+                    Message = e.Message,
+                    InnerException = e.InnerException?.ToString() ?? "",
+                    StackTrace = e.StackTrace?.ToString() ?? ""
+                };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Policy = "AllUsers")]
         [HttpGet("Dashboard/{id:int}")]
         public async Task<IActionResult> GetDashboard([FromRoute] int id)
         {

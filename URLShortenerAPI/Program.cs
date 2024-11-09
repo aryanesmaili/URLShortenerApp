@@ -117,7 +117,7 @@ builder.Services.AddAuthentication(auth =>
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
-    .AddPolicy("AllUsers", policy => policy.RequireRole("Admin", "ChannelAdmin"))
+    .AddPolicy("AllUsers", policy => policy.RequireRole("Admin", "ChannelAdmin", "TelegramBot"))
     .AddPolicy("TelegramBot", policy => policy.RequireRole("Admin", "TelegramBot"));
 
 builder.Services.AddAntiforgery(options =>
