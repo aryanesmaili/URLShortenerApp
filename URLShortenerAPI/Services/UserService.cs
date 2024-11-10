@@ -119,11 +119,9 @@ namespace URLShortenerAPI.Services
         {
             await _authService.AuthorizeUserAccessAsync(userID, username);
 
-            double balance = (await _context.Users
-                 .Include(x => x.FinancialRecord).ThenInclude(x => x.Deposits)
-                 .Include(x => x.FinancialRecord).ThenInclude(x => x.Purchases)
-                 .AsNoTracking()
-                 .FirstAsync(x => x.ID == userID)).FinancialRecord.Balance;
+            double balance = (await _context.Users.Include(x => x.FinancialRecord).AsNoTracking().FirstOrDefaultAsync(x => x.ID == userID) 
+                ?? throw new NotFoundException($"User {userID} Not Found.")
+                ).FinancialRecord.Balance;
             return balance;
         }
 

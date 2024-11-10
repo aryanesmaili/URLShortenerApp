@@ -142,11 +142,9 @@ namespace URLShortenerAPI.Services
         private async Task IsPurchasePossible(int userID)
         {
             // Fetch the latest balance
-            double balance = (await _context.Users
-                .Include(x => x.FinancialRecord).ThenInclude(x => x.Deposits)
-                .Include(x => x.FinancialRecord).ThenInclude(x => x.Purchases)
-                .AsNoTracking()
-                .FirstAsync(x => x.ID == userID)).FinancialRecord.Balance;
+            double balance = (await _context.Users.Include(x => x.FinancialRecord).AsNoTracking().FirstOrDefaultAsync(x => x.ID == userID)
+                ?? throw new NotFoundException($"User {userID} Not Found.")
+                ).FinancialRecord.Balance;
 
             if (price > balance)
                 throw new InsufficientBalanceException($"User's balance is insufficient. Required: {price}");
@@ -173,6 +171,7 @@ namespace URLShortenerAPI.Services
             };
 
             user.FinancialRecord.Purchases.Add(purchase);
+            user.FinancialRecord.Balance -= price;
             _context.Update(user.FinancialRecord);
         }
 

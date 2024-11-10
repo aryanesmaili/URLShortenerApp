@@ -7,16 +7,16 @@ namespace URLShortenerAPI.Data.Entities.Finance
     {
         public int ID { get; set; }
 
-        private double? _cachedBalance;
+        private double _balance;
         public double Balance
         {
             get
             {
-                if (!_cachedBalance.HasValue)
-                {
-                    _cachedBalance = Deposits.Where(x => x.IsSuccessful).Sum(x => x.Amount) - Purchases.Sum(x => x.Amount);
-                }
-                return _cachedBalance.Value;
+                return Math.Round(_balance, 2);
+            }
+            set
+            {
+                _balance = value;
             }
         }
 
