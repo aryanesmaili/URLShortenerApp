@@ -7,7 +7,7 @@ using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers

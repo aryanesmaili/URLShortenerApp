@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.Utility
 {
     internal static class UtilityFunctions
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.URLRelated;
 using URLShortenerAPI.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {

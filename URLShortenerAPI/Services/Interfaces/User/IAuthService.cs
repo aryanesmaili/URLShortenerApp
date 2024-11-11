@@ -1,7 +1,7 @@
 ﻿using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 
-namespace URLShortenerAPI.Services.Interfaces
+namespace URLShortenerAPI.Services.Interfaces.UserRelated
 {
     internal interface IAuthService
     {

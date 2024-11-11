@@ -9,10 +9,10 @@ using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.User
 {
     internal class AuthService(AppDbContext context, JwtSettings jwtSettings) : IAuthService
     {

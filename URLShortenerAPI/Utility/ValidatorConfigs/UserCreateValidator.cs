@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using SharedDataModels.DTOs;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
 
 namespace URLShortenerAPI.Responses.ValidatorConfigs
 {

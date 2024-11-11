@@ -1,6 +1,6 @@
 ﻿using SharedDataModels.DTOs;
 
-namespace URLShortenerAPI.Services.Interfaces
+namespace URLShortenerAPI.Services.Interfaces.URLRelated
 {
     public interface IURLService
     {

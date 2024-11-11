@@ -3,7 +3,7 @@ using System.Text.Json;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Services.Interfaces;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.Utility
 {
     internal class UserAgentService : IUserAgentService
     {

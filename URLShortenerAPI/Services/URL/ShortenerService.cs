@@ -1,10 +1,9 @@
-﻿using URLShortenerAPI.Services.Interfaces;
-
-namespace URLShortenerAPI.Services
+﻿namespace URLShortenerAPI.Services.URL
 {
     using System;
     using System.Security.Cryptography;
     using System.Text;
+    using URLShortenerAPI.Services.Interfaces.URLRelated;
 
     /// <summary>
     /// A service that provides URL shortening functionalities.

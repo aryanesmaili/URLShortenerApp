@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Mail;
 using URLShortenerAPI.Data.Entities.Settings;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.User
 {
     internal class EmailService(IOptions<SMTPSettings> smtpSettings) : IEmailService
     {

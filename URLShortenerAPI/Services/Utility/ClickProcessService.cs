@@ -4,7 +4,7 @@ using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Services.Interfaces;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.Utility
 {
     internal class ClickProcessService : BackgroundService
     {

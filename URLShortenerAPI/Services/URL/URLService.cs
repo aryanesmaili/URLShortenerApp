@@ -7,9 +7,11 @@ using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.URLRelated;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.URL
 {
     internal class URLService : IURLService
     {

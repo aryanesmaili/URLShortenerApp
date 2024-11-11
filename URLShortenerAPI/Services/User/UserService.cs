@@ -11,9 +11,11 @@ using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Services.Utility;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.User
 {
     internal class UserService(AppDbContext context,
                                IAuthService authorizationService,
@@ -119,7 +121,7 @@ namespace URLShortenerAPI.Services
         {
             await _authService.AuthorizeUserAccessAsync(userID, username);
 
-            double balance = (await _context.Users.Include(x => x.FinancialRecord).AsNoTracking().FirstOrDefaultAsync(x => x.ID == userID) 
+            double balance = (await _context.Users.Include(x => x.FinancialRecord).AsNoTracking().FirstOrDefaultAsync(x => x.ID == userID)
                 ?? throw new NotFoundException($"User {userID} Not Found.")
                 ).FinancialRecord.Balance;
             return balance;
@@ -234,7 +236,7 @@ namespace URLShortenerAPI.Services
             else if (lastWeekClicks == 0)
                 return 100;
             // Calculate growth percentage
-            growth = ((double)(thisWeekClicks - lastWeekClicks) / lastWeekClicks) * 100;
+            growth = (double)(thisWeekClicks - lastWeekClicks) / lastWeekClicks * 100;
 
             return Math.Round(growth, 2);
         }

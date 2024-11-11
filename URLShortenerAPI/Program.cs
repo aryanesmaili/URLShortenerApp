@@ -9,8 +9,13 @@ using System.Text;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Responses.MapperConfigs;
-using URLShortenerAPI.Services;
+using URLShortenerAPI.Services.Infra;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.URLRelated;
+using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Services.URL;
+using URLShortenerAPI.Services.User;
+using URLShortenerAPI.Services.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 

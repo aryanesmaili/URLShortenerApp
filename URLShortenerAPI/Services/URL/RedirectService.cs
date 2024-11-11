@@ -5,9 +5,10 @@ using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Services.Interfaces.URLRelated;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.URL
 {
     internal class RedirectService : IRedirectService
     {

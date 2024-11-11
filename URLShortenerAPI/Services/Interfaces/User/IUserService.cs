@@ -2,7 +2,7 @@
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 
-namespace URLShortenerAPI.Services.Interfaces
+namespace URLShortenerAPI.Services.Interfaces.UserRelated
 {
     public interface IUserService
     {

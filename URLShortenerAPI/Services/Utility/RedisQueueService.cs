@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using URLShortenerAPI.Services.Interfaces;
 
-namespace URLShortenerAPI.Services
+namespace URLShortenerAPI.Services.Utility
 {
     internal class RedisQueueService : IRedisQueueService
     {
