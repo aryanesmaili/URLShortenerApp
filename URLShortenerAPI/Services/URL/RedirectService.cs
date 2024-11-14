@@ -4,8 +4,8 @@ using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.URL;
-using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Services.Interfaces.URLRelated;
+using URLShortenerAPI.Data.Interfaces.Infra;
+using URLShortenerAPI.Data.Interfaces.URL;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services.URL

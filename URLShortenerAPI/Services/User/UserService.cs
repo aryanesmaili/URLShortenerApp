@@ -10,8 +10,8 @@ using URLShortenerAPI.Data.Entities.ClickInfo;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
-using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Data.Interfaces.Infra;
+using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Services.Utility;
 using URLShortenerAPI.Utility.Exceptions;
 

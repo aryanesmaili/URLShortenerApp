@@ -2,7 +2,7 @@
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using URLShortenerAPI.Data.Entities.Analytics;
-using URLShortenerAPI.Services.Interfaces.URLRelated;
+using URLShortenerAPI.Data.Interfaces.URL;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers

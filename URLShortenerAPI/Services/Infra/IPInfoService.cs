@@ -1,6 +1,7 @@
 ﻿using IPinfo;
 using IPinfo.Models;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Data.Interfaces.Infra;
+
 namespace URLShortenerAPI.Services.Utility
 {
     internal class IPInfoService : IIPInfoService

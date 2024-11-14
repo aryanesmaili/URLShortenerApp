@@ -3,15 +3,13 @@
     using System;
     using System.Security.Cryptography;
     using System.Text;
-    using URLShortenerAPI.Services.Interfaces.URLRelated;
+    using URLShortenerAPI.Data.Interfaces.URL;
 
     /// <summary>
     /// A service that provides URL shortening functionalities.
     /// </summary>
     internal class ShortenerService : IShortenerService
     {
-        // fixed length for the length of shortened URLs.
-        private const int ShortUrlLength = 6;
         // Allowed characters to exist in shortened URL.
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         private const string Alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -79,15 +77,15 @@
         /// Handles collisions by generating a random suffix to ensure uniqueness of the short URL.
         /// </summary>
         /// <param name="shortURL">The base short URL to check for collisions.</param>
-        /// <param name="length">The length of the random suffix to be generated (default is 6).</param>
+        /// <param name="lengthToAdd">The length of the random suffix to be generated (default is 6).</param>
         /// <returns>A unique short URL with a random suffix added to it.</returns>
-        public string CollisionHandler(ref string shortURL, int length = ShortUrlLength)
+        public string CollisionHandler(ref string shortURL, int lengthToAdd = 1)
         {
             // Create a buffer to hold the randomly generated characters
-            char[] buffer = new char[length];
+            char[] buffer = new char[lengthToAdd];
 
             // Fill the buffer with random characters from the allowed set
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < lengthToAdd; i++)
             {
                 buffer[i] = Chars[random.Next(Chars.Length)];
             }
@@ -96,5 +94,4 @@
             return shortURL += new string(buffer);
         }
     }
-
 }

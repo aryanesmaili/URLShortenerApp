@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using URLShortenerAPI.Data.Entities.Settings;
-using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Data.Interfaces.User;
 
 namespace URLShortenerAPI.Services.User
 {

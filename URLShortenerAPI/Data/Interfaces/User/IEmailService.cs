@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Services.Interfaces.UserRelated
+﻿namespace URLShortenerAPI.Data.Interfaces.User
 {
     public interface IEmailService
     {

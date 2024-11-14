@@ -10,7 +10,7 @@ using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
-using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services.User

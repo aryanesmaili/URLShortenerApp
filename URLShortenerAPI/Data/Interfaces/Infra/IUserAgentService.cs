@@ -1,6 +1,6 @@
 ﻿using URLShortenerAPI.Data.Entities.ClickInfo;
 
-namespace URLShortenerAPI.Services.Interfaces
+namespace URLShortenerAPI.Data.Interfaces.Infra
 {
     internal interface IUserAgentService
     {

@@ -2,7 +2,7 @@
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Analytics;
 using URLShortenerAPI.Data.Entities.ClickInfo;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Data.Interfaces.Infra;
 
 namespace URLShortenerAPI.Services.Utility
 {

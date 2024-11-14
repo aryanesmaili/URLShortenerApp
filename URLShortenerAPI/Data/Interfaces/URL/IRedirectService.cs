@@ -1,7 +1,7 @@
 ﻿using SharedDataModels.DTOs;
 using URLShortenerAPI.Data.Entities.Analytics;
 
-namespace URLShortenerAPI.Services.Interfaces.URLRelated
+namespace URLShortenerAPI.Data.Interfaces.URL
 {
     public interface IRedirectService
     {

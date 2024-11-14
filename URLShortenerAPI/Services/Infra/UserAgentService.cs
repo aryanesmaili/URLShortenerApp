@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using URLShortenerAPI.Data.Entities.ClickInfo;
-using URLShortenerAPI.Services.Interfaces;
+using URLShortenerAPI.Data.Interfaces.Infra;
 
 namespace URLShortenerAPI.Services.Utility
 {

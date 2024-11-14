@@ -6,9 +6,9 @@ using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.URLCategory;
 using URLShortenerAPI.Data.Entities.User;
-using URLShortenerAPI.Services.Interfaces;
-using URLShortenerAPI.Services.Interfaces.URLRelated;
-using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Data.Interfaces.Infra;
+using URLShortenerAPI.Data.Interfaces.URL;
+using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Services.URL

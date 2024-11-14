@@ -1,7 +1,8 @@
-﻿using URLShortenerAPI.Data.Entities.URL;
+﻿using URLShortenerAPI.Data.Entities.Finance;
+using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 
-namespace URLShortenerAPI.Services.Interfaces.UserRelated
+namespace URLShortenerAPI.Data.Interfaces.User
 {
     internal interface IAuthService
     {
@@ -11,6 +12,6 @@ namespace URLShortenerAPI.Services.Interfaces.UserRelated
         public Task<URLModel> AuthorizeURLAccessAsync(int urlID, string username, bool includeRelations = false);
         public string GenerateRefreshToken();
         public string GenerateRandomPassword(int length);
-
+        public Task<UserModel> AuthorizeUserDepositsAccess(int UserID, string reqUsername);
     }
 }
