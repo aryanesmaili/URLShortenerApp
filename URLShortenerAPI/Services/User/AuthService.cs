@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
@@ -19,6 +20,14 @@ namespace URLShortenerAPI.Services.User
         private readonly AppDbContext _context = context;
         private readonly JwtSettings _jwtSettings = jwtSettings;
 
+        /// <summary>
+        /// Authorizes whether a given username has authority to access another user's urls.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns></returns>
+        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="NotAuthorizedException"></exception>
         public async Task AuthorizeURLsAccessAsync(int userID, string reqUsername)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(reqUsername);
@@ -32,6 +41,7 @@ namespace URLShortenerAPI.Services.User
             else if (reqUser.ID != userID)
                 throw new NotAuthorizedException($"User {reqUsername} cannot access user {userID}'s URLs.");
         }
+
         /// <summary>
         /// Authorizes whether a given username has authority to access a url.
         /// </summary>
@@ -71,6 +81,40 @@ namespace URLShortenerAPI.Services.User
         }
 
         /// <summary>
+        /// Authorizes whether a given username has authority to access a user's Deposits.
+        /// </summary>
+        /// <param name="UserID"></param>
+        /// <param name="reqUsername"></param>
+        /// <returns>the List of <see cref="DepositModel"/>s to be Accessed.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="NotAuthorizedException"></exception>
+        public async Task<UserModel> AuthorizeUserDepositsAccess(int UserID, string reqUsername)
+        {
+            if (string.IsNullOrEmpty(reqUsername))
+                throw new ArgumentNullException(nameof(reqUsername));
+
+            UserModel user = await _context.Users.Include(x => x.FinancialRecord)
+                                                 .ThenInclude(x => x.Deposits)
+                                                 .FirstOrDefaultAsync(x => x.ID == UserID)
+                                                  ?? throw new NotFoundException($"User {UserID} not found.");
+
+            UserModel reqUser = await _context.Users.AsNoTracking()
+                                                    .FirstOrDefaultAsync(x => x.Username == reqUsername)
+                                                    ?? throw new NotFoundException($"User {reqUsername} not found.");
+
+            bool isAdmin = reqUser.Role == UserType.Admin;
+            bool isOwner = reqUser.ID == user.ID;
+
+            if (!isAdmin && !isOwner)
+            {
+                throw new NotAuthorizedException($"User {reqUsername} is not Authorized to Access User {UserID}'s records");
+            }
+
+            return user;
+        }
+
+        /// <summary>
         /// Authorizes whether a given username has authority to access a user's data.
         /// </summary>
         /// <param name="UserID"></param>
@@ -89,6 +133,7 @@ namespace URLShortenerAPI.Services.User
                 user = await _context.Users
                    .Include(u => u.URLs)
                    .Include(u => u.URLCategories)
+                   .Include(u => u.FinancialRecord)
                    .FirstOrDefaultAsync(x => x.ID == UserID)
                    ?? throw new NotFoundException($"User {UserID} not found.");
             else

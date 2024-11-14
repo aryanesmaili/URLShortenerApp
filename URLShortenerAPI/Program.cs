@@ -45,6 +45,7 @@ builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<ICacheService, CacheService>();
 builder.Services.AddTransient<IUserAgentService, UserAgentService>();
+builder.Services.AddTransient<IPaymentService, PaymentService>();
 
 builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
 

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using URLShortenerAPI.Services.Interfaces.UserRelated;
+using URLShortenerAPI.Data.Interfaces.User;
 
 namespace URLShortenerAPI.Services.User
 {
@@ -26,7 +26,7 @@ namespace URLShortenerAPI.Services.User
         /// <param name="isLazy">true for transaction in lazy mode, false for normal method.</param>
         /// <param name="isAdvanced">true for transaction in advanced mode.</param>
         /// <returns>a <see cref="CreateTransactionResponse"/> if in normal mode, and a <see cref="CreateAdvancedTransactionResponse"/> if in Advanced mode.</returns>
-        public async Task<CreateTransactionResponse> RequestTransaction(CreateTransactionRequest transactionInfo, bool isLazy = false, bool isAdvanced = false)
+        public async Task<CreateTransactionResponse> RequestTransactionAsync(CreateTransactionRequest transactionInfo, bool isLazy = false, bool isAdvanced = false)
         {
             string url = isLazy ? zibalLazyRequestTransactionAddress : zibalRequestTransactionAddress;
             HttpRequestMessage request = new(HttpMethod.Post, url)
@@ -50,7 +50,7 @@ namespace URLShortenerAPI.Services.User
         /// <param name="verifyTransactionRequest">the information needed to verify the request.</param>
         /// <param name="isAdvanced">true for transaction in advanced mode.</param>
         /// <returns>a <see cref="VerifyTransactionResponse"/> object if in normal mode, a <see cref="VerifyAdvancedTransactionResponse"/> if in advanced mode.</returns>
-        public async Task<VerifyTransactionResponse> VerifyTransaction(VerifyTransactionRequest verifyTransactionRequest, bool isAdvanced = false)
+        public async Task<VerifyTransactionResponse> VerifyTransactionAsync(VerifyTransactionRequest verifyTransactionRequest, bool isAdvanced = false)
         {
 
             HttpRequestMessage request = new(HttpMethod.Post, zibalVerifyTransactionAddress)
@@ -76,7 +76,7 @@ namespace URLShortenerAPI.Services.User
         /// <param name="inquiryTransactionRequest"></param>
         /// <param name="isAdvanced">true for transaction in advanced mode.</param>
         /// <returns>a <see cref="InquiryTransactionRequest"/> if in normal mode, a <see cref="InquiryAdvancedTransactionResponse"/> if in advanced mode.</returns>
-        public async Task<InquiryTransactionResponse> GetTransactionStatus(InquiryTransactionRequest inquiryTransactionRequest, bool isAdvanced = false)
+        public async Task<InquiryTransactionResponse> GetTransactionStatusAsync(InquiryTransactionRequest inquiryTransactionRequest, bool isAdvanced = false)
         {
             HttpRequestMessage request = new(HttpMethod.Post, zibalInquiryTransactionAddress)
             {
@@ -110,6 +110,7 @@ namespace URLShortenerAPI.Services.User
         /// <summary>
         /// is this transaction a test one?
         /// </summary>
+        [JsonIgnore]
         public bool IsTest { get; set; } = false;
 
         /// <summary>
