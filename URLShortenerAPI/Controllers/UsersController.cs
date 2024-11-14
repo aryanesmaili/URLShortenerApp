@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.CustomClasses;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
@@ -46,6 +47,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("antiforgery/token")]
+        [EnableRateLimiting("Auth")]
         [IgnoreAntiforgeryToken]
         public IActionResult GetForgeryToken()
         {
@@ -71,6 +73,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("GetRoles")]
+        [EnableRateLimiting("Auth")]
         public IActionResult GetUserRoles()
         {
             APIResponse<ClaimValue> response;
@@ -98,6 +101,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("Profile/URLTable/{userId}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             APIResponse<PagedResult<URLDTO>> response;
@@ -148,6 +152,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("{id:int}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<IActionResult> GetUserById([FromRoute] int id)
         {
             APIResponse<UserDTO> response;
@@ -178,6 +183,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("Profile/{id:int}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<IActionResult> GetStats(int id)
         {
             APIResponse<UserStats> response;
@@ -222,6 +228,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("Balance/{id:int}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<IActionResult> GetUserBalance([FromRoute] int id)
         {
             APIResponse<double> response;
@@ -269,6 +276,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("Dashboard/{id:int}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<IActionResult> GetDashboard([FromRoute] int id)
         {
             APIResponse<UserDashboardDTO> response;
@@ -306,6 +314,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("{username}")]
+        [EnableRateLimiting("DataFetch")]
         public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
         {
             APIResponse<UserDTO> response;
@@ -336,6 +345,7 @@ namespace URLShortenerAPI.Controllers
 
         [IgnoreAntiforgeryToken]
         [HttpPost("Captcha")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> VerifyCaptcha([FromBody] string token)
         {
             APIResponse<CaptchaVerificationResponse> response;
@@ -363,6 +373,7 @@ namespace URLShortenerAPI.Controllers
 
         [IgnoreAntiforgeryToken]
         [HttpPost("Login")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
         {
             APIResponse<UserDTO> response;
@@ -430,8 +441,10 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
         [IgnoreAntiforgeryToken]
         [HttpPost("Register")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> Register([FromBody] UserCreateDTO userCreateDTO)
         {
             APIResponse<UserDTO> response;
@@ -480,6 +493,7 @@ namespace URLShortenerAPI.Controllers
 
         [IgnoreAntiforgeryToken]
         [HttpPost("ResetPassword")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ResetPassword([FromBody] string identifier)
         {
             APIResponse<string> response;
@@ -515,6 +529,7 @@ namespace URLShortenerAPI.Controllers
 
         [IgnoreAntiforgeryToken]
         [HttpPost("CheckResetCode")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> CheckPasswordResetCode([FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<UserDTO> response;
@@ -569,6 +584,7 @@ namespace URLShortenerAPI.Controllers
         [IgnoreAntiforgeryToken]
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ChangePassword")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest reqInfo)
         {
             APIResponse<UserDTO> response;
@@ -621,6 +637,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ResetEmail/{id:int}")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ResetEmail(int id)
         {
             APIResponse<string> response;
@@ -666,6 +683,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("CheckEmailResetCode/{id:int}")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] CheckVerificationCode reqInfo)
         {
             APIResponse<string> response;
@@ -713,6 +731,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ChangeEmail/{id:int}")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ChangeEmail(int id, [FromBody] ChangeEmailRequest reqInfo)
         {
             APIResponse<UserDTO> response;
@@ -771,6 +790,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("Logout")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> Logout()
         {
             APIResponse<string> response;
@@ -816,8 +836,10 @@ namespace URLShortenerAPI.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
         [IgnoreAntiforgeryToken]
         [HttpPost("RefreshToken")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> RefreshToken()
         {
             APIResponse<string> response;
@@ -868,6 +890,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPut("UpdateUser")]
+        [EnableRateLimiting("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
         {
             APIResponse<UserDTO> response;
@@ -929,6 +952,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("Delete/{id:int}")]
+        [EnableRateLimiting("UpdateUser")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
             APIResponse<string> response;

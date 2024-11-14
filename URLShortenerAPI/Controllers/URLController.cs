@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using URLShortenerAPI.Data.Interfaces.URL;
@@ -23,6 +24,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("/{id:int}")]
+        [EnableRateLimiting("FetchData")]
         public async Task<IActionResult> GetURL([FromRoute] int id)
         {
             APIResponse<URLDTO> response;
@@ -49,6 +51,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("AddURL")]
+        [EnableRateLimiting("AddURL")]
         public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
             APIResponse<URLShortenResponse> response;
@@ -107,6 +110,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("AddBatchURL")]
+        [EnableRateLimiting("AddURL")]
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
             APIResponse<List<URLShortenResponse>> response;
@@ -157,6 +161,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleActivation/{id:int}")]
+        [EnableRateLimiting("FetchData")]
         public async Task<IActionResult> ToggleActivation(int id)
         {
             APIResponse<string> response;
@@ -196,6 +201,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("ToggleMonetization/{id:int}")]
+        [EnableRateLimiting("FetchData")]
         public async Task<IActionResult> ToggleMonetization(int id)
         {
             APIResponse<string> response;
@@ -235,6 +241,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpDelete("Delete/{id:int}")]
+        [EnableRateLimiting("Deletion")]
         public async Task<IActionResult> DeleteURL(int id)
         {
             APIResponse<string> response;

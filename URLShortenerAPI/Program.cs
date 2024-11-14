@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text;
+using System.Threading.RateLimiting;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Data.Entities.Settings;
 using URLShortenerAPI.Data.Interfaces.Infra;
@@ -132,6 +133,49 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.Name = "XSRF-TOKEN";
     options.Cookie.SameSite = builder.Environment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict;
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("Auth", context =>
+        RateLimitPartition.GetSlidingWindowLimiter("Auth", key => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 15,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 4
+        }));
+
+    options.AddPolicy("DataFetch", context =>
+        RateLimitPartition.GetSlidingWindowLimiter("DataFetch", key => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 4
+        }));
+
+    options.AddPolicy("AddURL", context =>
+    RateLimitPartition.GetSlidingWindowLimiter("AddURL", key => new SlidingWindowRateLimiterOptions
+    {
+        PermitLimit = 20,
+        Window = TimeSpan.FromMinutes(1),
+        SegmentsPerWindow = 4
+    }
+    ));
+
+    options.AddPolicy("UpdateUser", context =>
+        RateLimitPartition.GetFixedWindowLimiter("UpdateUser", key => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1)
+        }));
+
+    options.AddPolicy("Deletion", context =>
+        RateLimitPartition.GetSlidingWindowLimiter("Deletion", key => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 4
+        }));
 });
 
 var app = builder.Build();

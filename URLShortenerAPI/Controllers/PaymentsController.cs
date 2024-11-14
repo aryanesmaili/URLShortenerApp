@@ -1,6 +1,7 @@
 ﻿using IPinfo.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using URLShortenerAPI.Data.Interfaces.User;
@@ -22,6 +23,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("Payments/{id:int}")]
+        [EnableRateLimiting("FetchData")]
         public async Task<IActionResult> GetPaymentsOfUser(int userID)
         {
             APIResponse<List<DepositDTO>> response;
@@ -59,6 +61,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpPost("CreateTransaction")]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> CreateTransaction(PaymentCreateDTO createDTO)
         {
             APIResponse<string> response;
@@ -102,6 +105,7 @@ namespace URLShortenerAPI.Controllers
 
         [Authorize(Policy = "AllUsers")]
         [HttpGet("CheckStatus/{trackID:int}")]
+        [EnableRateLimiting("FetchData")]
         public async Task<IActionResult> GetPaymentStatus(int trackID)
         {
             APIResponse<InquiryTransactionResponse> response;
