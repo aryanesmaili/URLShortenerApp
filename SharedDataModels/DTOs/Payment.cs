@@ -25,7 +25,7 @@
         public int UserID { get; set; }
     }
 
-    public class DepositDTO 
+    public class DepositDTO
     {
         public int ID { get; set; }
         public double Amount { get; set; }

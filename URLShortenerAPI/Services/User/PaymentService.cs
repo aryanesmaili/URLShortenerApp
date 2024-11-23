@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
@@ -6,24 +7,34 @@ using URLShortenerAPI.Data.Entities.Finance;
 using URLShortenerAPI.Data.Entities.User;
 using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Utility.Exceptions;
+using URLShortenerAPI.Utility.SignalR;
 
 namespace URLShortenerAPI.Services.User
 {
     internal class PaymentService : IPaymentService
     {
         private readonly AppDbContext _context;
-        private readonly ZibalService _zibalService;
+        private readonly IZibalService _zibalService;
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
+        private readonly IHubContext<UserBalanceHub> _balancehubContext;
+        private readonly UserConnectionMapping _connectionMapping;
 
         private const string _callbackURL = "https://www.Pexita.Click/Payments/callback";
         private const string _merchantName = "Pexita";
-        public PaymentService(AppDbContext context, ZibalService zibalService, IAuthService authService, IMapper mapper)
+        public PaymentService(AppDbContext context,
+                              IZibalService zibalService,
+                              IAuthService authService,
+                              IMapper mapper,
+                              IHubContext<UserBalanceHub> balancehubContext,
+                              UserConnectionMapping connectionMapping)
         {
             _context = context;
             _zibalService = zibalService;
             _authService = authService;
             _mapper = mapper;
+            _balancehubContext = balancehubContext;
+            _connectionMapping = connectionMapping;
         }
 
         /// <summary>
@@ -114,8 +125,16 @@ namespace URLShortenerAPI.Services.User
                 deposit.RefNumber = response.RefNumber;
                 deposit.Description = response.Description;
                 deposit.PaidAt = response.PaidAt;
+                UserModel user = await _context.Users.Include(x => x.FinancialRecord).FirstOrDefaultAsync(x => x.FinancialID == deposit.FinanceID) ?? throw new NotFoundException($"User with financial id {deposit.FinanceID} Does Not Exist.");
+                user.FinancialRecord.Balance += response.Amount;
                 _context.Update(deposit);
+                _context.Update(user);
                 await _context.SaveChangesAsync();
+
+                foreach (var connectionID in _connectionMapping.GetConnections(user.Username)) // notify clients that the balance has changed.
+                {
+                    await _balancehubContext.Clients.Client(connectionID).SendAsync("ReceiveBalanceUpdate", response.Amount);
+                }
             }
             return response;
         }

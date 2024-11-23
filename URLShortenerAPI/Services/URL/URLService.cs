@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedDataModels.DTOs;
 using URLShortenerAPI.Data;
@@ -10,6 +11,7 @@ using URLShortenerAPI.Data.Interfaces.Infra;
 using URLShortenerAPI.Data.Interfaces.URL;
 using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Utility.Exceptions;
+using URLShortenerAPI.Utility.SignalR;
 
 namespace URLShortenerAPI.Services.URL
 {
@@ -21,18 +23,27 @@ namespace URLShortenerAPI.Services.URL
         private readonly IShortenerService _shortenerService;
         private readonly ICacheService _cacheService;
         private const double price = 1000.0;
+        private readonly IHubContext<UserBalanceHub> _balanceHubContext;
+        private readonly IHubContext<UserURLsHub> _URLsHubContext;
+        private readonly UserConnectionMapping _userConnectionMapping;
 
         public URLService(AppDbContext context,
             IMapper mapper,
             IAuthService authService,
             IShortenerService shortenerService,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            IHubContext<UserURLsHub> URLsHubContext,
+            UserConnectionMapping userConnectionMapping,
+            IHubContext<UserBalanceHub> balanceHubContext)
         {
             _context = context;
             _mapper = mapper;
             _authService = authService;
             _shortenerService = shortenerService;
             _cacheService = cacheService;
+            _URLsHubContext = URLsHubContext;
+            _userConnectionMapping = userConnectionMapping;
+            _balanceHubContext = balanceHubContext;
         }
 
         /// <summary>
@@ -223,9 +234,20 @@ namespace URLShortenerAPI.Services.URL
                     CommitPurchase(newRecord);
                     await _context.SaveChangesAsync();
                 }
-
                 // Commit the transaction if everything succeeded.
                 await transaction.CommitAsync();
+                if (isCustom)
+                {
+                    foreach (var connectionID in _userConnectionMapping.GetConnections($"b_{newRecord.User.Username}"))
+                    {
+                        await _balanceHubContext.Clients.Client(connectionID).SendAsync("ReceiveBalanceUpdate", -price);
+                    }
+                }
+
+                foreach (var connectionID in _userConnectionMapping.GetConnections($"u_{newRecord.User.Username}"))
+                {
+                    await _URLsHubContext.Clients.Client(connectionID).SendAsync("ReceiveURLCountUpdate", +1);
+                }
             }
 
             catch (InsufficientBalanceException)
@@ -259,6 +281,10 @@ namespace URLShortenerAPI.Services.URL
 
                 // Commit the transaction if everything succeeded.
                 await transaction.CommitAsync();
+                foreach (var connectionID in _userConnectionMapping.GetConnections($"u_{newRecords[0].User.Username}"))
+                {
+                    await _URLsHubContext.Clients.Client(newRecords[0].User.Username).SendAsync("ReceiveURLCountUpdate", newRecords[0].User.URLs?.Count);
+                }
             }
             catch (Exception ex)
             {
@@ -429,7 +455,7 @@ namespace URLShortenerAPI.Services.URL
             await _context.SaveChangesAsync();
 
             // now we update cache:
-            if (!url.IsMonetized) // if the url is no longer active
+            if (!url.IsMonetized) // if the url is no longer monetized.
                 await _cacheService.RemoveAsync<URLModel>(url.ShortCode); // we remove the old record.
             else // if it is active now:
                 await _cacheService.SetAsync(url.ShortCode, url); // we cache it.
@@ -445,8 +471,14 @@ namespace URLShortenerAPI.Services.URL
         /// <returns></returns>
         public async Task DeleteURL(int URLID, string requestingUsername)
         {
-            var url = await _authService.AuthorizeURLAccessAsync(URLID, requestingUsername);
+            URLModel url = await _authService.AuthorizeURLAccessAsync(URLID, requestingUsername);
             _context.URLs.Remove(url);
+            await _context.SaveChangesAsync();
+            foreach (var connectionID in _userConnectionMapping.GetConnections($"u_{requestingUsername}"))
+            {
+                await _URLsHubContext.Clients.Client(connectionID).SendAsync("ReceiveURLCountUpdate", -1);
+            }
+            await _cacheService.RemoveAsync<UserStats>("UserStats_" + url.UserID); // so that if the user refreshes, their stats be calculated again.
             return;
         }
 

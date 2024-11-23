@@ -122,8 +122,8 @@ namespace URLShortenerAPI.Services.User
             await _authService.AuthorizeUserAccessAsync(userID, username);
 
             double balance = (await _context.Users.Include(x => x.FinancialRecord).AsNoTracking().FirstOrDefaultAsync(x => x.ID == userID)
-                ?? throw new NotFoundException($"User {userID} Not Found.")
-                ).FinancialRecord.Balance;
+                                                    ?? throw new NotFoundException($"User {userID} Not Found.")
+                                                    ).FinancialRecord.Balance;
             return balance;
         }
 
@@ -514,7 +514,7 @@ namespace URLShortenerAPI.Services.User
         {
             UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUserInfo.Password); // Hashing user's password to ensure security
-            newUser.FinancialRecord = new() { User = newUser };
+            newUser.FinancialRecord = new() { User = newUser, Balance = 0 };
 
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();

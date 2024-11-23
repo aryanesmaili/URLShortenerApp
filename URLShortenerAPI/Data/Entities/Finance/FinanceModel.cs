@@ -38,7 +38,7 @@ namespace URLShortenerAPI.Data.Entities.Finance
         public long? TrackID { get; set; }
         public string OrderID { get; set; } = string.Empty;
         public string CardNumber { get; set; } = string.Empty;
-        public int?  RefNumber { get; set; }
+        public int? RefNumber { get; set; }
         public string? Description { get; set; }
 
 

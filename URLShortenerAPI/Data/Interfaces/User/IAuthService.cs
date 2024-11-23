@@ -1,5 +1,4 @@
-﻿using URLShortenerAPI.Data.Entities.Finance;
-using URLShortenerAPI.Data.Entities.URL;
+﻿using URLShortenerAPI.Data.Entities.URL;
 using URLShortenerAPI.Data.Entities.User;
 
 namespace URLShortenerAPI.Data.Interfaces.User

@@ -17,6 +17,7 @@ using URLShortenerAPI.Services.Infra;
 using URLShortenerAPI.Services.URL;
 using URLShortenerAPI.Services.User;
 using URLShortenerAPI.Services.Utility;
+using URLShortenerAPI.Utility.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,9 +47,11 @@ builder.Services.AddTransient<IShortenerService, ShortenerService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 builder.Services.AddTransient<ICacheService, CacheService>();
 builder.Services.AddTransient<IUserAgentService, UserAgentService>();
+builder.Services.AddTransient<IZibalService, ZibalService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 
 builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
+builder.Services.AddSingleton<UserConnectionMapping>();
 
 builder.Services.AddHostedService<ClickProcessService>(); // Background Service.
 
@@ -178,6 +181,9 @@ builder.Services.AddRateLimiter(options =>
         }));
 });
 
+
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -191,15 +197,29 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    // no authorization since cross-origin requests do not contain http-only cookies that have our JWTs in them
+    app.MapHub<UserBalanceHub>("User/BalanceHub");
+    app.MapHub<UserURLsHub>("User/UrlCountsHub");
+}
+else if (app.Environment.IsProduction())
+{
+    app.MapHub<UserBalanceHub>("User/BalanceHub").RequireAuthorization("AllUsers");
+    app.MapHub<UserURLsHub>("User/UrlCountsHub").RequireAuthorization("AllUsers");
+}
 
 
 app.Use(async (context, next) =>
 {
     // Check if the request is for an API endpoint
     if (!context.Request.Path.StartsWithSegments("/api") ||
+        (context.Request.Path.ToString().Contains("Hub")) ||
         HttpMethods.IsGet(context.Request.Method))
     {
         await next();
@@ -229,7 +249,7 @@ app.Use(async (context, next) =>
     }
     catch (AntiforgeryValidationException)
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
     }
 });
 app.Run();

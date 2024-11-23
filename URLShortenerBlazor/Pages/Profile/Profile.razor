@@ -7,6 +7,17 @@
 <PageTitle>Profile</PageTitle>
 <main>
     <div class="container">
+        <!-- Error Section -->
+        <div class="col-md-12">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-1 mb-2 py-1">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item list-group-item-danger mx-3 my-2">@errorMessage</li>
+                    </ul>
+                </div>
+            }
+        </div>
         <div class="card">
             <div class="card-header">
                 <div class="row align-items-center">
@@ -16,6 +27,7 @@
                         <h5 class="">@@@userinfo.Username.ToLower()</h5>
                     </div>
                     <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0 fs-5"><Icon Name="IconName.Wallet"></Icon> @userBalance</p>
                         <p class="mb-0 fs-5"><Icon Name="IconName.Mail"></Icon> @userinfo.Email</p>
                         <p class="mb-0 fs-5 mt-2"><Icon Name="IconName.Calendar"></Icon> @((DateTime.Now.Date - userinfo.CreatedAt.Date).Days) Days</p>
                     </div>
@@ -101,6 +113,9 @@
 @code {
     private bool isLoading = true;
     private string? errorMessage = string.Empty;
+    private HubConnection? balanceConnection;
+    private HubConnection? urlConnection;
+    private double userBalance = 0;
 
     private enum Pages
     {
@@ -127,12 +142,61 @@
             userinfo = await AuthService.GetUserInfoAsync();
             await GetUserStats(userinfo.ID);
             isLoading = false;
+            await StartHubConnections(userinfo.ID);
+            SetRefreshDataListener();
             await base.OnInitializedAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
+            errorMessage = $"Initialization error: {ex.Message}";
+            isLoading = false;
+            StateHasChanged();
         }
+    }
+
+    private async Task StartHubConnections(int userID)
+    {
+        var apiAddress = "https://localhost:7167";
+
+        Task balance = StartBalanceConnection(apiAddress, userID);
+        Task url = StartURLCountConnection(apiAddress);
+
+        await Task.WhenAll(balance, url);
+    }
+
+    private async Task StartBalanceConnection(string apiAddress, int userID)
+    {
+        var balanceEndpoint = ($"{apiAddress}/User/BalanceHub?userID={userID}");
+        balanceConnection = new HubConnectionBuilder()
+                                    .WithUrl(balanceEndpoint)
+                                    .WithAutomaticReconnect()
+                                    .Build();
+        await balanceConnection.StartAsync();
+    }
+
+    private async Task StartURLCountConnection(string apiAddress)
+    {
+        var urlEndpoint = ($"{apiAddress}/User/UrlCountsHub");
+        urlConnection = new HubConnectionBuilder()
+                                    .WithUrl(urlEndpoint)
+                                    .WithAutomaticReconnect()
+                                    .Build();
+        await urlConnection.StartAsync();
+    }
+
+    private void SetRefreshDataListener()
+    {
+        balanceConnection?.On<double>(methodName: "ReceiveBalanceUpdate", (data) =>
+        {
+            userBalance += data;
+            StateHasChanged();
+        });
+
+        urlConnection?.On<int>(methodName: "ReceiveURLCountUpdate", (data) =>
+        {
+            stats.TotalURLsCount += data;
+            StateHasChanged();
+        });
     }
 
     private async Task GetUserStats(int userID)
@@ -163,5 +227,16 @@
     private void SetActiveTab(Pages tabName)
     {
         activeTab = tabName;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (urlConnection is not null || balanceConnection is not null)
+        {
+            await urlConnection!.StopAsync();
+            await urlConnection.DisposeAsync();
+            await balanceConnection!.StopAsync();
+            await balanceConnection.DisposeAsync();
+        }
     }
 }
