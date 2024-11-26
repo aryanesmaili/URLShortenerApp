@@ -3,6 +3,7 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject IProfileDashboardService ProfileService
+@inject IWebAssemblyHostEnvironment Environment
 
 <PageTitle>Profile</PageTitle>
 <main>
@@ -156,7 +157,8 @@
 
     private async Task StartHubConnections(int userID)
     {
-        var apiAddress = "https://localhost:7167";
+
+        string apiAddress = Environment.IsDevelopment() ? "https://localhost:7167" : "https://Pexita.click";
 
         Task balance = StartBalanceConnection(apiAddress, userID);
         Task url = StartURLCountConnection(apiAddress);
@@ -166,7 +168,7 @@
 
     private async Task StartBalanceConnection(string apiAddress, int userID)
     {
-        var balanceEndpoint = ($"{apiAddress}/User/BalanceHub?userID={userID}");
+        var balanceEndpoint = ($"{apiAddress}/api/User/BalanceHub?userID={userID}");
         balanceConnection = new HubConnectionBuilder()
                                     .WithUrl(balanceEndpoint)
                                     .WithAutomaticReconnect()
@@ -176,7 +178,7 @@
 
     private async Task StartURLCountConnection(string apiAddress)
     {
-        var urlEndpoint = ($"{apiAddress}/User/UrlCountsHub");
+        var urlEndpoint = ($"{apiAddress}/api/User/UrlCountsHub");
         urlConnection = new HubConnectionBuilder()
                                     .WithUrl(urlEndpoint)
                                     .WithAutomaticReconnect()

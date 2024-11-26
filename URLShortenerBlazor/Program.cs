@@ -15,8 +15,10 @@ builder.Services.AddBlazoredLocalStorage();
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7167") });
-builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri("https://localhost:7167"))
+string backendHost = builder.HostEnvironment.IsDevelopment() ? "https://localhost:7167" : "http://Pexita.click";
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(backendHost) });
+builder.Services.AddHttpClient("Auth", client => client.BaseAddress = new Uri(backendHost))
     .AddHttpMessageHandler<HTTPAuthAdder>();
 
 builder.Services.AddScoped<CustomAuthProvider>();

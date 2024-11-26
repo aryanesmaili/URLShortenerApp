@@ -12,27 +12,41 @@ namespace URLShortenerAPI.Controllers
     public class RedirectController : ControllerBase
     {
         private readonly IRedirectService _redirectService;
-
-        public RedirectController(IRedirectService redirectService)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public RedirectController(IRedirectService redirectService, IWebHostEnvironment webHostEnvironment)
         {
             _redirectService = redirectService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet("{shortCode}")]
         public async Task<IActionResult> CheckURLExists([FromRoute] string shortCode)
         {
+            string url = _webHostEnvironment.IsDevelopment() ? "https://localhost:7112" : "http://Pexita.click";
             try
             {
-                string? ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+                string? ipAddress;
+
+                if (_webHostEnvironment.IsDevelopment())
+                    ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+
+                else // since the request is redirected by nginx, we have to retrieve IP from special headers.
+                    ipAddress = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
+                   ?? HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                   ?? HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString()
+                   ?? "Unknown";
+
                 string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
 
                 URLDTO result = await _redirectService.CheckURLExists(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, TimeClicked = DateTime.UtcNow });
-                return result.IsMonetized ? Redirect(result.LongURL) : Redirect($"http://localhost:7112/RedirectURL/{shortCode}");
+
+
+                return !result.IsMonetized ? Redirect(result.LongURL) : Redirect($"{url}/RedirectURL/{shortCode}");
             }
 
             catch (NotFoundException)
             {
-                return Redirect("http://localhost:7112/Notfound");
+                return Redirect($"{url}/Notfound");
             }
 
             catch (Exception e)

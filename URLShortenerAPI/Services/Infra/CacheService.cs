@@ -13,13 +13,15 @@ namespace URLShortenerAPI.Services.Infra
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabase _batchRedis;
         private readonly JsonSerializerOptions _serializerOptions;
-        public CacheService(IDistributedCache cache, IConnectionMultiplexer redis)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public CacheService(IDistributedCache cache, IConnectionMultiplexer redis, IWebHostEnvironment webHostEnvironment)
         {
             _cache = cache;
             _redis = redis;
             _batchRedis = redis.GetDatabase();
             _serializerOptions = new()
             { ReferenceHandler = ReferenceHandler.Preserve };
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -79,9 +81,21 @@ namespace URLShortenerAPI.Services.Infra
         /// <returns></returns>
         public async Task<List<T>?> GetAllValuesAsync<T>() where T : class
         {
+            string host = string.Empty;
+            int port = 0;
+            if(_webHostEnvironment.IsDevelopment())
+            {
+                host = "localhost";
+                port = 9191;
+            }
+            else
+            {
+                host = "RedisCache";
+                port = 6379;
+            }
             // Get all Redis keys matching the provided pattern.
             var redisKeys = _redis
-                .GetServer("localhost", 9191)
+                .GetServer(host, port)
                 .Keys(pattern: typeof(T).Name.ToLower() + "_")
                 .AsQueryable()
                 .Select(p => p.ToString())

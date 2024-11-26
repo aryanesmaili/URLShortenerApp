@@ -20,7 +20,7 @@ namespace URLShortenerAPI.Services.User
         private readonly IHubContext<UserBalanceHub> _balancehubContext;
         private readonly UserConnectionMapping _connectionMapping;
 
-        private const string _callbackURL = "https://www.Pexita.Click/Payments/callback";
+        private const string _callbackURL = "https://www.Pexita.Click/api/Payments/callback";
         private const string _merchantName = "Pexita";
         public PaymentService(AppDbContext context,
                               IZibalService zibalService,

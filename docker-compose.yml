@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # .NET Backend Service
+  url-shortener-backend:
+    build:
+      context: ./URLShortenerAPI
+      dockerfile: Dockerfile
+    image: shortener-backend-image:latest
+    container_name: shortenerbackend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - url-shortener-net
+    depends_on:
+      - db
+      - redis
+
+  url-shortener-frontend:
+    build:
+      context: ./URLShortenerBlazor
+      dockerfile: Dockerfile
+    image: shortener-frontend-image:latest
+    container_name: shortenerfrontend
+    networks:
+      - url-shortener-net
+    depends_on:
+      - nginx
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ./URLShortenerBlazor/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - url-shortener-backend
+    networks:
+      - url-shortener-net
+
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_USER: aryan
+      POSTGRES_PASSWORD: a123
+      POSTGRES_DB: ShortenerDB
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - url-shortener-net
+
+  redis:
+    image: redis:latest
+    container_name: rediscache
+    volumes:
+      - redis_data:/data
+    networks:
+      - url-shortener-net
+
+networks:
+  url-shortener-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

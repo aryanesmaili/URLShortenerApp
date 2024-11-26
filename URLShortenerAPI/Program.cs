@@ -22,8 +22,12 @@ using URLShortenerAPI.Utility.SignalR;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+}
 
 
 builder.Configuration.AddUserSecrets<Program>();
@@ -61,33 +65,48 @@ builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
 builder.Services.AddAutoMapper(typeof(URLMapper));
 builder.Services.AddAutoMapper(typeof(TokenMapper));
 
-
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLDocker")));
+string postgresConnectionString = builder.Environment.IsDevelopment() ? "PostgreSQLDockerDev" : "PostgreSQLDockerProd";
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
 
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddCors(options =>
     {
-        builder
-            .WithOrigins("https://localhost:7112")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();  // Important for cookies/authentication
+        options.AddDefaultPolicy(builder =>
+        {
+            builder
+                .WithOrigins("https://localhost:7112")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();  // Important for cookies/authentication
+        });
     });
-});
-
+else
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(builder =>
+        {
+            builder
+                .WithOrigins("http://localhost:80", "http://shortenerfront:80") // nginx serves on port 80
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();  // Important for cookies/authentication
+        });
+    });
 
 // Add redis Service
+string redisHost = (builder.Environment.IsDevelopment() ? "localhost:9191" : "RedisCache:6379") + ",password=a123";
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:9191,password=a123";
+    options.Configuration = redisHost;
     options.InstanceName = string.Empty;
 });
-builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMultiplexer.Connect("localhost:9191,password=a123"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMultiplexer.Connect(redisHost));
+
 
 
 JwtSettings jwtSettings = new();
@@ -184,6 +203,9 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddSignalR();
 
+if (builder.Environment.IsProduction())
+    builder.WebHost.UseUrls("http://0.0.0.0:5261");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -205,13 +227,13 @@ app.MapControllers();
 if (app.Environment.IsDevelopment())
 {
     // no authorization since cross-origin requests do not contain http-only cookies that have our JWTs in them
-    app.MapHub<UserBalanceHub>("User/BalanceHub");
-    app.MapHub<UserURLsHub>("User/UrlCountsHub");
+    app.MapHub<UserBalanceHub>("api/User/BalanceHub");
+    app.MapHub<UserURLsHub>("api/User/UrlCountsHub");
 }
 else if (app.Environment.IsProduction())
 {
-    app.MapHub<UserBalanceHub>("User/BalanceHub").RequireAuthorization("AllUsers");
-    app.MapHub<UserURLsHub>("User/UrlCountsHub").RequireAuthorization("AllUsers");
+    app.MapHub<UserBalanceHub>("api/User/BalanceHub").RequireAuthorization("AllUsers");
+    app.MapHub<UserURLsHub>("api/User/UrlCountsHub").RequireAuthorization("AllUsers");
 }
 
 

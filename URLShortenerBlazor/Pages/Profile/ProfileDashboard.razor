@@ -4,8 +4,9 @@
  @inject IJSRuntime JSRuntime
  @inject IShortenerService ShortenerService
  @inject Blazored.Toast.Services.IToastService ToastClient
+ @inject IWebAssemblyHostEnvironment Environment
 
- <PageTitle>Dashboard</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 <div class="py-4">
     <div class="container-fluid">
         @if (!string.IsNullOrEmpty(errorMessage))
@@ -120,8 +121,8 @@
                                 {
                                     <li>
                                         <a class="text-decoration-none"
-                                           href="@item.LongURL"
-                                           title="@item.LongURL">
+                                        href="@item.LongURL"
+                                        title="@item.LongURL">
                                             @(item.LongURL.Length > 40 ? item.LongURL.Substring(0, 37) + "..." : item.LongURL)
                                         </a>
                                     </li>
@@ -158,7 +159,7 @@
                                     {
                                         <tr>
                                             <td class="url-cell"><a class="text-decoration-none" href="@item.LongURL">@item.LongURL</a></td>
-                                            <td><a class="text-decoration-none" href="https://localhost:5261/@item.ShortCode">@item.ShortCode</a></td>
+                                            <td><a class="text-decoration-none" href="@host/@item.ShortCode">@item.ShortCode</a></td>
                                             <td>@ConvertToPersianDateTime(@item.CreatedAt)</td>
                                             <td>
                                                 <button class="btn btn-icon" title="Copy Short Link" @onclick="() => CopyToClipboard(item.ShortCode!)">
@@ -176,7 +177,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
     </div>
 </div>
@@ -184,161 +185,161 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 <script>
     function InitializeLineChart(data) {
-        // Get the 2D context of the canvas
-        const linechart = document.getElementById("linechart").getContext("2d");
+    // Get the 2D context of the canvas
+    const linechart = document.getElementById("linechart").getContext("2d");
 
-        const labels = Object.keys(data);
-        const values = Object.values(data);
+    const labels = Object.keys(data);
+    const values = Object.values(data);
 
-        // Create a new Chart
-        new Chart(linechart, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Daily Clicks',
-                    data: values,
-                    backgroundColor: "rgba(54, 162, 235, 0.1)", // Softer background for fill
-                    borderColor: "rgba(54, 162, 235, 1)", // Bold line color
-                    borderWidth: 2,
-                    pointBackgroundColor: "#fff",
-                    pointBorderColor: "rgba(54, 162, 235, 1)",
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.3 // Smooth line curve
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "Date",
-                            color: "#555",
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            display: false // Hide x-axis gridlines
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "rgba(200, 200, 200, 0.3)", // Subtle gridlines for y-axis
-                            lineWidth: 1
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false // Optional: hiding the legend since it’s a single dataset
-                    },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark tooltip for readability
-                        titleFont: { size: 12, weight: 'bold' },
-                        bodyFont: { size: 12 }
-                    },
-                    title: {
-                        display: true,
-                        text: "Daily Clicks for Current Month",
-                        color: "#333",
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        padding: { top: 10, bottom: 15 }
-                    }
-                }
-            }
-        });
+    // Create a new Chart
+    new Chart(linechart, {
+    type: 'line',
+    data: {
+    labels: labels,
+    datasets: [{
+    label: 'Daily Clicks',
+    data: values,
+    backgroundColor: "rgba(54, 162, 235, 0.1)", // Softer background for fill
+    borderColor: "rgba(54, 162, 235, 1)", // Bold line color
+    borderWidth: 2,
+    pointBackgroundColor: "#fff",
+    pointBorderColor: "rgba(54, 162, 235, 1)",
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    tension: 0.3 // Smooth line curve
+    }]
+    },
+    options: {
+    responsive: true,
+    animation: false,
+    scales: {
+    x: {
+    title: {
+    display: true,
+    text: "Date",
+    color: "#555",
+    font: {
+    size: 14,
+    weight: 'bold'
+    }
+    },
+    grid: {
+    display: false // Hide x-axis gridlines
+    }
+    },
+    y: {
+    beginAtZero: true,
+    grid: {
+    color: "rgba(200, 200, 200, 0.3)", // Subtle gridlines for y-axis
+    lineWidth: 1
+    }
+    }
+    },
+    plugins: {
+    legend: {
+    display: false // Optional: hiding the legend since it’s a single dataset
+    },
+    tooltip: {
+    enabled: true,
+    backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark tooltip for readability
+    titleFont: { size: 12, weight: 'bold' },
+    bodyFont: { size: 12 }
+    },
+    title: {
+    display: true,
+    text: "Daily Clicks for Current Month",
+    color: "#333",
+    font: {
+    size: 16,
+    weight: 'bold'
+    },
+    padding: { top: 10, bottom: 15 }
+    }
+    }
+    }
+    });
 
     }
 
     function InitializeBarChart(data) {
-        // Get the 2D context of the canvas
-        const barchart = document.getElementById("barchart").getContext("2d");
+    // Get the 2D context of the canvas
+    const barchart = document.getElementById("barchart").getContext("2d");
 
-        // Ensure data is properly formatted
-        const dataLabels = Object.keys(data);
-        const values = Object.values(data);
+    // Ensure data is properly formatted
+    const dataLabels = Object.keys(data);
+    const values = Object.values(data);
 
-        // Create a new Chart
-        new Chart(barchart, {
-            type: 'bar',
-            data: {
-                labels: dataLabels,
-                datasets: [{
-                    label: 'Hourly Clicks',
-                    data: values,
-                    backgroundColor: "rgba(54, 162, 235, 0.6)", // Softer, modern color with opacity
-                    borderColor: "rgba(54, 162, 235, 1)",
-                    borderWidth: 1.5, // Slightly thinner border for a sleeker look
-                    borderRadius: 6, // Rounded corners for bars
-                    barPercentage: 0.8 // Adjusts bar width within available space
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: false, // No animations as requested
-                scales: {
-                    x: {
-                        grid: {
-                            display: false // Hide x-axis gridlines
-                        },
-                        title: {
-                            display: true,
-                            text: "Hours",
-                            color: "#555", // Subtle color for title
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    y: {
-                        grid: {
-                            display: false // Hide y-axis gridlines
-                        },
-                        beginAtZero: true,
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false // No legend since only one dataset is shown
-                    },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: "rgba(0,0,0,0.7)", // Darker background for better readability
-                        titleFont: { size: 12, weight: 'bold' },
-                        bodyFont: { size: 12 }
-                    },
-                    title: {
-                        display: true,
-                        text: "Click Distribution In a Day",
-                        color: "#333", // Darker color for title
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        padding: { top: 10, bottom: 15 }
-                    }
-                }
-            }
-        });
+    // Create a new Chart
+    new Chart(barchart, {
+    type: 'bar',
+    data: {
+    labels: dataLabels,
+    datasets: [{
+    label: 'Hourly Clicks',
+    data: values,
+    backgroundColor: "rgba(54, 162, 235, 0.6)", // Softer, modern color with opacity
+    borderColor: "rgba(54, 162, 235, 1)",
+    borderWidth: 1.5, // Slightly thinner border for a sleeker look
+    borderRadius: 6, // Rounded corners for bars
+    barPercentage: 0.8 // Adjusts bar width within available space
+    }]
+    },
+    options: {
+    responsive: true,
+    animation: false, // No animations as requested
+    scales: {
+    x: {
+    grid: {
+    display: false // Hide x-axis gridlines
+    },
+    title: {
+    display: true,
+    text: "Hours",
+    color: "#555", // Subtle color for title
+    font: {
+    size: 14,
+    weight: 'bold'
+    }
+    }
+    },
+    y: {
+    grid: {
+    display: false // Hide y-axis gridlines
+    },
+    beginAtZero: true,
+    }
+    },
+    plugins: {
+    legend: {
+    display: false // No legend since only one dataset is shown
+    },
+    tooltip: {
+    enabled: true,
+    backgroundColor: "rgba(0,0,0,0.7)", // Darker background for better readability
+    titleFont: { size: 12, weight: 'bold' },
+    bodyFont: { size: 12 }
+    },
+    title: {
+    display: true,
+    text: "Click Distribution In a Day",
+    color: "#333", // Darker color for title
+    font: {
+    size: 16,
+    weight: 'bold'
+    },
+    padding: { top: 10, bottom: 15 }
+    }
+    }
+    }
+    });
 
     }
 
     window.copyToClipboard = function (text) {
-        navigator.clipboard.writeText(text)
-            .catch(function (err) {
-                console.error('Could not copy text: ', err);
-            });
+    navigator.clipboard.writeText(text)
+    .catch(function (err) {
+    console.error('Could not copy text: ', err);
+    });
     }
 </script>
 @code {
@@ -353,10 +354,11 @@
     private List<URLDTO> TopClickedURLs = new();
     private bool isLoading = true;
     private string errorMessage = string.Empty;
-
+    private string host = string.Empty; 
 
     protected override async Task OnInitializedAsync()
     {
+        host = Environment.IsDevelopment() ? "https://localhost:7167" : "http://Pexita.click";
         await GetDashboardData(UserID);
 
         await base.OnInitializedAsync();
