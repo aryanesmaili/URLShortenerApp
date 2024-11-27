@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # .NET Backend Service
   url-shortener-backend:
     build:
-      context: ./URLShortenerAPI
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: API.Dockerfile
     image: shortener-backend-image:latest
     container_name: shortenerbackend
     environment:
@@ -18,25 +16,12 @@ services:
 
   url-shortener-frontend:
     build:
-      context: ./URLShortenerBlazor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Blazor.Dockerfile
     image: shortener-frontend-image:latest
     container_name: shortenerfrontend
-    networks:
-      - url-shortener-net
-    depends_on:
-      - nginx
-
-  # Nginx Service
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    volumes:
-      - ./URLShortenerBlazor/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "80:80"
-    depends_on:
-      - url-shortener-backend
     networks:
       - url-shortener-net
 

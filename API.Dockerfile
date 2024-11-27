@@ -3,17 +3,19 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project file and restore any dependencies (use .csproj for the project name)
-COPY *.csproj ./
-RUN dotnet restore
+COPY ./SharedDataModels ./SharedDataModels/
+COPY ./URLShortenerAPI/*.csproj ./URLShortenerAPI/
+RUN dotnet restore ./URLShortenerAPI/*.csproj
 
 # Copy the rest of the application code and Publish the application
-COPY . .
+COPY ./URLShortenerAPI ./URLShortenerAPI/
+WORKDIR /app/URLShortenerAPI/
 RUN dotnet publish -c Release -o out
 
 # Build the runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-COPY --from=build /app/out ./
+WORKDIR /app/URLShortenerAPI/
+COPY --from=build /app/URLShortenerAPI/out ./
 
 # Set the environment to Production
 ENV ASPNETCORE_ENVIRONMENT=Production
