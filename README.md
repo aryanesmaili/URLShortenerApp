@@ -1,6 +1,6 @@
 # Modern Link Shortener
 
-This project is a scalable and feature-rich **Link Shortener** built with modern technologies in .NET 8. It employs Clean Architecture principles to ensure maintainability, testability, and scalability. The application consists of an **ASP.NET Core Web API** as the backend and a **Blazor WebAssembly** front-end. It leverages a wide range of technologies and design patterns to offer a secure, efficient, and user-friendly experience.
+This project is a scalable and feature-rich **Link Shortener** built with modern technologies in .NET 8. It employs Layered Architecture to ensure maintainability, testability, and scalability. The application consists of an **ASP.NET Core Web API** as the backend and a **Blazor WebAssembly** front-end. It leverages a wide range of technologies and design patterns to offer a secure, efficient, and user-friendly experience.
 
 ## 🚀 Key Features
 
@@ -35,7 +35,7 @@ This project is a scalable and feature-rich **Link Shortener** built with modern
 ## 💻 Technical Stack
 
 ### Backend (.NET 8)
-- **Architecture**: Clean Architecture
+- **Architecture**: Layered Architecture
 - **API**: ASP.NET Core Web API
 - **Authentication**: JWT with secure cookie storage
 - **Database**: PostgreSQL (Dockerized)
