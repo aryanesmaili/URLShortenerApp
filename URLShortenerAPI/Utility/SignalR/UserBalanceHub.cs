@@ -23,7 +23,7 @@ namespace URLShortenerAPI.Utility.SignalR
 
             double userBalance = await _userService.GetUserBalance(userID, userName!);
 
-            await Clients.Caller.SendAsync("ReceiveBalanceUpdate", userBalance); 
+            await Clients.Caller.SendAsync("ReceiveBalanceUpdate", userBalance);
             await base.OnConnectedAsync();
         }
 

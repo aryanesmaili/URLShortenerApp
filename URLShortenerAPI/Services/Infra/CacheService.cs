@@ -83,7 +83,7 @@ namespace URLShortenerAPI.Services.Infra
         {
             string host = string.Empty;
             int port = 0;
-            if(_webHostEnvironment.IsDevelopment())
+            if (_webHostEnvironment.IsDevelopment())
             {
                 host = "localhost";
                 port = 9191;
