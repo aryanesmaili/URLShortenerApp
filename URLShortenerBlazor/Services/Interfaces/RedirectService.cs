@@ -1,10 +1,10 @@
-﻿using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
-    internal class RedirectService : IRedirectService
+    public class RedirectService : IRedirectService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _authClient;

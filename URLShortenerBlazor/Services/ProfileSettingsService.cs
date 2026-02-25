@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services

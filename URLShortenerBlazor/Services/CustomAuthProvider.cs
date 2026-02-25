@@ -1,10 +1,10 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services
 {

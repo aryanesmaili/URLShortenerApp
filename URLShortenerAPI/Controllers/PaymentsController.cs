@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
-using URLShortenerAPI.Data.Interfaces.User;
-using URLShortenerAPI.Services.User;
+using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.ZibalDTOs;
+using URLShortener.Application.Interfaces.Services.User;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    internal class PaymentsController : ControllerBase
+    public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
 

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.CustomClasses;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
+using URLShortener.Common.CustomClasses;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class URLTableService : IURLTableService
+    public class URLTableService : IURLTableService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;

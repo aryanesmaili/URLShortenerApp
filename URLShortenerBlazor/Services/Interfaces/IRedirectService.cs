@@ -1,10 +1,10 @@
-﻿using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
     public interface IRedirectService
     {
-        public Task<APIResponse<URLDTO>> ResolveURL(string shortcode);
+        Task<APIResponse<URLDTO>> ResolveURL(string shortcode);
     }
 }

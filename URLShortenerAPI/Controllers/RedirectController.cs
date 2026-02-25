@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
-using URLShortenerAPI.Data.Entities.Analytics;
-using URLShortenerAPI.Data.Interfaces.URL;
+using URLShortener.Application.DTOs;
+using URLShortener.Application.Interfaces.Services.URL;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers

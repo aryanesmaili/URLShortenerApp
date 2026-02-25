@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class HTTPAuthAdder : DelegatingHandler
+    public class HTTPAuthAdder : DelegatingHandler
     {
         private readonly ILocalStorageService _localStorage;
         private readonly HttpClient _httpClient;

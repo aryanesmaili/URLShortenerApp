@@ -1,0 +1,60 @@
+﻿using URLShortener.Domain.Entities.URL;
+using URLShortener.Domain.Entities.User;
+
+namespace URLShortener.Domain.Entities.Finance;
+
+public class FinancialRecord
+{
+    public int ID { get; set; }
+
+    private double _balance;
+    public double Balance
+    {
+        get
+        {
+            return Math.Round(_balance, 2);
+        }
+        set
+        {
+            _balance = value;
+        }
+    }
+
+    public int UserID { get; set; }
+    public required UserModel User { get; set; }
+
+    public ICollection<DepositModel> Deposits { get; set; } = [];
+    public ICollection<PurchaseModel> Purchases { get; set; } = [];
+}
+
+public class DepositModel
+{
+    public int ID { get; set; }
+    public double Amount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime PaidAt { get; set; }
+    public bool IsSuccessful { get; set; }
+    public string? FailureReason { get; set; }
+    public long? TrackID { get; set; }
+    public string OrderID { get; set; } = string.Empty;
+    public string CardNumber { get; set; } = string.Empty;
+    public int? RefNumber { get; set; }
+    public string? Description { get; set; }
+
+
+    public int FinanceID { get; set; }
+    public required FinancialRecord Finance { get; set; }
+}
+
+public class PurchaseModel
+{
+    public int ID { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public double Amount { get; set; }
+
+    public int CustomURLID { get; set; }
+    public required URLModel URL { get; set; }
+
+    public int FinanceID { get; set; }
+    public required FinancialRecord Finance { get; set; }
+}

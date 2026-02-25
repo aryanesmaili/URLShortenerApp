@@ -7,11 +7,14 @@ using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text;
 using System.Threading.RateLimiting;
+using URLShortener.Application.DTOs.Settings;
+using URLShortener.Application.Interfaces.Infrastructure.External;
+using URLShortener.Application.Interfaces.Services.Request;
+using URLShortener.Application.Interfaces.Services.URL;
+using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Utility.SignalR;
+using URLShortener.Infrastructure.BackgroundServices;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Data.Entities.Settings;
-using URLShortenerAPI.Data.Interfaces.Infra;
-using URLShortenerAPI.Data.Interfaces.URL;
-using URLShortenerAPI.Data.Interfaces.User;
 using URLShortenerAPI.Responses.MapperConfigs;
 using URLShortenerAPI.Services.Infra;
 using URLShortenerAPI.Services.URL;
@@ -54,16 +57,17 @@ builder.Services.AddTransient<IUserAgentService, UserAgentService>();
 builder.Services.AddTransient<IZibalService, ZibalService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 
-builder.Services.AddSingleton<IRedisQueueService, RedisQueueService>();
+builder.Services.AddSingleton<IQueueService, RedisQueueService>();
 builder.Services.AddSingleton<UserConnectionMapping>();
 
 builder.Services.AddHostedService<ClickProcessService>(); // Background Service.
 
-builder.Services.AddAutoMapper(typeof(UserMapper));
-builder.Services.AddAutoMapper(typeof(AnalyticsMapper));
-builder.Services.AddAutoMapper(typeof(URLCategoryMapper));
-builder.Services.AddAutoMapper(typeof(URLMapper));
-builder.Services.AddAutoMapper(typeof(TokenMapper));
+builder.Services.AddAutoMapper(cfg => { },
+    typeof(UserMapper),
+    typeof(AnalyticsMapper),
+    typeof(URLCategoryMapper),
+    typeof(URLMapper),
+    typeof(TokenMapper));
 
 string postgresConnectionString = builder.Environment.IsDevelopment() ? "PostgreSQLDockerDev" : "PostgreSQLDockerProd";
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));

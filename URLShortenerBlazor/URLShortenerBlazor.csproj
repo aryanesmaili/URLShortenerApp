@@ -25,7 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedDataModels\SharedDataModels.csproj" />
+    <ProjectReference Include="..\URLShortener.Application\URLShortener.Application.csproj" />
+    <ProjectReference Include="..\URLShortener.Common\URLShortener.Common.csproj" />
   </ItemGroup>
 
 </Project>

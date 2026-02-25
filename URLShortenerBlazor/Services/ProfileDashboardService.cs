@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class ProfileDashboardService : IProfileDashboardService
+    public class ProfileDashboardService : IProfileDashboardService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;

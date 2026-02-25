@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using SharedDataModels.CustomClasses;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
-using URLShortenerAPI.Data.Interfaces.User;
+using URLShortener.Application.DTOs;
+using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Common.CustomClasses;
 using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers

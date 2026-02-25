@@ -1,14 +1,14 @@
-﻿using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
     public interface IShortenerService
     {
-        public Task<APIResponse<string>> DeleteURL(int urlID);
-        public string FakeShortener(string longURL);
-        public Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO);
-        public Task<APIResponse<URLShortenResponse>> ShortenSingle(URLCreateDTO createDTO);
+        Task<APIResponse<string>> DeleteURL(int urlID);
+        string FakeShortener(string longURL);
+        Task<APIResponse<List<URLShortenResponse>>> ShortenBatch(List<URLCreateDTO> createDTO);
+        Task<APIResponse<URLShortenResponse>> ShortenSingle(URLCreateDTO createDTO);
         Task<APIResponse<string>> ToggleActivation(int urlID);
         Task<APIResponse<string>> ToggleMonetization(int urlID);
     }

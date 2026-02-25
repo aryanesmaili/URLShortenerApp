@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using Standart.Hash.xxHash;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class ShortenerService : IShortenerService
+    public class ShortenerService : IShortenerService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _authClient;

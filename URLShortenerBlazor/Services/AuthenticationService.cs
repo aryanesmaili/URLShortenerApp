@@ -1,15 +1,15 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using URLShortener.Application.DTOs;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services
 {
-    internal class AuthenticationService : IAuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly ILocalStorageService _localStorage;
         private readonly IHttpClientFactory _httpClientFactory;

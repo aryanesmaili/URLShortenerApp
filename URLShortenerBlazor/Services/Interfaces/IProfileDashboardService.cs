@@ -1,5 +1,5 @@
-﻿using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {

@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using SharedDataModels.DTOs;
 using SharedDataModels.Responses;
-using URLShortenerAPI.Data.Interfaces.URL;
+using URLShortener.Application.DTOs;
+using URLShortener.Application.Interfaces.Services.URL;
 using URLShortenerAPI.Utility.Exceptions;
 namespace URLShortenerAPI.Controllers
 {

@@ -1,10 +1,10 @@
-﻿using SharedDataModels.CustomClasses;
-using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
+using URLShortener.Application.DTOs;
+using URLShortener.Common.CustomClasses;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
-    internal interface IURLTableService
+    public interface IURLTableService
     {
         Task<APIResponse<PagedResult<URLDTO>>> GetProfileURLList(int userID, int pageNumber, int pageSize);
     }

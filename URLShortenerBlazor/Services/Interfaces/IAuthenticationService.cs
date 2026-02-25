@@ -1,17 +1,17 @@
-﻿using SharedDataModels.DTOs;
-using SharedDataModels.Responses;
+﻿using SharedDataModels.Responses;
+using URLShortener.Application.DTOs;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {
     public interface IAuthenticationService
     {
-        public Task LogOutAsync(bool backendlogout = true);
-        public Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo);
-        public Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO);
-        public Task<int> GetUserIDAsync();
-        public Task<UserDTO> GetUserInfoAsync();
-        public Task UpdateUserInfo(UserDTO user);
-        public Task ClearUserInfo();
+        Task LogOutAsync(bool backendlogout = true);
+        Task<APIResponse<UserDTO>> Login(UserLoginDTO loginInfo);
+        Task<APIResponse<UserDTO>> Register(UserCreateDTO userCreateDTO);
+        Task<int> GetUserIDAsync();
+        Task<UserDTO> GetUserInfoAsync();
+        Task UpdateUserInfo(UserDTO user);
+        Task ClearUserInfo();
         Task<APIResponse<CaptchaVerificationResponse>> VerifyCaptcha(string token);
     }
 }
