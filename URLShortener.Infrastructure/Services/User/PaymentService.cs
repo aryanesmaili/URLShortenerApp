@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using IPinfo.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using URLShortener.Application.DTOs;
@@ -137,7 +136,7 @@ namespace URLShortenerAPI.Services.User
                 deposit.RefNumber = response.RefNumber;
                 deposit.Description = response.Description;
                 deposit.PaidAt = response.PaidAt;
-                
+
                 UserModel user = await _userRepository.GetAsync(r => r.FinancialID == deposit.FinanceID, i => i.Include(x => x.FinancialRecord))
                     ?? throw new NotFoundException($"User with financial id {deposit.FinanceID} Does Not Exist.");
                 user.FinancialRecord.Balance += response.Amount;
