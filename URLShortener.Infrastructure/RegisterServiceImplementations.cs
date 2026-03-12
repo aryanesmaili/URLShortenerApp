@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using URLShortener.Application;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.Request;
 using URLShortener.Application.Interfaces.Services.URL;
@@ -30,7 +32,9 @@ namespace URLShortener.Infrastructure
             services.AddTransient<IURLService, URLService>();
             services.AddTransient<IShortenerService, ShortenerService>();
             services.AddTransient<IRedirectService, RedirectService>();
-            services.AddTransient<ICacheService, CacheService>();
+
+            services.AddTransient<ICacheService, RedisCacheService>();
+
             services.AddTransient<IUserAgentService, UserAgentService>();
             services.AddTransient<IZibalService, ZibalService>();
             services.AddTransient<IPaymentService, PaymentService>();
@@ -43,6 +47,22 @@ namespace URLShortener.Infrastructure
 
             // Register Validators By Scanning the Marker Class
             services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
+
+            return services;
+        }
+
+        public static IServiceCollection RegisterCreds(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddBinding<RedisConnectionCreds>(configuration, "RedisCacheCreds");
+
+            return services;
+        }
+
+        private static IServiceCollection AddBinding<T>(this IServiceCollection services, IConfiguration configuration, string keyName) where T : class
+        {
+            var item = configuration.GetSection(keyName).Get<T>()
+                ?? throw new InvalidOperationException($"Configuration section '{keyName}' could not be bound to {typeof(T).Name}");
+            services.AddSingleton(item);
 
             return services;
         }

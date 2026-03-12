@@ -123,7 +123,7 @@ namespace URLShortener.Infrastructure.Services.URL
             if (uniqueItems.Count == 0)
             {
                 List<URLShortenResponse> result = conflictURLs.Select(_mapper.Map<URLDTO>).Select(x => new URLShortenResponse() { URL = x, IsNew = false }).ToList();
-                await _cacheService.SetRange(conflictURLs.ToList(), "ShortCode");
+                await _cacheService.SetRange(conflictURLs.ToList(), x => x.ShortCode);
                 return result;
             }
 
@@ -139,7 +139,7 @@ namespace URLShortener.Infrastructure.Services.URL
             await SaveURLRecordWithTransaction(newRecords);
 
             // We cache all of the new URLs in Redis right away.
-            await _cacheService.SetRange(newRecords, "ShortCode");
+            await _cacheService.SetRange(newRecords, x => x.ShortCode);
 
             // Creating a list of new records that were added.
             List<URLDTO> newURLs = newRecords.Select(_mapper.Map<URLDTO>).ToList();

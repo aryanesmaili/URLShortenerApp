@@ -26,6 +26,9 @@ if (builder.Environment.IsDevelopment())
 }
 
 #region DI Container Modification
+// Adding Creds to DI Container
+builder.Services.RegisterCreds(builder.Configuration);
+
 // Adding services to DI Container
 builder.Services.AddServices();
 
