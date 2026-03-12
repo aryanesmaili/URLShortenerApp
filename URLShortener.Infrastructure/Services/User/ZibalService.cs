@@ -3,7 +3,7 @@ using System.Text.Json;
 using URLShortener.Application.DTOs.ZibalDTOs;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 
-namespace URLShortenerAPI.Services.User
+namespace URLShortener.Infrastructure.Services.User
 {
     public class ZibalService : IZibalService
     {

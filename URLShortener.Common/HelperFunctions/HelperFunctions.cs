@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace URLShortenerAPI.Services.Utility
+namespace URLShortener.Common.HelperFunctions
 {
-    public static class UtilityFunctions
+    public static class HelperFunctions
     {
         /// <summary>
         /// validates if a given string is an Email or not.

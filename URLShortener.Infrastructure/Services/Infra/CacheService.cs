@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 
-namespace URLShortenerAPI.Services.Infra
+namespace URLShortener.Infrastructure.Services.Infra
 {
     public class CacheService : ICacheService
     {

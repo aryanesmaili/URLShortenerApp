@@ -4,7 +4,7 @@ using System.Net.Mail;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 
-namespace URLShortenerAPI.Services.User
+namespace URLShortener.Infrastructure.Services.User
 {
     public class EmailService(IOptions<SMTPSettings> smtpSettings) : IEmailService
     {

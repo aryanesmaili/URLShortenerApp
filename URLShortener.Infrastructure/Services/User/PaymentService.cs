@@ -10,9 +10,8 @@ using URLShortener.Application.Utility.SignalR;
 using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Entities.User;
 using URLShortenerAPI.Utility.Exceptions;
-using URLShortenerAPI.Utility.SignalR;
 
-namespace URLShortenerAPI.Services.User
+namespace URLShortener.Infrastructure.Services.User
 {
     public class PaymentService : IPaymentService
     {

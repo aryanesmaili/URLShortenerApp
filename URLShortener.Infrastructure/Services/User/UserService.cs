@@ -8,15 +8,15 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
 using URLShortener.Common.CustomClasses;
+using URLShortener.Common.HelperFunctions;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
 using URLShortener.Domain.Enums;
-using URLShortenerAPI.Services.Utility;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services.User
+namespace URLShortener.Infrastructure.Services.User
 {
     public class UserService(
                                IAuthService authorizationService,

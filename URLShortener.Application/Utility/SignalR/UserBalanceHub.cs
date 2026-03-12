@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using URLShortener.Application.Interfaces.Services.User;
-using URLShortenerAPI.Utility.SignalR;
 
 namespace URLShortener.Application.Utility.SignalR
 {

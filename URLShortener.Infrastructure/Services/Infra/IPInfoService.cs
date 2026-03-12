@@ -3,7 +3,7 @@ using IPinfo.Models;
 using Microsoft.Extensions.Configuration;
 using URLShortener.Application.Interfaces.Services.Request;
 
-namespace URLShortenerAPI.Services.Utility
+namespace URLShortener.Infrastructure.Services.Infra
 {
     public class IPInfoService : IIPInfoService
     {

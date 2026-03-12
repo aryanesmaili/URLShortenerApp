@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace URLShortenerAPI.Utility.SignalR
+namespace URLShortener.Application.Utility.SignalR
 {
     public class UserConnectionMapping
     {

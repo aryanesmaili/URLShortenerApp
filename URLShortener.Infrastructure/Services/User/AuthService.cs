@@ -12,7 +12,7 @@ using URLShortener.Domain.Enums;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Utility.Exceptions;
 
-namespace URLShortenerAPI.Services.User
+namespace URLShortener.Infrastructure.Services.User
 {
     public class AuthService(AppDbContext context, JwtSettings jwtSettings) : IAuthService
     {

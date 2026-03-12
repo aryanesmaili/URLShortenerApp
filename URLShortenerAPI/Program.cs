@@ -9,18 +9,11 @@ using System.Text;
 using System.Threading.RateLimiting;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Services.Request;
-using URLShortener.Application.Interfaces.Services.URL;
-using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Utility.SignalR;
-using URLShortener.Infrastructure.BackgroundServices;
+using URLShortener.Infrastructure;
+using URLShortener.Infrastructure.Services.User;
+using URLShortener.Persistence;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Responses.MapperConfigs;
-using URLShortenerAPI.Services.Infra;
-using URLShortenerAPI.Services.URL;
-using URLShortenerAPI.Services.User;
-using URLShortenerAPI.Services.Utility;
-using URLShortenerAPI.Utility.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +25,14 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerGen();
 }
 
+#region DI Container Modification
+// Adding services to DI Container
+builder.Services.AddServices();
 
+// Adding Repositories to DI Container
+builder.Services.AddRepositories();
+
+#endregion
 builder.Configuration.AddUserSecrets<Program>();
 
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
@@ -40,34 +40,6 @@ builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSet
 // Automatically adds all validators of this project to DI pool.
 var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
-
-// Add services to the container.
-
-builder.Services.AddHttpClient();
-
-builder.Services.AddSingleton<IIPInfoService, IPInfoService>();
-
-builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<IAuthService, AuthService>();
-builder.Services.AddTransient<IURLService, URLService>();
-builder.Services.AddTransient<IShortenerService, ShortenerService>();
-builder.Services.AddTransient<IRedirectService, RedirectService>();
-builder.Services.AddTransient<ICacheService, CacheService>();
-builder.Services.AddTransient<IUserAgentService, UserAgentService>();
-builder.Services.AddTransient<IZibalService, ZibalService>();
-builder.Services.AddTransient<IPaymentService, PaymentService>();
-
-builder.Services.AddSingleton<IQueueService, RedisQueueService>();
-builder.Services.AddSingleton<UserConnectionMapping>();
-
-builder.Services.AddHostedService<ClickProcessService>(); // Background Service.
-
-builder.Services.AddAutoMapper(cfg => { },
-    typeof(UserMapper),
-    typeof(AnalyticsMapper),
-    typeof(URLCategoryMapper),
-    typeof(URLMapper),
-    typeof(TokenMapper));
 
 string postgresConnectionString = builder.Environment.IsDevelopment() ? "PostgreSQLDockerDev" : "PostgreSQLDockerProd";
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));

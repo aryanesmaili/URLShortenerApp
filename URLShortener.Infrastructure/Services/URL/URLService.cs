@@ -12,9 +12,8 @@ using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
 using URLShortenerAPI.Utility.Exceptions;
-using URLShortenerAPI.Utility.SignalR;
 
-namespace URLShortenerAPI.Services.URL
+namespace URLShortener.Infrastructure.Services.URL
 {
     public class URLService : IURLService
     {

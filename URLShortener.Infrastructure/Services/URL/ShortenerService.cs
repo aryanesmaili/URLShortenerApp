@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Services.URL
+﻿namespace URLShortener.Infrastructure.Services.URL
 {
     using System;
     using System.Security.Cryptography;

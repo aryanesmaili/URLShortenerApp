@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using URLShortener.Application.Repositories;
 using URLShortenerAPI.Data;
 
-namespace URLShortener.Infrastructure.Repositories
+namespace URLShortener.Persistence.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
