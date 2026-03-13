@@ -1,19 +1,23 @@
 ﻿using IPinfo;
 using IPinfo.Models;
 using Microsoft.Extensions.Configuration;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.Request;
 
 namespace URLShortener.Infrastructure.Services.Infra
 {
-    public class IPInfoService : IIPInfoService
+    public sealed class IPInfoService : IIPInfoService
     {
-        private readonly string myToken;
         private readonly IPinfoClient client;
-        public IPInfoService(IConfiguration settings)
+
+        public IPInfoService(IPInfoCreds creds)
         {
-            myToken = settings["IPInfoApiKey"]!; // retrieve IPInfo.io key from user secrets.
-            client = new IPinfoClient.Builder().AccessToken(myToken).Build();
+            client = new IPinfoClient
+                .Builder()
+                .AccessToken(creds.AccessToken)
+                .Build();
         }
+
         /// <summary>
         /// fetches info about an IP Address from IPInfo.io.
         /// </summary>

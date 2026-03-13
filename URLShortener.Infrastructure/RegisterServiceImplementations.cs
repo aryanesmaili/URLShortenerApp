@@ -53,12 +53,17 @@ namespace URLShortener.Infrastructure
 
         public static IServiceCollection RegisterCreds(this IServiceCollection services, IConfiguration configuration)
         {
+            // Redis Connection Information binding
             services.AddBinding<RedisConnectionCreds>(configuration, "RedisCacheCreds");
+
+            // Creds needed to contact IPInfo Service
+            services.AddBinding<IPInfoCreds>(configuration, "IPInfoCreds");
 
             return services;
         }
 
-        private static IServiceCollection AddBinding<T>(this IServiceCollection services, IConfiguration configuration, string keyName) where T : class
+        private static IServiceCollection AddBinding<T>(this IServiceCollection services, IConfiguration configuration, string keyName) 
+            where T : class
         {
             var item = configuration.GetSection(keyName).Get<T>()
                 ?? throw new InvalidOperationException($"Configuration section '{keyName}' could not be bound to {typeof(T).Name}");
