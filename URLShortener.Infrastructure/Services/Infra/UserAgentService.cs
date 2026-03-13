@@ -5,7 +5,7 @@ using URLShortener.Domain.Entities.ClickInfo;
 
 namespace URLShortener.Infrastructure.Services.Infra
 {
-    public class UserAgentService : IUserAgentService
+    public sealed class UserAgentService : IUserAgentService
     {
         private readonly HttpClient _httpClient;
         private const string _postAPIURL = "https://api.apicagent.com";

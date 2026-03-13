@@ -6,7 +6,7 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 
 namespace URLShortener.Infrastructure.Services.Infra
 {
-    public class RedisCacheService : ICacheService
+    public sealed class RedisCacheService : ICacheService
     {
         private readonly IConnectionMultiplexer _redis;
         private readonly RedisConnectionCreds _connectionCreds;

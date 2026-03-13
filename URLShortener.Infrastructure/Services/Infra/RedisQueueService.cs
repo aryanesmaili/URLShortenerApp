@@ -5,7 +5,7 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 
 namespace URLShortener.Infrastructure.Services.Infra
 {
-    public class RedisQueueService : IQueueService
+    public sealed class RedisQueueService : IQueueService
     {
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabase _db;
