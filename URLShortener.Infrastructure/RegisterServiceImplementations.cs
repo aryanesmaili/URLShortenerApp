@@ -59,6 +59,9 @@ namespace URLShortener.Infrastructure
             // Creds needed to contact IPInfo Service
             services.AddBinding<IPInfoCreds>(configuration, "IPInfoCreds");
 
+            // Creds needed to work with user agent service
+            services.AddBinding<UserAgentServiceCreds>(configuration, "UserAgentServiceCreds");
+
             return services;
         }
 

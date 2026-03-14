@@ -123,7 +123,7 @@ namespace URLShortener.Infrastructure.BackgroundServices
         /// <returns>a <see cref="DeviceInfo"/> object containing info about the user.</returns>
         private async Task<DeviceInfo?> AnalyzeUserAgent(string userAgent)
         {
-            DeviceInfo? apiResponse = await _userAgentService.GetRequestInfo(userAgent);
+            DeviceInfo? apiResponse = await _userAgentService.GetUserAgentInfo(userAgent);
             return apiResponse;
         }
 
