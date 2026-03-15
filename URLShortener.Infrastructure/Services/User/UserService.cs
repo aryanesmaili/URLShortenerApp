@@ -7,14 +7,14 @@ using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
-using URLShortener.Common.CustomClasses;
+using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Common.HelperFunctions;
+using URLShortener.Common.Responses;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
 using URLShortener.Domain.Enums;
-using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortener.Infrastructure.Services.User
 {

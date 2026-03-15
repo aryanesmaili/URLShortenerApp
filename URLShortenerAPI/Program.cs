@@ -14,6 +14,7 @@ using URLShortener.Infrastructure;
 using URLShortener.Infrastructure.Services.User;
 using URLShortener.Persistence;
 using URLShortenerAPI.Data;
+using URLShortenerAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -186,6 +187,9 @@ if (builder.Environment.IsProduction())
     builder.WebHost.UseUrls("http://0.0.0.0:5261");
 
 var app = builder.Build();
+
+// Global Exception Handler Middleware
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,6 +1,6 @@
 ﻿using SharedDataModels.Responses;
 using URLShortener.Application.DTOs;
-using URLShortener.Common.CustomClasses;
+using URLShortener.Common.Responses;
 
 namespace URLShortener.Application.Interfaces.Services.User
 {

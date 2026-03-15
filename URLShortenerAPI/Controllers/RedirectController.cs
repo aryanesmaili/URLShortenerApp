@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedDataModels.Responses;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Services.URL;
-using URLShortenerAPI.Utility.Exceptions;
+using URLShortener.Application.Utility;
+using URLShortener.Application.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -21,83 +21,63 @@ namespace URLShortenerAPI.Controllers
         [HttpGet("{shortCode}")]
         public async Task<IActionResult> CheckURLExists([FromRoute] string shortCode)
         {
-            string url = _webHostEnvironment.IsDevelopment() ? "https://localhost:7112" : "http://Pexita.click";
+            var baseUrl = GetBaseUrl();
+
             try
             {
-                string? ipAddress;
+                var requestInfo = BuildRequestInfo();
 
-                if (_webHostEnvironment.IsDevelopment())
-                    ipAddress = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+                var result = await _redirectService.CheckURLExists(shortCode, requestInfo);
 
-                else // since the request is redirected by nginx, we have to retrieve IP from special headers.
-                    ipAddress = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
-                   ?? HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
-                   ?? HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString()
-                   ?? "Unknown";
+                if (result.IsMonetized)
+                    return Redirect($"{baseUrl}/RedirectURL/{shortCode}");
 
-                string userAgent = HttpContext.Request.Headers.UserAgent.ToString();
-
-                URLDTO result = await _redirectService.CheckURLExists(shortCode, new IncomingRequestInfo { IPAddress = ipAddress!, UserAgent = userAgent, TimeClicked = DateTime.UtcNow });
-
-
-                return !result.IsMonetized ? Redirect(result.LongURL) : Redirect($"{url}/RedirectURL/{shortCode}");
+                return Redirect(result.LongURL);
             }
-
             catch (NotFoundException)
             {
-                return Redirect($"{url}/Notfound");
+                return Redirect($"{baseUrl}/Notfound");
+            }
+        }
+
+        private IncomingRequestInfo BuildRequestInfo()
+        {
+            return new IncomingRequestInfo
+            {
+                IPAddress = GetClientIpAddress(),
+                UserAgent = HttpContext.Request.Headers.UserAgent.ToString(),
+                TimeClicked = DateTime.UtcNow
+            };
+        }
+
+        private string GetClientIpAddress()
+        {
+            if (_webHostEnvironment.IsDevelopment())
+            {
+                return HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unknown";
             }
 
-            catch (Exception e)
-            {
-                DebugErrorResponse error =
-                    new()
-                    {
-                        Message = e.Message,
-                        InnerException = e.InnerException?.ToString() ?? "",
-                        StackTrace = e.StackTrace ?? ""
-                    };
-                return StatusCode(500, error);
-            }
+            return HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
+                ?? HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                ?? HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString()
+                ?? "Unknown";
+        }
+
+        private string GetBaseUrl()
+        {
+            return _webHostEnvironment.IsDevelopment()
+                ? "https://localhost:7112"
+                : "http://Pexita.click";
         }
 
         [HttpGet("Resolve/{shortcode}")]
         public async Task<IActionResult> ResolveURL(string shortcode)
         {
-            APIResponse<URLDTO> response;
-            try
-            {
-                URLDTO result = await _redirectService.ResolveURL(shortcode);
+            URLDTO result = await _redirectService.ResolveShortCode(shortcode);
 
-                response = new()
-                { Success = true, Result = result };
-                return Ok(response);
-            }
-            catch (NotFoundException e)
-            {
-                response = new()
-                { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message, };
+            var response = CreateResult.CreateDataSuccess(result);
+            return Ok(response);
 
-                return NotFound(response);
-            }
-            catch (ArgumentException e)
-            {
-                response = new()
-                { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-
-                return BadRequest(response);
-            }
-            catch (Exception e)
-            {
-                DebugErrorResponse error =
-                    new()
-                    {
-                        Message = e.Message,
-                        InnerException = e.InnerException?.ToString() ?? "",
-                        StackTrace = e.StackTrace ?? ""
-                    };
-                return StatusCode(500, error);
-            }
         }
     }
 }

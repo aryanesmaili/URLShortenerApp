@@ -6,12 +6,12 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
+using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Application.Utility.SignalR;
 using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
-using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortener.Infrastructure.Services.URL
 {

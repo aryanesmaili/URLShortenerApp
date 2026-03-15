@@ -2,7 +2,7 @@
 using SharedDataModels.Responses;
 using System.Text.Json;
 using URLShortener.Application.DTOs;
-using URLShortener.Common.CustomClasses;
+using URLShortener.Common.Responses;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services

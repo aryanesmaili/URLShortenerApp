@@ -65,7 +65,7 @@ namespace URLShortener.Infrastructure
             return services;
         }
 
-        private static IServiceCollection AddBinding<T>(this IServiceCollection services, IConfiguration configuration, string keyName) 
+        private static IServiceCollection AddBinding<T>(this IServiceCollection services, IConfiguration configuration, string keyName)
             where T : class
         {
             var item = configuration.GetSection(keyName).Get<T>()

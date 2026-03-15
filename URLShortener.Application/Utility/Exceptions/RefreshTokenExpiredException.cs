@@ -1,4 +1,4 @@
-﻿namespace URLShortenerAPI.Utility.Exceptions
+﻿namespace URLShortener.Application.Utility.Exceptions
 {
     public class RefreshTokenExpiredException : Exception
     {

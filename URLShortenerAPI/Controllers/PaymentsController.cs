@@ -5,7 +5,7 @@ using SharedDataModels.Responses;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.DTOs.ZibalDTOs;
 using URLShortener.Application.Interfaces.Services.User;
-using URLShortenerAPI.Utility.Exceptions;
+using URLShortener.Application.Utility.Exceptions;
 
 namespace URLShortenerAPI.Controllers
 {

@@ -1,6 +1,6 @@
-﻿namespace URLShortener.Common.CustomClasses
+﻿namespace URLShortener.Common.Responses
 {
-    public class PagedResult<T>
+    public class PagedResult<T> : BaseResponse
     {
         public List<T> Items { get; set; } = [];
         public int TotalCount { get; set; }

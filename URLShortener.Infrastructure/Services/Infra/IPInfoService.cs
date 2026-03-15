@@ -1,6 +1,5 @@
 ﻿using IPinfo;
 using IPinfo.Models;
-using Microsoft.Extensions.Configuration;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.Request;
 

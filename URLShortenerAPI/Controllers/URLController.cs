@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.Responses;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Services.URL;
-using URLShortenerAPI.Utility.Exceptions;
+using URLShortener.Application.Utility.Exceptions;
+
 namespace URLShortenerAPI.Controllers
 {
     [ApiController]

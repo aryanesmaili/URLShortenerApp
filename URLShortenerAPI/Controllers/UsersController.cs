@@ -8,8 +8,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Services.User;
-using URLShortener.Common.CustomClasses;
-using URLShortenerAPI.Utility.Exceptions;
+using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Common.Responses;
 
 namespace URLShortenerAPI.Controllers
 {

@@ -6,11 +6,11 @@ using System.Security.Cryptography;
 using System.Text;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.User;
 using URLShortener.Domain.Enums;
 using URLShortenerAPI.Data;
-using URLShortenerAPI.Utility.Exceptions;
 
 namespace URLShortener.Infrastructure.Services.User
 {
