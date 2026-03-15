@@ -405,7 +405,7 @@ namespace URLShortener.Infrastructure.Services.URL
             // collision has happened, going to make a new unique URL
             do
             {
-                shortURL = _shortenerService.CollisionHandler(ref shortURL);
+                shortURL = _shortenerService.CollisionHandler(shortURL);
             }
             while (await _urlRepository.AnyAsync(x => x.ShortCode == shortURL));
 

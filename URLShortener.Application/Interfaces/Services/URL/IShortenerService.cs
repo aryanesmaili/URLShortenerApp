@@ -3,6 +3,6 @@
     public interface IShortenerService
     {
         string HashURL(string longURL);
-        string CollisionHandler(ref string shortURL, int lengthToAdd = 1);
+        string CollisionHandler(string shortURL, int lengthToAdd = 1);
     }
 }
