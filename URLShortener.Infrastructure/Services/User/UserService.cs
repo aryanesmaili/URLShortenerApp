@@ -7,6 +7,7 @@ using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
+using URLShortener.Application.Utility;
 using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Common.HelperFunctions;
 using URLShortener.Common.Responses;
@@ -116,14 +117,7 @@ namespace URLShortener.Infrastructure.Services.User
                 .ToListAsync();
 
             var result = URLs.Select(_mapper.Map<URLDTO>).ToList();
-            return new PagedResult<URLDTO>
-            {
-                Items = result,
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-            };
+            return CreateResult.CreatePagedSuccess(result, pageNumber, pageSize, totalCount, (int)Math.Ceiling((double)totalCount / pageSize));
         }
 
         /// <summary>
