@@ -13,6 +13,7 @@ namespace URLShortener.Infrastructure.Services.Infra
         private readonly IDatabase _db;
         private readonly JsonSerializerOptions _serializerOptions;
         private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromDays(3);
+        private const string DefaultCollectionIdentifier = "all";
 
         public RedisCacheService(IConnectionMultiplexer redis, RedisConnectionCreds connectionCreds)
         {
@@ -35,21 +36,23 @@ namespace URLShortener.Infrastructure.Services.Infra
         }
 
         /// <inheritdoc/>
-        public async Task SetRange<T>(List<T> items, Func<T, string> keySelector, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists)
+        public async Task SetRange<T>(IEnumerable<T> items, Func<T, string> keySelector, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists)
         {
-            if (items == null || items.Count == 0)
+            if (items == null)
                 return;
 
+            // we detect how long to store the values in cache
             span ??= DefaultCacheDuration;
+            // we detect in what situation we add these values to cache
             var when = MapStrategy(strategy);
 
-            var prepared = new List<(string key, string content)>(items.Count);
+            var prepared = new List<(string key, string content)>(); // we store each item separately
             foreach (var item in items)
             {
                 if (item == null)
                     continue;
 
-                string uniqueValue = keySelector(item);
+                string uniqueValue = keySelector(item); // get the unique value used as the key provided by func caller.
                 if (string.IsNullOrEmpty(uniqueValue))
                     throw new ArgumentException("Key selector returned null or empty value for an item.");
 
@@ -60,8 +63,25 @@ namespace URLShortener.Infrastructure.Services.Infra
             var tasks = prepared.Select(p => batch.StringSetAsync(p.key, p.content, span, when)).ToList();
 
             batch.Execute();
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks); // we await until all set operations in batch are done
         }
+
+        /// <inheritdoc/>
+        public async Task SetCollectionAsync<T>(IEnumerable<T> items, string? extraIdentifier = null, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists)
+        {
+            if (items == null)
+                return;
+
+            span ??= DefaultCacheDuration;
+            string collectionIdentifier = extraIdentifier ?? DefaultCollectionIdentifier;
+            var key = GenerateRedisKey<T>(collectionIdentifier);
+            var when = MapStrategy(strategy);
+
+            var serialized = JsonSerializer.Serialize(items, _serializerOptions);
+
+            await _db.StringSetAsync(key, serialized, span, when);
+        }
+
 
         /// <inheritdoc/>
         public async Task SetAsync<T>(string key, T value, TimeSpan? cacheDuration = null, CacheStrategy strategy = CacheStrategy.NotExists)
@@ -75,48 +95,29 @@ namespace URLShortener.Infrastructure.Services.Infra
             await _db.StringSetAsync(cacheKey, serializedData, cacheDuration.Value, when);
         }
 
-        /// <inheritdoc/>
-        public async Task<List<T>?> GetAllValuesAsync<T>() where T : class
-        {
-            var redisKeys = _redis
-                .GetServer(_connectionCreds.Host, _connectionCreds.Port)
-                .Keys(pattern: GetRedisPattern<T>())
-                .Select(p => p.ToString())
-                .ToList();
 
-            var result = new List<T>();
-
-            if (redisKeys.Count == 0)
-                return result = [];
-
-            // FIX: Batch all reads instead of awaiting each one sequentially (N round trips → 1 batch)
-            var batch = _db.CreateBatch();
-            var tasks = redisKeys.Select(k => batch.StringGetAsync(k)).ToList();
-            batch.Execute();
-            var values = await Task.WhenAll(tasks);
-
-            foreach (var cachedValue in values)
-            {
-                if (string.IsNullOrEmpty(cachedValue))
-                    continue;
-
-                var deserializedObject = JsonSerializer.Deserialize<T>(cachedValue!, _serializerOptions);
-                if (deserializedObject != null)
-                    result.Add(deserializedObject);
-            }
-
-            return result;
-        }
 
         /// <inheritdoc/>
-        public async Task<T?> GetValueAsync<T>(string key) where T : class
+        public async Task<T?> GetValueAsync<T>(string key)
         {
             var cachedData = await _db.StringGetAsync(GenerateRedisKey<T>(key));
 
-            if (string.IsNullOrEmpty(cachedData))
-                return null;
+            if (cachedData.IsNullOrEmpty)
+                return default;
 
             return JsonSerializer.Deserialize<T>(cachedData!, _serializerOptions);
+        }
+
+        /// <inheritdoc/>
+        public async Task<IReadOnlyCollection<T>?> GetCollectionAsync<T>(string? extraIdentifier = null)
+        {
+            string collectionIdentifier = extraIdentifier ?? DefaultCollectionIdentifier;
+            var cachedData = await _db.StringGetAsync(GenerateRedisKey<T>(collectionIdentifier));
+
+            if (cachedData.IsNullOrEmpty)
+                return [];
+
+            return JsonSerializer.Deserialize<List<T>>(cachedData!, _serializerOptions);
         }
 
         /// <inheritdoc/>
@@ -125,9 +126,7 @@ namespace URLShortener.Infrastructure.Services.Infra
             await _db.KeyDeleteAsync(GenerateRedisKey<T>(key));
         }
 
-        // FIX: Added wildcard so Redis SCAN pattern actually matches keys (e.g. "url_*" not "url_")
-        private static string GetRedisPattern<T>() => typeof(T).Name.ToLower() + "_*";
+        private static string GenerateRedisKey<T>(string key) => $"{typeof(T).Name.ToLower()}:{key}".ToLowerInvariant();
 
-        private static string GenerateRedisKey<T>(string key) => $"{typeof(T).Name.ToLower()}_{key}";
     }
 }

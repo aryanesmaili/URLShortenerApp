@@ -14,19 +14,12 @@ public interface ICacheService
     Task SetAsync<T>(string key, T value, TimeSpan? cacheDuration = null, CacheStrategy strategy = CacheStrategy.NotExists);
 
     /// <summary>
-    /// gets all data saved in Redis cache.
-    /// </summary>
-    /// <param name="type">type of data that was stored (e.g URL, User data etc.)</param>
-    /// <returns></returns>
-    Task<List<T>?> GetAllValuesAsync<T>() where T : class;
-
-    /// <summary>
     /// Gets a Value from Redis Cache based on Type_Key:Value format (e.g URL_a62b53:Value).
     /// </summary>
     /// <typeparam name="T">Type of Data to be Deserialized into.</typeparam>
     /// <param name="key">Unique Identifier of the record (in case of URLs, it's ShortCode).</param>
     /// <returns></returns>
-    Task<T?> GetValueAsync<T>(string key) where T : class;
+    Task<T?> GetValueAsync<T>(string key);
 
     /// <summary>
     /// Removes a data from redis Cache.
@@ -36,7 +29,7 @@ public interface ICacheService
     Task RemoveAsync<T>(string key);
 
     /// <summary>
-    /// Adds Batch of items to the Cache
+    /// Adds Batch of items to the Cache each as a separate key,value
     /// </summary>
     /// <typeparam name="T">type of value to be added</typeparam>
     /// <param name="items">list of items to be added</param>
@@ -45,7 +38,27 @@ public interface ICacheService
     /// <param name="strategy">In what situation the item is added to Cache</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"> thrown if key selector returns null or empty</exception>
-    Task SetRange<T>(List<T> items, Func<T, string> keySelector, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists);
+    Task SetRange<T>(IEnumerable<T> items, Func<T, string> keySelector, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists);
+
+    /// <summary>
+    /// Adds Batch of items to the Cache each as one key with collection of values.
+    /// </summary>
+    /// <typeparam name="T">type of value to be added</typeparam>
+    /// <param name="items">list of items to be added</param>
+    /// <param name="extraIdentifier">extra identifier used in key. example key: URL:extraIdentifier</param>
+    /// <param name="span">how long the item exists in cache. defaults to 3 days if not provided</param>
+    /// <param name="strategy">In what situation the item is added to Cache</param>
+    /// <returns></returns>
+    Task SetCollectionAsync<T>(IEnumerable<T> items, string? extraIdentifier = null, TimeSpan? span = null, CacheStrategy strategy = CacheStrategy.NotExists);
+
+    /// <summary>
+    /// Gets Items set by <see cref="SetCollectionAsync{T}(IEnumerable{T}, string?, TimeSpan?, CacheStrategy)"/>.
+    /// they are stored as key:[CollectionOfItems]
+    /// </summary>
+    /// <typeparam name="T">type of items to fetch</typeparam>
+    /// <param name="extraIdentifier">extra identifier used in key. example key: URL:extraIdentifier</param>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<T>?> GetCollectionAsync<T>(string? extraIdentifier = null);
 }
 
 public enum CacheStrategy
