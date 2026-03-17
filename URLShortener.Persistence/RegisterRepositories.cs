@@ -12,6 +12,9 @@ namespace URLShortener.Persistence
             // Register Repository Implementation
             services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            services.AddTransient<IServiceTariffRepository, ServiceTariffRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
+
             return services;
         }
     }

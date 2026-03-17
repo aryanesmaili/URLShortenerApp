@@ -2,6 +2,7 @@
 using URLShortener.Domain.Entities.Analytics;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.Finance;
+using URLShortener.Domain.Entities.ServiceTariffs;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
@@ -20,6 +21,7 @@ namespace URLShortenerAPI.Data
         public DbSet<PurchaseModel> Purchases { get; set; }
         public DbSet<DepositModel> Deposits { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<ServiceTariffModel> ServiceTariffs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -111,6 +113,9 @@ namespace URLShortenerAPI.Data
 
             builder.Entity<PurchaseModel>()
                 .HasIndex(x => x.FinanceID);
+
+            builder.Entity<ServiceTariffModel>()
+                .HasIndex(x => x.Price);
 
         }
     }
