@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Repositories;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.Category;
 using URLShortener.Domain.Entities.URLCategory;
 
 namespace URLShortenerAPI.Responses.MapperConfigs
@@ -9,7 +9,9 @@ namespace URLShortenerAPI.Responses.MapperConfigs
         public URLCategoryMapper()
         {
             CreateMap<URLCategoryModel, CategoryDTO>()
-                .ForMember(x => x.URLs, opt => opt.Ignore());
+                .ReverseMap();
+
+            CreateMap<URLCategoryModel, CategorySummaryDTO>();
         }
     }
 }

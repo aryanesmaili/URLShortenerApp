@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
@@ -12,6 +13,7 @@ using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
+using URLShortener.Domain.Enums;
 
 namespace URLShortener.Infrastructure.Services.URL
 {
@@ -208,6 +210,7 @@ namespace URLShortener.Infrastructure.Services.URL
         {
             // Map the DTO to a new URLModel object.
             URLModel newRecord = _mapper.Map<URLModel>(url);
+            newRecord.CreatedAt = DateTime.UtcNow;
 
             // Set the user for this URL.
             newRecord.User = user;

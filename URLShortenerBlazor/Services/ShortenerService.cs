@@ -4,7 +4,7 @@ using Standart.Hash.xxHash;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services

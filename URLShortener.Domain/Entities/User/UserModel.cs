@@ -17,10 +17,10 @@ public class UserModel
     public UserType Role { get; set; } = UserType.ChannelAdmin;
     public DateTime CreatedAt { get; set; }
 
-    public ICollection<URLModel>? URLs { get; set; }
-    public ICollection<URLCategoryModel>? URLCategories { get; set; }
+    public ICollection<URLModel>? URLs { get; set; } = [];
+    public ICollection<URLCategoryModel>? URLCategories { get; set; } = [];
     public ICollection<RefreshToken>? RefreshTokens { get; set; }
 
     public int FinancialID { get; set; }
-    public required FinancialRecord FinancialRecord { get; set; }
+    public required FinancialRecordModel FinancialRecord { get; set; }
 }

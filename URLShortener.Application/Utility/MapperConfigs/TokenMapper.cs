@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Domain.Entities.User;
 
 namespace URLShortenerAPI.Responses.MapperConfigs
@@ -8,7 +8,8 @@ namespace URLShortenerAPI.Responses.MapperConfigs
     {
         public TokenMapper()
         {
-            CreateMap<RefreshToken, RefreshTokenDTO>();
+            CreateMap<RefreshToken, RefreshTokenDTO>()
+                .ReverseMap();
         }
     }
 }

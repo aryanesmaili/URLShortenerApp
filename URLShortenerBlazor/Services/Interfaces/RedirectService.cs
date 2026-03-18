@@ -1,6 +1,6 @@
 ﻿using SharedDataModels.Responses;
 using System.Text.Json;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 
 namespace URLShortenerBlazor.Services.Interfaces
 {

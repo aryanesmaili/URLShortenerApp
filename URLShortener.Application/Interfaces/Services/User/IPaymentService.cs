@@ -1,4 +1,4 @@
-﻿using URLShortener.Application.DTOs;
+﻿using URLShortener.Application.DTOs.EntityDTOs.Finance;
 using URLShortener.Application.DTOs.ZibalDTOs;
 
 namespace URLShortener.Application.Interfaces.Services.User

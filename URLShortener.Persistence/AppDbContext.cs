@@ -17,7 +17,7 @@ namespace URLShortenerAPI.Data
         public DbSet<URLAnalyticsModel> URLAnalytics { get; set; }
         public DbSet<LocationInfo> LocationInfos { get; set; }
         public DbSet<DeviceInfo> DeviceInfos { get; set; }
-        public DbSet<FinancialRecord> FinancialRecords { get; set; }
+        public DbSet<FinancialRecordModel> FinancialRecords { get; set; }
         public DbSet<PurchaseModel> Purchases { get; set; }
         public DbSet<DepositModel> Deposits { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -84,16 +84,16 @@ namespace URLShortenerAPI.Data
             builder.Entity<UserModel>()
                 .HasOne(x => x.FinancialRecord)
                 .WithOne(x => x.User)
-                .HasForeignKey<FinancialRecord>(x => x.UserID)
+                .HasForeignKey<FinancialRecordModel>(x => x.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<FinancialRecord>()
+            builder.Entity<FinancialRecordModel>()
                 .HasMany(x => x.Deposits)
                 .WithOne(x => x.Finance)
                 .HasForeignKey(x => x.FinanceID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<FinancialRecord>()
+            builder.Entity<FinancialRecordModel>()
                 .HasMany(x => x.Purchases)
                 .WithOne(x => x.Finance)
                 .HasForeignKey(x => x.FinanceID)

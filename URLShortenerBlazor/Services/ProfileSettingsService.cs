@@ -3,7 +3,7 @@ using SharedDataModels.Responses;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortenerBlazor.Services.Interfaces;
 
 namespace URLShortenerBlazor.Services

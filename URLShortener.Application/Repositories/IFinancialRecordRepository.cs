@@ -2,7 +2,7 @@
 
 namespace URLShortener.Application.Repositories
 {
-    public interface IFinancialRecordRepository : IGenericRepository<FinancialRecord>
+    public interface IFinancialRecordRepository : IGenericRepository<FinancialRecordModel>
     {
 
     }

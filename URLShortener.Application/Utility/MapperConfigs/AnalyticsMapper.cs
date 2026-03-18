@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Domain.Entities.Analytics;
 
 namespace URLShortenerAPI.Responses.MapperConfigs
@@ -8,7 +8,8 @@ namespace URLShortenerAPI.Responses.MapperConfigs
     {
         public AnalyticsMapper()
         {
-            CreateMap<URLAnalyticsModel, URLAnalyticsDTO>();
+            CreateMap<URLAnalyticsModel, URLAnalyticsDTO>()
+                .ReverseMap();
         }
     }
 }

@@ -20,7 +20,7 @@ public class URLModel
     public int UserID { get; set; }
     public required UserModel User { get; set; }
 
-    public ICollection<ClickInfoModel>? Clicks { get; set; }
+    public ICollection<ClickInfoModel>? Clicks { get; set; } = [];
 
     public int? CategoryID { get; set; }
     public ICollection<URLCategoryModel>? Categories { get; set; }

@@ -1,5 +1,6 @@
 ﻿using SharedDataModels.Responses;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Common.Responses;
 
 namespace URLShortener.Application.Interfaces.Services.User

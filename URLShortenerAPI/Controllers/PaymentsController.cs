@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.Responses;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.Finance;
 using URLShortener.Application.DTOs.ZibalDTOs;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Utility.Exceptions;

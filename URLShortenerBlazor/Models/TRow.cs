@@ -1,4 +1,4 @@
-﻿using URLShortener.Application.DTOs;
+﻿using URLShortener.Application.DTOs.EntityDTOs.URL;
 
 namespace SharedDataModels.CustomClasses
 {

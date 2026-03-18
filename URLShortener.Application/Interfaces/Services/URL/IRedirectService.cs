@@ -1,4 +1,5 @@
 ﻿using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 
 namespace URLShortener.Application.Interfaces.Services.URL
 {

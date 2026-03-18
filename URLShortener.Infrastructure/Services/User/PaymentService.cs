@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.Finance;
 using URLShortener.Application.DTOs.ZibalDTOs;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;

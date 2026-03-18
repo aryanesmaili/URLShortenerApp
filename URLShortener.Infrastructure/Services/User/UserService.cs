@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SharedDataModels.Responses;
 using System.Text.Json;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
@@ -520,6 +521,7 @@ namespace URLShortener.Infrastructure.Services.User
         public async Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo)
         {
             UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
+            newUser.CreatedAt = DateTime.UtcNow;
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUserInfo.Password); // Hashing user's password to ensure security
             newUser.FinancialRecord = new() { User = newUser, Balance = 0 };
 

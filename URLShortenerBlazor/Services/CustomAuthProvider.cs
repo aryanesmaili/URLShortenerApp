@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.User;
 
 namespace URLShortenerBlazor.Services
 {

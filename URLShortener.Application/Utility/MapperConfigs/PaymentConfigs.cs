@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.Finance;
 using URLShortener.Domain.Entities.Finance;
 
 namespace URLShortenerAPI.Utility.MapperConfigs
@@ -8,7 +8,8 @@ namespace URLShortenerAPI.Utility.MapperConfigs
     {
         public PaymentConfigs()
         {
-            CreateMap<DepositModel, DepositDTO>();
+            CreateMap<DepositModel, DepositDTO>()
+                .ReverseMap();
         }
     }
 }

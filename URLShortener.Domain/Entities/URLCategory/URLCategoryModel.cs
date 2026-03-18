@@ -3,7 +3,7 @@ using URLShortener.Domain.Entities.User;
 
 namespace URLShortener.Domain.Entities.URLCategory;
 
-public class URLCategoryModel
+public sealed class URLCategoryModel
 {
     public int ID { get; set; }
     public required string Title { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace URLShortener.Application.DTOs.Settings;
 
-public class JwtSettings
+public sealed class JwtSettings
 {
     public string? SecretKey { get; set; }
     public string? Issuer { get; set; }

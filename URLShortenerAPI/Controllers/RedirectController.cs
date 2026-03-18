@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using URLShortener.Application.DTOs;
+using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Utility;
 using URLShortener.Application.Utility.Exceptions;
