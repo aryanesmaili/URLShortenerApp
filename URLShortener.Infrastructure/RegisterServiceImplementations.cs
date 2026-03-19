@@ -38,7 +38,7 @@ namespace URLShortener.Infrastructure
             services.AddTransient<IUserAgentService, UserAgentService>();
             services.AddTransient<IZibalService, ZibalService>();
             services.AddTransient<IPaymentService, PaymentService>();
-
+            services.AddTransient<UserNotificationService>();
 
             // Register Mappers By Scanning the Marker Class
             services.AddAutoMapper(
