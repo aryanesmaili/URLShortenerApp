@@ -1,4 +1,5 @@
 ﻿using URLShortener.Domain.Entities.URL;
+using URLShortener.Domain.Enums;
 
 namespace URLShortener.Domain.Entities.Finance;
 
@@ -6,7 +7,9 @@ public class PurchaseModel
 {
     public int ID { get; set; }
     public DateTime CreatedAt { get; set; }
-    public double Amount { get; set; }
+    public long Amount { get; set; }
+
+    public required int ServiceType { get; set; }
 
     public int CustomURLID { get; set; }
     public required URLModel URL { get; set; }

@@ -21,7 +21,7 @@ namespace URLShortener.Infrastructure.Services.URL
         }
 
         /// <inheritdoc/>
-        public async Task<decimal> GetServicePrice(ServiceType serviceType)
+        public async Task<long> GetServicePrice(ServiceType serviceType)
         {
             // first we try to read from cache.
             var priceTariff = await _cacheService.GetValueAsync<ServiceTariffModel>(((int)serviceType).ToString());
@@ -38,7 +38,7 @@ namespace URLShortener.Infrastructure.Services.URL
         }
 
         /// <inheritdoc/>
-        public async Task UpdateServicePrice(ServiceType serviceType, decimal newPrice)
+        public async Task UpdateServicePrice(ServiceType serviceType, long newPrice)
         {
             // we start updating from first updating the DB.
             var priceTariff = await _serviceTariffRepository.GetAsync(x => x.ID == (int)serviceType)

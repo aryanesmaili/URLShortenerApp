@@ -5,11 +5,11 @@ namespace URLShortener.Application.Interfaces.Services.URL
 {
     public interface IServiceTariffService
     {
-        Task<decimal> GetServicePrice(ServiceType serviceType);
+        Task<long> GetServicePrice(ServiceType serviceType);
 
         Task<IReadOnlyList<ServiceTariffModel>> GetServiceTariffs();
 
-        Task UpdateServicePrice(ServiceType serviceType, decimal newPrice);
+        Task UpdateServicePrice(ServiceType serviceType, long newPrice);
     }
 
 }
