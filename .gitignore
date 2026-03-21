@@ -365,3 +365,5 @@ FodyWeavers.xsd
 URLShortenerBlazor/.vscode/
 URLShortenerBlazor/wwwroot/Images/
 /.vscode/launch.json
+/Directory.Build.props
+/NuGet.config
