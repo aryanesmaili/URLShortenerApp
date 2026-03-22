@@ -7,7 +7,6 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.Request;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
-using URLShortener.Application.Utility.SignalR;
 using URLShortener.Infrastructure.BackgroundServices;
 using URLShortener.Infrastructure.Services.Infra;
 using URLShortener.Infrastructure.Services.URL;
@@ -25,7 +24,6 @@ namespace URLShortener.Infrastructure
             // Register Service Implementations
             services.AddSingleton<IIPInfoService, IPInfoService>();
             services.AddSingleton<IQueueService, RedisQueueService>();
-            services.AddSingleton<UserConnectionMapping>();
 
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IAuthService, AuthService>();

@@ -11,7 +11,7 @@ public sealed class URLCreateDTO
     public bool IsMonetized { get; set; } = true;
     public string CustomShortCode { get; set; } = string.Empty;
     public string? Categories { get; set; }
-    public required int UserID { get; set; }
 
-    public bool IsCustom => string.IsNullOrEmpty(CustomShortCode);
+    public bool IsCustom => !string.IsNullOrEmpty(CustomShortCode);
+    public bool HasCategories => !string.IsNullOrEmpty(Categories);
 }

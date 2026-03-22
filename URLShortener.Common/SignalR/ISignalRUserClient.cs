@@ -2,6 +2,6 @@
 
 public interface ISignalRUserClient
 {
-    Task ReceiveBalanceUpdate(double balance);
+    Task ReceiveBalanceUpdate(long balance);
     Task ReceiveURLCountUpdate(int count = 1);
 }

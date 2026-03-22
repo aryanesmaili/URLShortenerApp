@@ -126,11 +126,9 @@ namespace URLShortener.Infrastructure.Services.User
         /// </summary>
         /// <param name="userID"></param>
         /// <returns></returns>
-        public async Task<double> GetUserBalance(int userID, string username)
+        public async Task<long> GetUserBalance(int userID)
         {
-            await _authService.AuthorizeUserAccessAsync(userID, username);
-
-            double balance = (await _userRepository.GetAsync(x => x.ID == userID, i => i.Include(x => x.FinancialRecord), null, asNoTracking: true)
+            long balance = (await _userRepository.GetAsync(x => x.ID == userID, i => i.Include(x => x.FinancialRecord), null, asNoTracking: true)
                                                     ?? throw new NotFoundException($"User {userID} Not Found.")
                                                     ).FinancialRecord.Balance;
             return balance;

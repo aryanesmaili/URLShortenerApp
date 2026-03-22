@@ -1,5 +1,4 @@
 ﻿using URLShortener.Domain.Entities.URL;
-using URLShortener.Domain.Enums;
 
 namespace URLShortener.Domain.Entities.Finance;
 

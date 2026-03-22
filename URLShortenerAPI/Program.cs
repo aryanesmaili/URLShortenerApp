@@ -210,13 +210,11 @@ app.MapControllers();
 if (app.Environment.IsDevelopment())
 {
     // no authorization since cross-origin requests do not contain http-only cookies that have our JWTs in them
-    app.MapHub<UserBalanceHub>("api/User/BalanceHub");
-    app.MapHub<UserURLsHub>("api/User/UrlCountsHub");
+    app.MapHub<UserHub>("api/User/UserHub");
 }
 else if (app.Environment.IsProduction())
 {
-    app.MapHub<UserBalanceHub>("api/User/BalanceHub").RequireAuthorization("AllUsers");
-    app.MapHub<UserURLsHub>("api/User/UrlCountsHub").RequireAuthorization("AllUsers");
+    app.MapHub<UserHub>("api/User/UserHub").RequireAuthorization("AllUsers");
 }
 
 

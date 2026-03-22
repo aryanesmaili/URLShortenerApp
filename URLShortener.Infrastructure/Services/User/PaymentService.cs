@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using URLShortener.Application.DTOs.EntityDTOs.Finance;
 using URLShortener.Application.DTOs.ZibalDTOs;
@@ -7,7 +6,6 @@ using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
 using URLShortener.Application.Utility.Exceptions;
-using URLShortener.Application.Utility.SignalR;
 using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Entities.User;
 
@@ -18,8 +16,6 @@ namespace URLShortener.Infrastructure.Services.User
         private readonly IZibalService _zibalService;
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
-        private readonly IHubContext<UserBalanceHub> _balancehubContext;
-        private readonly UserConnectionMapping _connectionMapping;
         private readonly IDepositRepository _depositRepository;
         private readonly IUnitOfWork _uow;
         private readonly IUserRepository _userRepository;
@@ -30,8 +26,6 @@ namespace URLShortener.Infrastructure.Services.User
                               IZibalService zibalService,
                               IAuthService authService,
                               IMapper mapper,
-                              IHubContext<UserBalanceHub> balancehubContext,
-                              UserConnectionMapping connectionMapping,
                               IDepositRepository depositRepository,
                               IUnitOfWork uow,
                               IUserRepository userRepository)
@@ -39,8 +33,6 @@ namespace URLShortener.Infrastructure.Services.User
             _zibalService = zibalService;
             _authService = authService;
             _mapper = mapper;
-            _balancehubContext = balancehubContext;
-            _connectionMapping = connectionMapping;
             _depositRepository = depositRepository;
             _uow = uow;
             _userRepository = userRepository;
@@ -143,10 +135,10 @@ namespace URLShortener.Infrastructure.Services.User
                 _userRepository.Update(user);
                 await _uow.SaveChangesAsync();
 
-                foreach (var connectionID in _connectionMapping.GetConnections(user.Username)) // notify clients that the balance has changed.
-                {
-                    await _balancehubContext.Clients.Client(connectionID).SendAsync("ReceiveBalanceUpdate", response.Amount);
-                }
+                //foreach (var connectionID in _connectionMapping.GetConnections(user.Username)) // notify clients that the balance has changed.
+                //{
+                //    await _balancehubContext.Clients.Client(connectionID).SendAsync("ReceiveBalanceUpdate", response.Amount);
+                //}
             }
             return response;
         }

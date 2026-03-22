@@ -228,15 +228,15 @@ namespace URLShortenerAPI.Controllers
         }
 
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("Balance/{id:int}")]
+        [HttpGet("Balance")]
         [EnableRateLimiting("DataFetch")]
-        public async Task<IActionResult> GetUserBalance([FromRoute] int id)
+        public async Task<IActionResult> GetUserBalance()
         {
             APIResponse<double> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                double result = await _userService.GetUserBalance(id, username!);
+                double result = await _userService.GetUserBalance(userId);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);

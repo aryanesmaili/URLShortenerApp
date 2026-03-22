@@ -20,7 +20,7 @@ public class UserNotificationService
             .ReceiveURLCountUpdate(count);
     }
 
-    public async Task NotifyBalanceChanged(int userId, double newBalance)
+    public async Task NotifyBalanceChanged(int userId, long newBalance)
     {
         await _hub.Clients
             .Group(GetUserGroupName(userId))

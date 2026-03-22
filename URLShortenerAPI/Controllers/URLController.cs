@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.Responses;
+using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Utility.Exceptions;
@@ -56,12 +57,12 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
         {
             APIResponse<URLShortenResponse> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
                 await _validator.ValidateAndThrowAsync(createDTO);
 
-                URLShortenResponse result = await _urlService.AddURL(createDTO, username!);
+                URLShortenResponse result = await _urlService.AddURL(createDTO, userId!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
@@ -115,12 +116,12 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
         {
             APIResponse<List<URLShortenResponse>> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
                 await _listValidator.ValidateAndThrowAsync(createDTO);
 
-                List<URLShortenResponse> result = await _urlService.AddBatchURL(createDTO, username!);
+                List<URLShortenResponse> result = await _urlService.AddBatchURL(createDTO, userId!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);

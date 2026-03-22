@@ -22,7 +22,7 @@ public sealed class UserHub : Hub<ISignalRUserClient>
             await Groups.AddToGroupAsync(Context.ConnectionId, GetUserGroupName(userId));
         }
 
-        double userBalance = await _userService.GetUserBalance(int.Parse(userId));
+        long userBalance = await _userService.GetUserBalance(int.Parse(userId));
         await Clients.Caller.ReceiveBalanceUpdate(userBalance);
 
         await base.OnConnectedAsync();
@@ -40,7 +40,7 @@ public sealed class UserHub : Hub<ISignalRUserClient>
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendBalanceUpdate(double balance)
+    public async Task SendBalanceUpdate(long balance)
     {
         var userId = GetUserId();
         if (!string.IsNullOrEmpty(userId))

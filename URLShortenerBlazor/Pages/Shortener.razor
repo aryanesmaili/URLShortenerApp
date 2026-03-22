@@ -212,7 +212,6 @@
     URLCreateDTO urlCreate = new()
         {
             LongURL = string.Empty,
-            UserID = 0,
         };
 
     private int index = 1;
@@ -252,7 +251,6 @@
         url = query["url"];
         userID = await AuthService.GetUserIDAsync();
         urlCreate.LongURL = string.IsNullOrEmpty(url) ? string.Empty : url;
-        urlCreate.UserID = userID;
         await base.OnInitializedAsync();
     }
 
@@ -261,7 +259,6 @@
         urlCreate = new()
             {
                 LongURL = string.Empty,
-                UserID = userID,
                 Categories = string.Empty,
                 Description = string.Empty,
                 IsActive = true,
@@ -336,7 +333,6 @@
                 URLCreateDTO createDTO = new()
                     {
                         LongURL = item,
-                        UserID = userID,
                         Description = urlCreate.Description,
                         IsActive = urlCreate.IsActive,
                         Categories = urlCreate.Categories
