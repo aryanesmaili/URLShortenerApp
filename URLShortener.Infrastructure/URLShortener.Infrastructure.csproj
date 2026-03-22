@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="16.1.0" />
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.9" />
@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\URLShortener.Application\URLShortener.Application.csproj" />
     <ProjectReference Include="..\URLShortener.Common\URLShortener.Common.csproj" />
+    <ProjectReference Include="..\URLShortener.Domain\URLShortener.Domain.csproj" />
     <ProjectReference Include="..\URLShortener.Persistence\URLShortener.Persistence.csproj" />
   </ItemGroup>
 
