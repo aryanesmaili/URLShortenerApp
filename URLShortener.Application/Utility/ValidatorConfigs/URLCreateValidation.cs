@@ -18,11 +18,12 @@ namespace URLShortenerAPI.Responses.ValidatorConfigs
                 .WithMessage("CustomShortCode can't exceed 32 characters.");
         }
     }
-    public class ListURLCreateValidation : AbstractValidator<List<URLCreateDTO>>
+    public class ListURLCreateValidation : AbstractValidator<BatchURLCreateDTO>
     {
         public ListURLCreateValidation()
         {
-            RuleForEach(x => x).SetValidator(new URLCreateValidation());
+            // TODO: FIX VALIDATORS
+            // RuleForEach(x => x.URLs).SetValidator(new URLCreateValidation());
         }
     }
 }

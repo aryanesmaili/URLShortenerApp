@@ -1,17 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace URLShortener.Application.DTOs.EntityDTOs.URL;
 
-namespace URLShortener.Application.DTOs.EntityDTOs.URL;
-
-public sealed class URLCreateDTO
+public sealed record URLCreateDTO : URLCreateDTOBase
 {
-    [Required]
-    public required string LongURL { get; set; }
-    public string? Description { get; set; }
-    public bool IsActive { get; set; } = true;
-    public bool IsMonetized { get; set; } = true;
-    public string CustomShortCode { get; set; } = string.Empty;
-    public string? Categories { get; set; }
+    public bool IsActive { get; init; } = true;
+    public bool IsMonetized { get; init; } = true;
+    public string? Description { get; init; }
+    public string? CustomShortCode { get; init; }
+    public List<string> Categories { get; init; } = [];
 
     public bool IsCustom => !string.IsNullOrEmpty(CustomShortCode);
-    public bool HasCategories => !string.IsNullOrEmpty(Categories);
+    public bool HasCategories => Categories.Count > 0;
 }

@@ -16,12 +16,12 @@ namespace URLShortenerAPI.Controllers
     {
         private readonly IURLService _urlService;
         private readonly IValidator<URLCreateDTO> _validator;
-        private readonly IValidator<List<URLCreateDTO>> _listValidator;
-        public URLController(IURLService urlService, IValidator<URLCreateDTO> validator, IValidator<List<URLCreateDTO>> listValidator)
+        private readonly IValidator<BatchURLCreateDTO> _batchURLValidator;
+        public URLController(IURLService urlService, IValidator<URLCreateDTO> validator, IValidator<BatchURLCreateDTO> batchValidator)
         {
             _urlService = urlService;
             _validator = validator;
-            _listValidator = listValidator;
+            _batchURLValidator = batchValidator;
         }
 
         [Authorize(Policy = "AllUsers")]
@@ -113,15 +113,15 @@ namespace URLShortenerAPI.Controllers
         [Authorize(Policy = "AllUsers")]
         [HttpPost("AddBatchURL")]
         [EnableRateLimiting("AddURL")]
-        public async Task<IActionResult> AddBatchURL([FromBody] List<URLCreateDTO> createDTO)
+        public async Task<IActionResult> AddBatchURL([FromBody] BatchURLCreateDTO createDTO)
         {
-            APIResponse<List<URLShortenResponse>> response;
+            APIResponse<IReadOnlyList<URLShortenResponse>> response;
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                await _listValidator.ValidateAndThrowAsync(createDTO);
+                await _batchURLValidator.ValidateAndThrowAsync(createDTO);
 
-                List<URLShortenResponse> result = await _urlService.AddBatchURL(createDTO, userId!);
+                IReadOnlyList<URLShortenResponse> result = await _urlService.AddBatchURL(createDTO, userId!);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
@@ -167,10 +167,10 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ToggleActivation(int id)
         {
             APIResponse<string> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                await _urlService.ToggleActivation(id, username!);
+                await _urlService.ToggleStateAsync(id, x => x.IsActive = !x.IsActive, userId);
                 response = new()
                 { Success = true, Result = string.Empty };
                 return Ok(response);
@@ -207,10 +207,10 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> ToggleMonetization(int id)
         {
             APIResponse<string> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                await _urlService.ToggleMonetization(id, username!);
+                await _urlService.ToggleStateAsync(id, x => x.IsMonetized = !x.IsMonetized, userId);
                 response = new()
                 { Success = true, Result = string.Empty };
                 return Ok(response);
@@ -247,10 +247,10 @@ namespace URLShortenerAPI.Controllers
         public async Task<IActionResult> DeleteURL(int id)
         {
             APIResponse<string> response;
-            var username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                await _urlService.DeleteURL(id, username!);
+                await _urlService.DeleteURL(id, userId);
                 response = new()
                 { Success = true };
                 return Ok(response);
