@@ -13,19 +13,19 @@ public class UserNotificationService
         _hub = hub;
     }
 
-    public async Task NotifyUrlCountChanged(int userId, int count)
+    public async Task NotifyUrlCountChanged(long userId, int count)
     {
         await _hub.Clients
             .Group(GetUserGroupName(userId))
             .ReceiveURLCountUpdate(count);
     }
 
-    public async Task NotifyBalanceChanged(int userId, long newBalance)
+    public async Task NotifyBalanceChanged(long userId, long newBalance)
     {
         await _hub.Clients
             .Group(GetUserGroupName(userId))
             .ReceiveBalanceUpdate(newBalance);
     }
 
-    private static string GetUserGroupName(int userId) => $"user:{userId}";
+    private static string GetUserGroupName(long userId) => $"user:{userId}";
 }

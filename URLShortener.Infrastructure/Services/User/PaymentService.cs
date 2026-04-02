@@ -160,7 +160,7 @@ namespace URLShortener.Infrastructure.Services.User
         /// </summary>
         /// <param name="userID"></param>
         /// <returns></returns>
-        private static string GenerateRandomOrderID(int userID)
+        private static string GenerateRandomOrderID(long userID)
         {
             return $"{userID}_{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
         }
