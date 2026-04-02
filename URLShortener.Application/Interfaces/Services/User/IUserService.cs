@@ -14,7 +14,7 @@ namespace URLShortener.Application.Interfaces.Services.User
         Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
         Task<UserLoginResponse> LoginUserAsync(UserLoginDTO user);
         Task<UserLoginResponse> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);
-        Task<double> GetUserBalance(int userID, string username);
+        Task<long> GetUserBalance(int userID);
         Task<UserStats> GetUserStats(int userID, string username);
         Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername);
         Task DeleteUserAsync(int id);
