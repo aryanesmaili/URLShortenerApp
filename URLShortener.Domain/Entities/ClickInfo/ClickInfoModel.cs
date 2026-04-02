@@ -5,23 +5,23 @@ namespace URLShortener.Domain.Entities.ClickInfo;
 
 public class ClickInfoModel
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
     public DateTime ClickedAt { get; set; }
     public required string IPAddress { get; set; }
     public required string UserAgent { get; set; }
 
 
-    public int LocationID { get; set; }
+    public long LocationID { get; set; }
     public LocationInfo? PossibleLocation { get; set; }
-    public int DeviceInfoID { get; set; }
+    public long DeviceInfoID { get; set; }
     public DeviceInfo? DeviceInfo { get; set; }
-    public int URLID { get; set; }
+    public long URLID { get; set; }
     public required URLModel URL { get; set; }
 }
 
 public class LocationInfo
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
     public required string City { get; set; }
     public required string Region { get; set; }
     public required string Country { get; set; }
@@ -30,13 +30,13 @@ public class LocationInfo
     public required string Latitude { get; set; }
     public required string Longitude { get; set; }
 
-    public int ClickID { get; set; }
+    public long ClickID { get; set; }
     public ClickInfoModel? ClickInfo { get; set; }
 }
 
 public class DeviceInfo
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
     public string? BrowserFamily { get; set; }
     public ClientInfo? Client { get; set; }
     public Device? Device { get; set; }
@@ -44,7 +44,7 @@ public class DeviceInfo
     public string? OSFamily { get; set; }
     public string? UserAgent { get; set; }
 
-    public int ClickID { get; set; }
+    public long ClickID { get; set; }
     public ClickInfoModel? ClickInfo { get; set; }
 }
 

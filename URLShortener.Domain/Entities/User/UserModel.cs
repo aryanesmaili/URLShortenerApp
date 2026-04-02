@@ -7,7 +7,7 @@ namespace URLShortener.Domain.Entities.User;
 
 public class UserModel
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
     public required string Name { get; set; }
     public required string Email { get; set; }
     public required string Username { get; set; }
@@ -21,6 +21,6 @@ public class UserModel
     public ICollection<URLCategoryModel>? URLCategories { get; set; } = [];
     public ICollection<RefreshToken>? RefreshTokens { get; set; }
 
-    public int FinancialID { get; set; }
+    public long FinancialID { get; set; }
     public required FinancialRecordModel FinancialRecord { get; set; }
 }

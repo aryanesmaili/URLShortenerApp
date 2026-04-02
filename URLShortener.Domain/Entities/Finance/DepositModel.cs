@@ -2,7 +2,7 @@
 
 public class DepositModel
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
     public double Amount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime PaidAt { get; set; }
@@ -15,6 +15,6 @@ public class DepositModel
     public string? Description { get; set; }
 
 
-    public int FinanceID { get; set; }
+    public long FinanceID { get; set; }
     public required FinancialRecordModel Finance { get; set; }
 }

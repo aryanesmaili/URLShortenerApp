@@ -4,11 +4,11 @@ namespace URLShortener.Domain.Entities.Finance;
 
 public class FinancialRecordModel
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
 
     public long Balance { get; set; }
 
-    public int UserID { get; set; }
+    public long UserID { get; set; }
     public required UserModel User { get; set; }
 
     public ICollection<DepositModel> Deposits { get; set; } = [];

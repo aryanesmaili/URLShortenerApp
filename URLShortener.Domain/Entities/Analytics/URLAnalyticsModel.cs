@@ -4,7 +4,7 @@ namespace URLShortener.Domain.Entities.Analytics;
 
 public class URLAnalyticsModel
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
 
     public required string MostUsedLocationsJSON { get; set; }
     public required string MostUsedDevicesJSON { get; set; }
