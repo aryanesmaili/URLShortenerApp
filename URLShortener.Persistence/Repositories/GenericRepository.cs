@@ -20,17 +20,7 @@ namespace URLShortener.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        public Task AddAsync(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
         public void AddRange(IEnumerable<T> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task AddRangeAsync(IEnumerable<T> entities)
         {
             throw new NotImplementedException();
         }
@@ -45,11 +35,6 @@ namespace URLShortener.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? include = null, Func<IQueryable<T>, IQueryable<T>>? orderBy = null, bool asNoTracking = false)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<T>> GetAllAsync(bool asNoTracking = false)
         {
             throw new NotImplementedException();
@@ -60,9 +45,16 @@ namespace URLShortener.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<T?> GetByIdAsync(object id, bool asNoTracking = false)
+        public Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>>? predicate = null, Func<IQueryable<T>, IQueryable<T>>? include = null, Func<IQueryable<T>, IQueryable<T>>? orderBy = null, bool asNoTracking = false)
         {
             throw new NotImplementedException();
+        }
+
+        public IQueryable<TResult> Select<TResult>(Expression<Func<T, bool>> filter, Expression<Func<T, TResult>> selector)
+        {
+            return _context.Set<T>()
+                .Where(filter)
+                .Select(selector); ;
         }
 
         public IQueryable<T> Query(bool asNoTracking = false)
@@ -84,5 +76,6 @@ namespace URLShortener.Persistence.Repositories
         {
             throw new NotImplementedException();
         }
+
     }
 }

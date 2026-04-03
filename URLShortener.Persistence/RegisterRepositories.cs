@@ -10,10 +10,10 @@ namespace URLShortener.Persistence
         {
 
             // Register Repository Implementation
-            services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            services.AddTransient<IServiceTariffRepository, ServiceTariffRepository>();
-            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddScoped<IServiceTariffRepository, ServiceTariffRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             return services;
         }
