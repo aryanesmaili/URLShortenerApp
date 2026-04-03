@@ -60,6 +60,9 @@ namespace URLShortener.Infrastructure
             // Creds needed to work with user agent service
             services.AddBinding<UserAgentServiceCreds>(configuration, "UserAgentServiceCreds");
 
+            /// Creds needed for <see cref="PaymentService"/>
+            services.AddBinding<PaymentSettings>(configuration, "PaymentSettings");
+
             return services;
         }
 
