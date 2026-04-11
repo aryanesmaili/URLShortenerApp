@@ -4,11 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using URLShortener.Application;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
+using URLShortener.Application.Interfaces.Services.Payment;
 using URLShortener.Application.Interfaces.Services.Request;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Domain.Enums;
+using URLShortener.Domain.Interfaces;
 using URLShortener.Infrastructure.BackgroundServices;
 using URLShortener.Infrastructure.Services.Infra;
+using URLShortener.Infrastructure.Services.Payment;
+using URLShortener.Infrastructure.Services.Payment.PaymentProviders;
 using URLShortener.Infrastructure.Services.URL;
 using URLShortener.Infrastructure.Services.User;
 
@@ -34,8 +39,6 @@ namespace URLShortener.Infrastructure
             services.AddTransient<ICacheService, RedisCacheService>();
 
             services.AddTransient<IUserAgentService, UserAgentService>();
-            services.AddTransient<IZibalService, ZibalService>();
-            services.AddTransient<IPaymentService, PaymentService>();
             services.AddTransient<UserNotificationService>();
 
             // Register Mappers By Scanning the Marker Class
@@ -45,6 +48,18 @@ namespace URLShortener.Infrastructure
 
             // Register Validators By Scanning the Marker Class
             services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
+
+            // Register Different Payment Providers
+            services.RegisterPayments();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterPayments(this IServiceCollection services)
+        {
+
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddKeyedScoped<IPaymentMethod, ZibalPayment>(PaymentTerminals.Zibal);
 
             return services;
         }
@@ -63,6 +78,9 @@ namespace URLShortener.Infrastructure
             /// Creds needed for <see cref="PaymentService"/>
             services.AddBinding<PaymentSettings>(configuration, "PaymentSettings");
 
+            // Creds needed for ZibalPayment to work
+            services.AddBinding<ZibalSettings>(configuration, "PaymentProviders:Zibal");
+
             return services;
         }
 
@@ -75,5 +93,6 @@ namespace URLShortener.Infrastructure
 
             return services;
         }
+
     }
 }

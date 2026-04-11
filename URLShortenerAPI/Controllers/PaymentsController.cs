@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.Responses;
+using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.Finance;
-using URLShortener.Application.DTOs.ZibalDTOs;
-using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Interfaces.Services.Payment;
 using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Common.Responses;
+using URLShortener.Domain.Enums;
+using URLShortener.Domain.ValueObjects.Payment;
 
 namespace URLShortenerAPI.Controllers
 {
@@ -14,22 +18,24 @@ namespace URLShortenerAPI.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly IMapper _mapper;
 
-        public PaymentsController(IPaymentService paymentService)
+        public PaymentsController(IPaymentService paymentService, IMapper mapper)
         {
             _paymentService = paymentService;
+            _mapper = mapper;
         }
 
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("Payments/{id:int}")]
+        [HttpGet("Payments")]
         [EnableRateLimiting("FetchData")]
-        public async Task<IActionResult> GetPaymentsOfUser(int userID)
+        public async Task<IActionResult> GetPaymentsOfUser([FromQuery] int pageNumber, [FromQuery] int pageSize)
         {
-            APIResponse<List<DepositDTO>> response;
-            string? username = HttpContext.User.Identity?.Name;
+            APIResponse<PagedResult<DepositDTO>> response;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                List<DepositDTO> result = await _paymentService.GetDepositsAsync(userID, username!);
+                PagedResult<DepositDTO> result = await _paymentService.GetDepositsAsync(pageNumber, pageSize, userId);
                 response = new()
                 { Success = true, Result = result };
 
@@ -61,18 +67,18 @@ namespace URLShortenerAPI.Controllers
         [Authorize(Policy = "AllUsers")]
         [HttpPost("CreateTransaction")]
         [EnableRateLimiting("Auth")]
-        public async Task<IActionResult> CreateTransaction(PaymentCreateDTO createDTO)
+        public async Task<IActionResult> CreateTransaction(PaymentCreateRequest createDTO)
         {
             APIResponse<string> response;
-            string? username = HttpContext.User.Identity?.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                CreateTransactionResponse result = await _paymentService.CreateTransactionAsync(createDTO, username!);
-                if (result.Result == 100)
-                {
-                    return Redirect($"https://gateway.zibal.ir/start/{result.TrackID}");
-                }
-                response = new() { Success = false, Result = $"ErrorCode:{result.Result} : {result.Message}" };
+                var result = await _paymentService.CreateTransactionAsync(createDTO.PaymentTerminal, createDTO, userId);
+
+                if (result.Success)
+                    return Redirect(result.RedirectURL!);
+
+                response = new() { Success = false, Result = result.Message };
                 return BadRequest(response);
             }
             catch (Exception e)
@@ -83,13 +89,23 @@ namespace URLShortenerAPI.Controllers
             }
         }
 
-        [HttpGet("callback")]
+        [HttpGet("Zibal/Callback")]
         public async Task<IActionResult> GetCallback([FromQuery] int success, [FromQuery] long trackID, [FromQuery] string orderID, [FromQuery] int status)
         {
-            APIResponse<VerifyTransactionResponse> response;
+            APIResponse<PaymentVerifyResult> response;
+            bool successfulOperation = success == 1;
             try
             {
-                VerifyTransactionResponse result = await _paymentService.VerifyTransactionAsync(trackID);
+                if (!successfulOperation)
+                {
+                    response = new()
+                    {
+                        Success = successfulOperation,
+                        Result = new() { Amount = default, Success = false, Message = status.ToString(), RefNumber = default }
+                    };
+                    return BadRequest(response);
+                }
+                var result = await _paymentService.VerifyTransactionAsync(PaymentTerminals.Zibal, new() { TrackID = trackID });
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
@@ -103,14 +119,17 @@ namespace URLShortenerAPI.Controllers
         }
 
         [Authorize(Policy = "AllUsers")]
-        [HttpGet("CheckStatus/{trackID:int}")]
+        [HttpGet("CheckStatus")]
         [EnableRateLimiting("FetchData")]
-        public async Task<IActionResult> GetPaymentStatus(int trackID)
+        public async Task<IActionResult> GetPaymentStatus([FromQuery] string terminal, [FromQuery] long trackId)
         {
-            APIResponse<InquiryTransactionResponse> response;
+            APIResponse<PaymentStatusResult> response;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                InquiryTransactionResponse result = await _paymentService.CheckTransactionStatusAsync(trackID);
+                PaymentTerminals paymentTerminal = Enum.Parse<PaymentTerminals>(terminal);
+                PaymentStatusRequest request = new() { TrackID = trackId };
+                var result = await _paymentService.CheckTransactionStatusAsync(paymentTerminal, request, userId);
                 response = new()
                 { Success = true, Result = result };
                 return Ok(response);
