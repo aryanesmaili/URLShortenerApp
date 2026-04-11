@@ -1,6 +1,6 @@
 ﻿namespace URLShortener.Infrastructure.Services.Payment.PaymentProviders;
 
-public sealed class ZibalSettings
+public sealed record ZibalSettings
 {
     public required string RequestTransactionAddress { get; init; }
     public required string VerifyTransactionAddress { get; init; }

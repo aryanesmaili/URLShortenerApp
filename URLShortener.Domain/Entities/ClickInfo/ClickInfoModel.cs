@@ -3,7 +3,7 @@ using URLShortener.Domain.Entities.URL;
 
 namespace URLShortener.Domain.Entities.ClickInfo;
 
-public class ClickInfoModel
+public sealed class ClickInfoModel
 {
     public long ID { get; set; }
     public DateTime ClickedAt { get; set; }
@@ -19,7 +19,7 @@ public class ClickInfoModel
     public required URLModel URL { get; set; }
 }
 
-public class LocationInfo
+public sealed class LocationInfo
 {
     public long ID { get; set; }
     public required string City { get; set; }
@@ -34,7 +34,7 @@ public class LocationInfo
     public ClickInfoModel? ClickInfo { get; set; }
 }
 
-public class DeviceInfo
+public sealed class DeviceInfo
 {
     public long ID { get; set; }
     public string? BrowserFamily { get; set; }
@@ -49,7 +49,7 @@ public class DeviceInfo
 }
 
 [Owned]
-public class ClientInfo
+public sealed class ClientInfo
 {
     public bool PreventNull { get; set; } = true;
     public string? Engine { get; set; }
@@ -60,7 +60,7 @@ public class ClientInfo
 }
 
 [Owned]
-public class Device
+public sealed class Device
 {
     public bool PreventNull { get; set; } = true;
     public string? Brand { get; set; }
@@ -69,7 +69,7 @@ public class Device
 }
 
 [Owned]
-public class OSInfo
+public sealed class OSInfo
 {
     public bool PreventNull { get; set; } = true;
     public string? Name { get; set; }

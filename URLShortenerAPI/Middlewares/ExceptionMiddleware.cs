@@ -5,7 +5,7 @@ using URLShortener.Common.Responses;
 
 namespace URLShortenerAPI.Middlewares;
 
-public class ExceptionMiddleware
+public sealed class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
 

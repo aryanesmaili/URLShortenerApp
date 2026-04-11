@@ -4,7 +4,7 @@ using URLShortener.Common.SignalR;
 
 namespace URLShortener.Infrastructure.Services.User;
 
-public class UserNotificationService
+public sealed class UserNotificationService
 {
     private readonly IHubContext<UserHub, ISignalRUserClient> _hub;
 

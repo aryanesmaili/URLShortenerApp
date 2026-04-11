@@ -2,17 +2,16 @@
 using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Domain.Entities.URL;
 
-namespace URLShortenerAPI.Responses.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs;
+
+public sealed class URLMapper : Profile
 {
-    public class URLMapper : Profile
+    public URLMapper()
     {
-        public URLMapper()
-        {
-            CreateMap<URLModel, URLDTO>()
-                .ReverseMap();
+        CreateMap<URLModel, URLDTO>()
+            .ReverseMap();
 
-            CreateMap<URLCreateDTO, URLModel>();
+        CreateMap<URLCreateDTO, URLModel>();
 
-        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace URLShortener.Application.Utility.Exceptions;
 
-public class NotFoundException : Exception
+public sealed class NotFoundException : Exception
 {
     public NotFoundException()
     {

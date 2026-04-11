@@ -5,7 +5,7 @@ using URLShortener.Domain.Enums;
 
 namespace URLShortener.Domain.Entities.User;
 
-public class UserModel
+public sealed class UserModel
 {
     public long ID { get; set; }
     public required string Name { get; set; }

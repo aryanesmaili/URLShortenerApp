@@ -2,14 +2,13 @@
 using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Domain.Entities.User;
 
-namespace URLShortenerAPI.Responses.MapperConfigs
+namespace URLShortenerAPI.Responses.MapperConfigs;
+
+public sealed class TokenMapper : Profile
 {
-    public class TokenMapper : Profile
+    public TokenMapper()
     {
-        public TokenMapper()
-        {
-            CreateMap<RefreshToken, RefreshTokenDTO>()
-                .ReverseMap();
-        }
+        CreateMap<RefreshToken, RefreshTokenDTO>()
+            .ReverseMap();
     }
 }

@@ -6,7 +6,7 @@ using URLShortener.Domain.ValueObjects.Payment;
 
 namespace URLShortenerAPI.Utility.MapperConfigs;
 
-public class PaymentConfigs : Profile
+public sealed class PaymentConfigs : Profile
 {
     public PaymentConfigs()
     {

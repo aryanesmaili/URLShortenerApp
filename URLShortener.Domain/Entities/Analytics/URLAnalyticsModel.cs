@@ -2,7 +2,7 @@
 
 namespace URLShortener.Domain.Entities.Analytics;
 
-public class URLAnalyticsModel
+public sealed class URLAnalyticsModel
 {
     public long ID { get; set; }
 

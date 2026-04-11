@@ -34,7 +34,7 @@ public sealed class RedirectService : IRedirectService
     }
 
     /// <inheritdoc/>
-    public async Task<URLDTO> CheckURLExists(string shortCode, IncomingRequestInfo requestInfo)
+    public async Task<URLDTO> CheckURLExists(string shortCode, IncomingRequestMetadata requestInfo)
     {
         URLModel? url = await GetOrThrowAsync(shortCode);
 

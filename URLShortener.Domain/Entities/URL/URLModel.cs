@@ -6,7 +6,7 @@ using URLShortener.Domain.Entities.User;
 
 namespace URLShortener.Domain.Entities.URL;
 
-public class URLModel
+public sealed class URLModel
 {
     public long ID { get; set; }
     public string? Description { get; set; }

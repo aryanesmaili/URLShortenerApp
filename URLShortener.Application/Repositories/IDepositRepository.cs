@@ -1,8 +1,7 @@
 ﻿using URLShortener.Domain.Entities.Finance;
 
-namespace URLShortener.Application.Repositories
+namespace URLShortener.Application.Repositories;
+
+public interface IDepositRepository : IGenericRepository<DepositModel>, IGetPaged<DepositModel>
 {
-    public interface IDepositRepository : IGenericRepository<DepositModel>, IGetPaged<DepositModel>
-    {
-    }
 }

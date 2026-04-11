@@ -1,6 +1,6 @@
 ﻿namespace URLShortener.Domain.Entities.User;
 
-public class RefreshToken
+public sealed class RefreshToken
 {
     public long ID { get; set; }
     public required string Token { get; set; }

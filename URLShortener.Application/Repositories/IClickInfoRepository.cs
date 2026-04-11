@@ -1,8 +1,7 @@
 ﻿using URLShortener.Domain.Entities.ClickInfo;
 
-namespace URLShortener.Application.Repositories
+namespace URLShortener.Application.Repositories;
+
+public interface IClickInfoRepository : IGenericRepository<ClickInfoModel>
 {
-    public interface IClickInfoRepository : IGenericRepository<ClickInfoModel>
-    {
-    }
 }

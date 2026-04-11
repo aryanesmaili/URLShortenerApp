@@ -2,7 +2,7 @@
 
 namespace URLShortener.Domain.Entities.Finance;
 
-public class PurchaseModel
+public sealed class PurchaseModel
 {
     public long ID { get; set; }
     public DateTime CreatedAt { get; set; }

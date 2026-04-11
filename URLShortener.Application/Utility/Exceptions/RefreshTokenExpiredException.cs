@@ -1,18 +1,17 @@
-﻿namespace URLShortener.Application.Utility.Exceptions
+﻿namespace URLShortener.Application.Utility.Exceptions;
+
+public sealed class RefreshTokenExpiredException : Exception
 {
-    public class RefreshTokenExpiredException : Exception
+    public RefreshTokenExpiredException()
     {
-        public RefreshTokenExpiredException()
-        {
 
-        }
-        public RefreshTokenExpiredException(string message) : base(message)
-        {
+    }
+    public RefreshTokenExpiredException(string message) : base(message)
+    {
 
-        }
-        public RefreshTokenExpiredException(string message, Exception innerException) : base(message, innerException)
-        {
+    }
+    public RefreshTokenExpiredException(string message, Exception innerException) : base(message, innerException)
+    {
 
-        }
     }
 }

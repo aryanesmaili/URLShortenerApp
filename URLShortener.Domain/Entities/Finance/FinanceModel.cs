@@ -2,7 +2,7 @@
 
 namespace URLShortener.Domain.Entities.Finance;
 
-public class FinancialRecordModel
+public sealed class FinancialRecordModel
 {
     public long ID { get; set; }
 

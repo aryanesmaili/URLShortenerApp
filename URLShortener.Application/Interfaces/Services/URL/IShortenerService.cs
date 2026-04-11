@@ -1,8 +1,7 @@
-﻿namespace URLShortener.Application.Interfaces.Services.URL
+﻿namespace URLShortener.Application.Interfaces.Services.URL;
+
+public interface IShortenerService
 {
-    public interface IShortenerService
-    {
-        string HashURL(string longURL);
-        string CollisionHandler(string shortURL, int lengthToAdd = 1);
-    }
+    string HashURL(string longURL);
+    string CollisionHandler(string shortURL, int lengthToAdd = 1);
 }

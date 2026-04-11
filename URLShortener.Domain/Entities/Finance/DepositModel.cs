@@ -1,6 +1,6 @@
 ﻿namespace URLShortener.Domain.Entities.Finance;
 
-public class DepositModel
+public sealed class DepositModel
 {
     public long ID { get; set; }
     public double Amount { get; set; }

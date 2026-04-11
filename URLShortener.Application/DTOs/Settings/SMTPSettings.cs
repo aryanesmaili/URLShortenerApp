@@ -1,12 +1,12 @@
 ﻿namespace URLShortener.Application.DTOs.Settings;
 
-public sealed class SMTPSettings
+public sealed record SMTPSettings
 {
-    public required string Server { get; set; }
-    public int Port { get; set; }
-    public required string SenderName { get; set; }
-    public required string SenderEmail { get; set; }
-    public required string Username { get; set; }
-    public required string Password { get; set; }
+    public required string Server { get; init; }
+    public int Port { get; init; }
+    public required string SenderName { get; init; }
+    public required string SenderEmail { get; init; }
+    public required string Username { get; init; }
+    public required string Password { get; init; }
 }
 

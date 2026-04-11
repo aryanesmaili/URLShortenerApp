@@ -39,8 +39,6 @@ builder.Services.AddRepositories();
 #endregion
 builder.Configuration.AddUserSecrets<Program>();
 
-builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
-
 // Automatically adds all validators of this project to DI pool.
 var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
