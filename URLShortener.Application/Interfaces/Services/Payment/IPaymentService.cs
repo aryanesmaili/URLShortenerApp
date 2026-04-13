@@ -14,5 +14,5 @@ public interface IPaymentService
     Task<PaymentStatusResult> CheckTransactionStatusAsync(PaymentTerminals paymentServices, PaymentStatusRequest requestInfo, long userId);
 
     Task<PagedResult<DepositDTO>> GetDepositsAsync(int pageNumber, int PageSize, long userID);
-
+    Task<long> GetUserBalance(long userId);
 }

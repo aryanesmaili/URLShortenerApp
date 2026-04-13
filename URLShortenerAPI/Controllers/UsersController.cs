@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.DTOs.EntityDTOs.User;
+using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Common.Responses;
@@ -25,7 +26,9 @@ public sealed class UsersController : ControllerBase
     private readonly IValidator<ChangeEmailRequest> _emailValidator;
     private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
     private readonly IWebHostEnvironment _webHostEnvironment;
-    private readonly IAntiforgery _antiforgery;
+    private readonly IAntiforgery _antiForgery;
+    private readonly IURLService _urlService;
+    private readonly IUserStatsService _userStatsService;
 
     public UsersController(IUserService userService,
         IValidator<UserCreateDTO> userValidator,
@@ -34,7 +37,9 @@ public sealed class UsersController : ControllerBase
         IValidator<ChangeEmailRequest> emailValidator,
         IValidator<ChangePasswordRequest> changePasswordValidator,
         IWebHostEnvironment webHostEnvironment,
-        IAntiforgery antiforgery)
+        IAntiforgery antiForgery,
+        IURLService urlService,
+        IUserStatsService userStatsService)
     {
         _userService = userService;
         _userValidator = userValidator;
@@ -43,7 +48,9 @@ public sealed class UsersController : ControllerBase
         _emailValidator = emailValidator;
         _changePasswordValidator = changePasswordValidator;
         _webHostEnvironment = webHostEnvironment;
-        _antiforgery = antiforgery;
+        _antiForgery = antiForgery;
+        _urlService = urlService;
+        _userStatsService = userStatsService;
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -55,7 +62,7 @@ public sealed class UsersController : ControllerBase
         APIResponse<string> response;
         try
         {
-            var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
+            var tokens = _antiForgery.GetAndStoreTokens(HttpContext);
             response = new()
             { Success = true, Result = tokens.RequestToken };
             return Ok(response);
@@ -101,12 +108,12 @@ public sealed class UsersController : ControllerBase
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpGet("Profile/URLTable/{userId}")]
+    [HttpGet("Profile/URLTable")]
     [EnableRateLimiting("DataFetch")]
-    public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         APIResponse<PagedResult<URLDTO>> response;
-        var username = HttpContext.User.Identity?.Name;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             if (pageNumber < 1)
@@ -115,7 +122,7 @@ public sealed class UsersController : ControllerBase
             else if (pageSize < 1)
                 throw new ArgumentException("Page size must be greater than or equal to 1.");
 
-            PagedResult<URLDTO> result = await _userService.GetPagedResult(userId, pageNumber, pageSize, username!);
+            PagedResult<URLDTO> result = await _urlService.GetPagedURLsAsync(userId, pageNumber, pageSize);
 
             response = new()
             { Result = result, Success = true };
@@ -188,10 +195,10 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> GetStats(int id)
     {
         APIResponse<UserStats> response;
-        var username = HttpContext.User.Identity?.Name;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
-            UserStats result = await _userService.GetUserStats(id, username!);
+            UserStats result = await _userStatsService.GetUserStats(userId);
 
             response = new()
             { Result = result, Success = true };
@@ -215,54 +222,6 @@ public sealed class UsersController : ControllerBase
             { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace?.ToString() ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpGet("Balance")]
-    [EnableRateLimiting("DataFetch")]
-    public async Task<IActionResult> GetUserBalance()
-    {
-        APIResponse<double> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        try
-        {
-            double result = await _userService.GetUserBalance(userId);
-            response = new()
-            { Success = true, Result = result };
-            return Ok(response);
-        }
-
-        catch (ArgumentException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
         catch (Exception e)
         {
             DebugErrorResponse errorResponse = new()
@@ -300,37 +259,6 @@ public sealed class UsersController : ControllerBase
             response = new()
             { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
             return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpGet("{username}")]
-    [EnableRateLimiting("DataFetch")]
-    public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
-    {
-        APIResponse<UserDTO> response;
-        try
-        {
-            UserDTO result = await _userService.GetUserByUsernameAsync(username);
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
         }
         catch (Exception e)
         {

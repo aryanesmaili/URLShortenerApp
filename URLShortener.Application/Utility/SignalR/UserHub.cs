@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
-using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Interfaces.Services.Payment;
 using URLShortener.Common.SignalR;
 
 namespace URLShortener.Application.Utility.SignalR;
 public sealed class UserHub : Hub<ISignalRUserClient>
 {
-    private readonly IUserService _userService;
+    private readonly IPaymentService _paymentService;
 
-    public UserHub(IUserService userService)
+    public UserHub(IPaymentService paymentService)
     {
-        _userService = userService;
+        _paymentService = paymentService;
     }
 
     public override async Task OnConnectedAsync()
@@ -22,7 +22,7 @@ public sealed class UserHub : Hub<ISignalRUserClient>
             await Groups.AddToGroupAsync(Context.ConnectionId, GetUserGroupName(userId));
         }
 
-        long userBalance = await _userService.GetUserBalance(int.Parse(userId));
+        long userBalance = await _paymentService.GetUserBalance(int.Parse(userId));
         await Clients.Caller.ReceiveBalanceUpdate(userBalance);
 
         await base.OnConnectedAsync();

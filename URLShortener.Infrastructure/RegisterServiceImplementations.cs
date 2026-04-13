@@ -31,6 +31,7 @@ public static class RegisterServiceImplementations
         services.AddSingleton<IQueueService, RedisQueueService>();
 
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IUserStatsService, UserStatsService>();
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IURLService, URLService>();
         services.AddTransient<IShortenerService, ShortenerService>();

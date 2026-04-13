@@ -32,7 +32,7 @@ public sealed class URLController : ControllerBase
         APIResponse<URLDTO> response;
         try
         {
-            URLDTO result = await _urlService.GetURL(id);
+            URLDTO result = await _urlService.GetURLAsync(id);
             response = new()
             { Success = true, Result = result };
             return Ok(result);
@@ -57,7 +57,7 @@ public sealed class URLController : ControllerBase
     public async Task<IActionResult> AddURL([FromBody] URLCreateDTO createDTO)
     {
         APIResponse<URLShortenResponse> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             await _validator.ValidateAndThrowAsync(createDTO);
@@ -116,7 +116,7 @@ public sealed class URLController : ControllerBase
     public async Task<IActionResult> AddBatchURL([FromBody] BatchURLCreateDTO createDTO)
     {
         APIResponse<IReadOnlyList<URLShortenResponse>> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             await _batchURLValidator.ValidateAndThrowAsync(createDTO);
@@ -167,7 +167,7 @@ public sealed class URLController : ControllerBase
     public async Task<IActionResult> ToggleActivation(int id)
     {
         APIResponse<string> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             await _urlService.ToggleStateAsync(id, x => x.IsActive = !x.IsActive, userId);
@@ -207,7 +207,7 @@ public sealed class URLController : ControllerBase
     public async Task<IActionResult> ToggleMonetization(int id)
     {
         APIResponse<string> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             await _urlService.ToggleStateAsync(id, x => x.IsMonetized = !x.IsMonetized, userId);
@@ -247,7 +247,7 @@ public sealed class URLController : ControllerBase
     public async Task<IActionResult> DeleteURL(int id)
     {
         APIResponse<string> response;
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
             await _urlService.DeleteURL(id, userId);

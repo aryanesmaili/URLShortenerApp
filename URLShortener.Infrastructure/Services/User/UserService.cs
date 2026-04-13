@@ -8,10 +8,8 @@ using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility;
 using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Common.HelperFunctions;
-using URLShortener.Common.Responses;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
@@ -51,193 +49,12 @@ public sealed class UserService(
     /// <param name="id"></param>
     /// <returns> an object containing showable user info</returns>
     /// <exception cref="NotFoundException"></exception>
-    public async Task<UserDTO> GetUserByIDAsync(int id)
+    public async Task<UserDTO> GetUserByIDAsync(long id)
     {
         UserModel? user = await _userRepository.GetAsync(x => x.ID == id, asNoTracking: true)
-            ?? throw new NotFoundException($"User {id} Does not Exist");
+            ?? throw new NotFoundException(nameof(UserModel), nameof(UserModel.ID), id);
 
-        return UserModelToDTO(user);
-    }
-
-    /// <summary>
-    /// gets a user's info alongside the nested objects.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<UserDTO> GetFullUserInfoAsync(int id)
-    {
-        UserModel? user = await _userRepository
-            .Query()
-            .Include(u => u.URLs)!
-            .ThenInclude(u => u.Categories)
-            .Include(u => u.URLs)!
-            .ThenInclude(u => u.URLAnalytics)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ID == id)
-            ?? throw new NotFoundException($"User {id} Does not Exist");
-        return UserModelToDTO(user);
-    }
-
-    /// <summary>
-    /// gets a user's info by their Username asynchronously.
-    /// </summary>
-    /// <param name="Username"></param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<UserDTO> GetUserByUsernameAsync(string Username)
-    {
-        UserModel? user = await _userRepository.GetAsync(x => x.Username == Username, asNoTracking: true)
-            ?? throw new NotFoundException($"User {Username} Does not Exist");
-
-        return UserModelToDTO(user);
-    }
-
-    /// <summary>
-    /// used in pagination. gives the records required to be shown in a table.
-    /// </summary>
-    /// <param name="userID">ID of the user whose records we're loading.</param>
-    /// <param name="pageNumber">number of the page to retrieve.</param>
-    /// <param name="pageSize">Count of elements in each page.</param>
-    /// <param name="reqUsername">username asking the operation.</param>
-    /// <returns></returns>
-    public async Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername)
-    {
-        await _authService.AuthorizeURLsAccessAsync(userID, reqUsername);
-
-        // get the total of URLs a user has shortened.
-        var totalCount = await _urlRepository.CountAsync(x => x.UserID == userID);
-        // Fetch the paginated URLs
-        var URLs = await _urlRepository
-            .Query()
-            .Where(u => u.UserID == userID)
-            .OrderByDescending(u => u.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Include(x => x.Categories)
-            .Take(pageSize)
-            .ToListAsync();
-
-        var result = URLs.Select(_mapper.Map<URLDTO>).ToList();
-        return CreateResult.CreatePagedSuccess(result, pageNumber, pageSize, totalCount, (int)Math.Ceiling((double)totalCount / pageSize));
-    }
-
-    /// <summary>
-    /// Gets User's Account Balance.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <returns></returns>
-    public async Task<long> GetUserBalance(int userID)
-    {
-        long balance = (await _userRepository.GetAsync(x => x.ID == userID, i => i.Include(x => x.FinancialRecord), null, asNoTracking: true)
-                                                ?? throw new NotFoundException($"User {userID} Not Found.")
-                                                ).FinancialRecord.Balance;
-        return balance;
-    }
-
-    /// <summary>
-    /// Gets the four elements needed to show in user stats.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    public async Task<UserStats> GetUserStats(int userID, string username)
-    {
-        UserModel user = await _authService.AuthorizeUserAccessAsync(userID, username, true);
-        // lookup cache first
-        UserStats? stats = await _cacheService.GetValueAsync<UserStats>($"UserStats_" + userID);
-        if (stats != null)
-            return stats;
-
-        stats = new()
-        {
-            WeeklyGrowth = await GetClickGrowthFromLastWeek(userID),
-            TotalURLsCount = user.URLs!.Count,
-            ClicksYesterdayCount = await GetYesterdayClicks(userID),
-            AverageClicksPerURL = await GetAverageClicksPerURL(userID)
-        };
-
-        // cache the results
-        await _cacheService.SetAsync($"UserStats_" + userID, stats, TimeSpan.FromMinutes(30));
-        return stats;
-    }
-
-    /// <summary>
-    /// Calculates the average clicks per url for user.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <returns></returns>
-    private async Task<double> GetAverageClicksPerURL(int userID)
-    {
-        int totalURLs = await _urlRepository
-            .CountAsync(url => url.UserID == userID);
-
-        int totalClicks = await _clickRepository
-            .CountAsync(click => click.URL.UserID == userID);
-
-        if (totalURLs == 0)
-            return 0; // Prevent division by zero
-
-        return Math.Round((double)totalClicks / totalURLs, 2);
-    }
-
-    /// <summary>
-    /// Gets the amount of clicks that happened yesterday.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <returns></returns>
-    private async Task<int> GetYesterdayClicks(int userID)
-    {
-        // Get the current date in the Tehran time zone.
-        TimeZoneInfo tehranTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Iran Standard Time");
-        DateTime currentDateUtc = DateTime.UtcNow;
-        DateTime currentDateTehran = TimeZoneInfo.ConvertTimeFromUtc(currentDateUtc, tehranTimeZone);
-
-        // Calculate the start and end of yesterday in Tehran time.
-        DateTime startOfYesterdayTehran = currentDateTehran.AddDays(-1).Date;  // 00:00 of yesterday in Tehran time
-        DateTime endOfYesterdayTehran = startOfYesterdayTehran.AddDays(1).AddSeconds(-1); // 23:59:59 of yesterday in Tehran time
-
-        // Convert the Tehran times to UTC
-        DateTime startOfYesterdayUtc = TimeZoneInfo.ConvertTimeToUtc(startOfYesterdayTehran, tehranTimeZone);
-        DateTime endOfYesterdayUtc = TimeZoneInfo.ConvertTimeToUtc(endOfYesterdayTehran, tehranTimeZone);
-
-        // Query the database to count the clicks on the user's URLs during yesterday (in UTC)
-        int yesterdayClicksCount = await _clickRepository
-            .Query()
-            .Include(x => x.URL)
-            .CountAsync(click => click.URL.UserID == userID &&
-                           click.ClickedAt >= startOfYesterdayUtc &&
-                           click.ClickedAt <= endOfYesterdayUtc);
-
-        return yesterdayClicksCount;
-    }
-
-    /// <summary>
-    /// Calculates how the clicks have grown since last week.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <returns></returns>
-    private async Task<double> GetClickGrowthFromLastWeek(int userID)
-    {
-        DateTime now = DateTime.UtcNow;
-        DateTime startOfThisWeek = now.AddDays(-(int)now.DayOfWeek);
-        DateTime startOfLastWeek = startOfThisWeek.AddDays(-7);
-
-        // Fetch click counts for last week and this week
-        int thisWeekClicks = await _clickRepository
-            .CountAsync(c => c.URL.UserID == userID && c.ClickedAt >= startOfThisWeek);
-
-        int lastWeekClicks = await _clickRepository
-            .CountAsync(c => c.URL.UserID == userID && c.ClickedAt >= startOfLastWeek && c.ClickedAt < startOfThisWeek);
-
-        double growth = 0;
-        if (lastWeekClicks == 0 && thisWeekClicks == 0)
-            return growth;
-        else if (lastWeekClicks == 0)
-            return 100;
-        // Calculate growth percentage
-        growth = (double)(thisWeekClicks - lastWeekClicks) / lastWeekClicks * 100;
-
-        return Math.Round(growth, 2);
+        return _mapper.Map<UserDTO>(user);
     }
 
     /// <summary>

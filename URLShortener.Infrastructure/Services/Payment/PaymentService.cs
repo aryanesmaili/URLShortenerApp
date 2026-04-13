@@ -46,8 +46,16 @@ public sealed class PaymentService : IPaymentService
             .FirstOrDefaultAsync();
 
         var depositsPaged = await _depositRepository
-            .GetPagedAsync(pageNumber, PageSize, x => x.FinanceID == financialRecordId, x => x.CreatedAt);
+            .GetPagedAsync(pageNumber, PageSize, x => x.FinanceID == financialRecordId, x => x.CreatedAt, descending: true);
         return _mapper.Map<PagedResult<DepositDTO>>(depositsPaged);
+    }
+
+    public async Task<long> GetUserBalance(long userId)
+    {
+        var balance = await _financialRecordRepository
+            .Select(x => x.UserID == userId, x => x.Balance)
+            .FirstOrDefaultAsync();
+        return balance;
     }
 
     public async Task<PaymentCreateResult> CreateTransactionAsync(PaymentTerminals paymentServices, PaymentCreateRequest requestInfo, long userId)

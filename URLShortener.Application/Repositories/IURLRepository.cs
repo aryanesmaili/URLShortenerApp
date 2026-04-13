@@ -2,7 +2,7 @@
 
 namespace URLShortener.Application.Repositories;
 
-public interface IURLRepository : IGenericRepository<URLModel>
+public interface IURLRepository : IGenericRepository<URLModel>, IGetPaged<URLModel>
 {
 
 }

@@ -1,23 +1,16 @@
 ﻿using SharedDataModels.Responses;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.DTOs.EntityDTOs.User;
-using URLShortener.Common.Responses;
 
 namespace URLShortener.Application.Interfaces.Services.User;
 
 public interface IUserService
 {
-    Task<UserDTO> GetUserByIDAsync(int id);
-    Task<UserDTO> GetFullUserInfoAsync(int id);
-    Task<UserDTO> GetUserByUsernameAsync(string Username);
+    Task<UserDTO> GetUserByIDAsync(long userId);
     Task<UserDashboardDTO> GetDashboardByIDAsync(int userID, string reqUsername);
     Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
     Task<UserLoginResponse> LoginUserAsync(UserLoginDTO user);
     Task<UserLoginResponse> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);
-    Task<long> GetUserBalance(int userID);
-    Task<UserStats> GetUserStats(int userID, string username);
-    Task<PagedResult<URLDTO>> GetPagedResult(int userID, int pageNumber, int pageSize, string reqUsername);
-    Task DeleteUserAsync(int id);
+    Task DeleteUserAsync(int userId);
     Task ResetPasswordAsync(string Identifier);
     Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername);
     Task<string> TokenRefresher(string refreshToken);

@@ -7,6 +7,7 @@ using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
 using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Common.Responses;
 using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
@@ -678,12 +679,18 @@ public sealed class URLService : IURLService
     /// <param name="urlID">ID of the URL to fetch.</param>
     /// <returns>a <see cref="URLDTO"/>object containing info about the record.</returns>
     /// <exception cref="NotFoundException">thrown if no object with this ID exists.</exception>
-    public async Task<URLDTO> GetURL(long urlID)
+    public async Task<URLDTO> GetURLAsync(long urlID)
     {
         URLModel url = await _urlRepository
             .GetAsync(x => x.ID == urlID, asNoTracking: true)
             ?? throw new NotFoundException(nameof(URLModel), nameof(URLModel.ID), urlID);
         return _mapper.Map<URLDTO>(url);
+    }
+
+    public async Task<PagedResult<URLDTO>> GetPagedURLsAsync(long userId, int pageNumber, int pageSize)
+    {
+        var URLs = await _urlRepository.GetPagedAsync(pageNumber, pageSize, x => x.UserID == userId, x => x.CreatedAt, descending: true);
+        return _mapper.Map<PagedResult<URLDTO>>(URLs); // TODO: consider using CreateResult across project
     }
 
     /// <summary>
@@ -717,4 +724,5 @@ public sealed class URLService : IURLService
         await SendSignalRNotifications(url.UserID);
         await _cacheService.RemoveAsync<UserStats>("UserStats_" + url.UserID); // so that if the user refreshes, their stats be calculated again.
     }
+
 }
