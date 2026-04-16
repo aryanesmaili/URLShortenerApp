@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+
 namespace URLShortener.Application.Repositories;
 
 public interface IUnitOfWork

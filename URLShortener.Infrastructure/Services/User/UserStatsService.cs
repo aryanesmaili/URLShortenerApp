@@ -3,7 +3,6 @@ using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
-using URLShortenerAPI.Data;
 
 namespace URLShortener.Infrastructure.Services.User;
 

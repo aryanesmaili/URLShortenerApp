@@ -4,6 +4,7 @@ using URLShortener.Application.Interfaces.Services.Payment;
 using URLShortener.Common.SignalR;
 
 namespace URLShortener.Application.Utility.SignalR;
+
 public sealed class UserHub : Hub<ISignalRUserClient>
 {
     private readonly IPaymentService _paymentService;
