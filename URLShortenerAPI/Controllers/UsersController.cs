@@ -29,6 +29,7 @@ public sealed class UsersController : ControllerBase
     private readonly IAntiforgery _antiForgery;
     private readonly IURLService _urlService;
     private readonly IUserStatsService _userStatsService;
+    private readonly IAuthenticationService _authenticationService;
 
     public UsersController(IUserService userService,
         IValidator<UserCreateDTO> userValidator,
@@ -39,7 +40,8 @@ public sealed class UsersController : ControllerBase
         IWebHostEnvironment webHostEnvironment,
         IAntiforgery antiForgery,
         IURLService urlService,
-        IUserStatsService userStatsService)
+        IUserStatsService userStatsService,
+        IAuthenticationService authenticationService)
     {
         _userService = userService;
         _userValidator = userValidator;
@@ -51,6 +53,7 @@ public sealed class UsersController : ControllerBase
         _antiForgery = antiForgery;
         _urlService = urlService;
         _userStatsService = userStatsService;
+        _authenticationService = authenticationService;
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -281,7 +284,7 @@ public sealed class UsersController : ControllerBase
         try
         {
             string IPAddress = HttpContext.Connection.RemoteIpAddress!.MapToIPv4().ToString();
-            CaptchaVerificationResponse result = await _userService.VerifyCaptcha(token, IPAddress);
+            CaptchaVerificationResponse result = await _authenticationService.VerifyCaptcha(token, IPAddress);
 
             response = new()
             { Success = result.Success, Result = result };
@@ -310,7 +313,7 @@ public sealed class UsersController : ControllerBase
         {
             await _userLoginValidator.ValidateAndThrowAsync(LoginInfo);
 
-            UserLoginResponse result = await _userService.LoginUserAsync(LoginInfo);
+            UserLoginResponse result = await _authenticationService.LoginUserAsync(LoginInfo);
 
             CookieOptions refreshCookieOptions = new()
             {
@@ -381,7 +384,7 @@ public sealed class UsersController : ControllerBase
         {
             await _userValidator.ValidateAndThrowAsync(userCreateDTO);
 
-            UserDTO result = await _userService.RegisterUserAsync(userCreateDTO);
+            UserDTO result = await _authenticationService.RegisterUserAsync(userCreateDTO);
             response = new()
             { Result = result, Success = true };
             return Ok(response);
@@ -428,7 +431,7 @@ public sealed class UsersController : ControllerBase
         APIResponse<string> response;
         try
         {
-            await _userService.ResetPasswordAsync(identifier);
+            await _authenticationService.ResetPasswordAsync(identifier);
             response = new()
             { Result = string.Empty, Success = true };
             return Ok(response);
@@ -464,7 +467,7 @@ public sealed class UsersController : ControllerBase
         APIResponse<UserDTO> response;
         try
         {
-            UserLoginResponse result = await _userService.CheckPasswordResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
+            UserLoginResponse result = await _authenticationService.CheckPasswordResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
 
             CookieOptions refreshCookieOptions = new()
             {
@@ -521,7 +524,7 @@ public sealed class UsersController : ControllerBase
         try
         {
             await _changePasswordValidator.ValidateAndThrowAsync(reqInfo);
-            UserDTO result = await _userService.ChangePasswordAsync(reqInfo, username!);
+            UserDTO result = await _authenticationService.ChangePasswordAsync(reqInfo, username!);
 
             response = new()
             { Result = result, Success = true };
@@ -573,7 +576,7 @@ public sealed class UsersController : ControllerBase
         var username = HttpContext.User.Identity?.Name;
         try
         {
-            await _userService.ResetEmailAsync(id, username!);
+            await _authenticationService.ResetEmailAsync(id, username!);
             response = new()
             { Success = true, Result = string.Empty };
             return Ok(response);
@@ -621,7 +624,7 @@ public sealed class UsersController : ControllerBase
         {
             ArgumentException.ThrowIfNullOrEmpty(reqInfo.Code);
 
-            await _userService.CheckEmailResetCodeAsync(reqInfo.Code, id, username!);
+            await _authenticationService.CheckEmailResetCodeAsync(reqInfo.Code, id, username!);
             response = new()
             { Success = true, Result = string.Empty };
             return Ok(response);
@@ -732,7 +735,7 @@ public sealed class UsersController : ControllerBase
         {
             RefreshTokenDTO? refreshToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
             // Invalidate the refresh token in the database
-            await _userService.RevokeTokenAsync(refreshToken!.Token);
+            await _authenticationService.RevokeTokenAsync(refreshToken!.Token);
 
             // Remove the cookie
             Response.Cookies.Delete("refreshToken");
@@ -779,7 +782,7 @@ public sealed class UsersController : ControllerBase
         try
         {
             RefreshTokenDTO? refrehToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
-            string result = await _userService.TokenRefresher(refrehToken!.Token);
+            string result = await _authenticationService.TokenRefresher(refrehToken!.Token);
 
             CookieOptions jwtCookieOptions = new()
             {

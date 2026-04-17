@@ -20,7 +20,6 @@ public sealed class UserService(
                            IMapper mapper,
                            IEmailService emailService,
                            ICacheService cacheService,
-                           IConfiguration settings,
                            HttpClient httpClient,
                            IUserRepository userRepository,
                            IURLRepository urlRepository,
@@ -32,7 +31,6 @@ public sealed class UserService(
     private readonly IMapper _mapper = mapper;
     private readonly IEmailService _emailService = emailService;
     private readonly ICacheService _cacheService = cacheService;
-    private readonly string _secretKey = settings["TurnstileSecret"]!;
     private readonly HttpClient _httpClient = httpClient;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IURLRepository _urlRepository = urlRepository;
@@ -55,107 +53,6 @@ public sealed class UserService(
     }
 
     /// <summary>
-    /// logs a user in and gives them respective tokens to surf across webpages.
-    /// </summary>
-    /// <param name="info">user login info</param>
-    /// <returns>a <see cref="UserLoginDTO"/> object containing information.</returns>
-    /// <exception cref="NotFoundException"></exception>
-    /// <exception cref="NotAuthorizedException"></exception>
-    public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
-    {
-        UserModel? user = null;
-        if (info.Identifier!.IsEmail())
-
-            user = await _userRepository.GetAsync(x => x.Email == info.Identifier)
-                ?? throw new NotFoundException($"Username or Password is wrong");
-        else
-            user = await _userRepository.GetAsync(u => u.Username == info.Identifier)
-                ?? throw new NotFoundException($"Username or Password is wrong");
-
-        if (user == null || !BCrypt.Net.BCrypt.Verify(info.Password, user?.PasswordHash))
-            throw new ArgumentException("Username or Password is not correct");
-
-        UserDTO userDTO = UserModelToDTO(user!);
-        string jwtoken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
-        string rawRefreshToken = _authService.GenerateRefreshToken();
-        RefreshToken refreshToken = new()
-        {
-            Token = rawRefreshToken,
-            User = user,
-            Expires = DateTime.UtcNow.AddDays(7),
-            Created = DateTime.UtcNow,
-            UserId = user.ID
-        };
-
-        _refreshTokenRepository.Add(refreshToken);
-        await _uow.SaveChangesAsync();
-
-        RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
-        UserLoginResponse response = new()
-        { User = userDTO, RefreshToken = refreshTokenDTO, JWToken = jwtoken };
-
-        return response;
-    }
-
-    /// <summary>
-    /// registers a new user.
-    /// </summary>
-    /// <param name="newUserInfo">object containing information about the new user.</param>
-    /// <returns>a <see cref="UserDTO"/> object containing information about the new user.</returns>
-    public async Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo)
-    {
-        UserModel newUser = _mapper.Map<UserModel>(newUserInfo);
-        newUser.CreatedAt = DateTime.UtcNow;
-        newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUserInfo.Password); // Hashing user's password to ensure security
-        newUser.FinancialRecord = new() { User = newUser, Balance = 0 };
-
-        _userRepository.Add(newUser);
-        await _uow.SaveChangesAsync();
-
-        return UserModelToDTO(newUser);
-    }
-
-    /// <summary>
-    /// Initiates a Email Reset Process and sends an Auth code to user.
-    /// </summary>
-    /// <param name="userID"></param>
-    /// <param name="reqUsername"></param>
-    /// <returns></returns>
-    public async Task ResetEmailAsync(int userID, string reqUsername)
-    {
-        UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
-        user.EmailResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
-        string Subject = "Pexita Authentication code";
-        string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
-
-        _userRepository.Update(user);
-        await _uow.SaveChangesAsync();
-
-        await _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
-    }
-
-    /// <summary>
-    /// Checks if the code entered by user is correct.
-    /// </summary>
-    /// <param name="code">The Code to be checked.</param>
-    /// <param name="userID"></param>
-    /// <param name="reqUsername"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public async Task CheckEmailResetCodeAsync(string code, int userID, string reqUsername)
-    {
-        UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
-
-        var resetCode = user.EmailResetCode;
-
-        if (resetCode != code)
-            throw new ArgumentException("Code is Wrong.");
-        user.EmailResetCode = null;
-        _userRepository.Update(user);
-        await _uow.SaveChangesAsync();
-    }
-
-    /// <summary>
     /// Sets the new email for the user.
     /// </summary>
     /// <param name="newEmail">The new Email to be set</param>
@@ -169,172 +66,7 @@ public sealed class UserService(
         user.Email = newEmail;
         _userRepository.Update(user);
         await _uow.SaveChangesAsync();
-        return UserModelToDTO(user);
-    }
-
-    /// <summary>
-    /// begins a Change password procedure for the user.
-    /// </summary>
-    /// <param name="identifier">user's input that can be either email or username.</param>
-    /// <returns>a <see cref="UserDTO"/> object containing Info. </returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task ResetPasswordAsync(string identifier)
-    {
-        if (string.IsNullOrEmpty(identifier))
-            throw new ArgumentNullException("Invalid Input.");
-
-        UserModel? user;
-
-        if (identifier.IsEmail()) // if the user has entered an email:
-            user = await _userRepository.GetAsync(u => u.Email == identifier); // we search by email
-
-        else // if it's not an email then the user has entered their username
-            user = await _userRepository.GetAsync(user => user.Username == identifier); // we search by username
-
-        if (user == null) // if no user exists with that email/username:
-            throw new NotFoundException($"User {identifier} does not exist.");
-
-        user.PasswordResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
-        string Subject = "Pexita Authentication code";
-        string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
-
-        _userRepository.Update(user);
-        await _uow.SaveChangesAsync();
-
-        await _emailService.SendEmail(user.Email, Subject, Body); // we send the code to the user.
-    }
-
-    /// <summary>
-    /// checks if the given code matches the one in Database.
-    /// </summary>
-    /// <param name="Code">the ResetCode. entered by user.</param>
-    /// <param name="identifier">user's input that can be either email or username.</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<UserLoginResponse> CheckPasswordResetCodeAsync(string identifier, string Code)
-    {
-        if (string.IsNullOrEmpty(Code))
-            throw new ArgumentNullException(nameof(Code));
-
-        UserModel? userRec;
-
-        if (identifier.IsEmail()) // if the user has entered an email:
-            userRec = await _userRepository.GetAsync(u => u.Email == identifier); // we search by email
-        else // if it's not an email then the user has entered their username
-            userRec = await _userRepository.GetAsync(user => user.Username == identifier); // we search by username
-
-        string ResetCode = userRec!.PasswordResetCode ?? throw new ArgumentNullException("ResetCode");
-
-        if (ResetCode != Code)
-            throw new ArgumentException("Code is Wrong.");
-
-        var result = UserModelToDTO(userRec);
-        string token = _authService.GenerateJWToken(userRec.Username, userRec.Role.ToString(), userRec.Email);
-        string refToken = _authService.GenerateRefreshToken();
-
-        RefreshToken refreshToken = new()
-        {
-            Token = refToken,
-            User = userRec,
-            UserId = userRec.ID,
-            Created = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddDays(7)
-        };
-
-        _refreshTokenRepository.Add(refreshToken);
-        await _uow.SaveChangesAsync();
-
-        RefreshTokenDTO refreshTokenDTO = _mapper.Map<RefreshTokenDTO>(refreshToken);
-
-        UserLoginResponse response = new()
-        { User = result, RefreshToken = refreshTokenDTO, JWToken = token };
-        return response;
-    }
-
-    /// <summary>
-    /// changes a user's password after making sure they're valid.
-    /// </summary>
-    /// <param name="reqInfo">required information for changing the password.</param>
-    /// <param name="requestingUsername">the user requesting the change.</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
-    public async Task<UserDTO> ChangePasswordAsync(ChangePasswordRequest reqInfo, string requestingUsername)
-    {
-
-        if (string.IsNullOrEmpty(reqInfo.NewPassword) || string.IsNullOrEmpty(reqInfo.ConfirmPassword))
-            throw new ArgumentNullException(nameof(reqInfo.NewPassword));
-
-        else if (reqInfo.NewPassword != reqInfo.ConfirmPassword)
-            throw new ArgumentException($"Entered values {reqInfo.NewPassword} and {reqInfo.ConfirmPassword} Do not match.");
-
-        // checking if the user has the authorization to access this.
-        UserModel user = await _authService.AuthorizeUserAccessAsync(reqInfo.UserInfo.ID, requestingUsername);
-
-        string hashedpassword = BCrypt.Net.BCrypt.HashPassword(reqInfo.NewPassword);
-        if (hashedpassword == user.PasswordHash)
-            throw new ArgumentException("input password is no different from the current password.");
-
-        user.PasswordHash = hashedpassword;
-        user.PasswordResetCode = null;
-        _userRepository.Update(user);
-        await _uow.SaveChangesAsync();
-
-        return UserModelToDTO(user);
-    }
-
-    /// <summary>
-    /// revokes a user's refresh token on their logout
-    /// </summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task RevokeTokenAsync(string token)
-    {
-        if (token == null)
-            throw new ArgumentNullException(token);
-
-        RefreshToken tokenRecord = await _refreshTokenRepository.GetAsync(t => t.Token == token)
-            ?? throw new NotFoundException("Refresh Token Not Found.");
-        if (tokenRecord != null && tokenRecord.IsActive)
-        {
-            tokenRecord.Revoked = DateTime.UtcNow;
-            _refreshTokenRepository.Update(tokenRecord);
-            await _uow.SaveChangesAsync();
-            return;
-        }
-        throw new Exception("token either invalid or already inactive.");
-    }
-
-    /// <summary>
-    /// Generates a fresh JWToken for the user given the refreshToken.
-    /// </summary>
-    /// <param name="refreshToken">the string containing user's given refreshToken.</param>
-    /// <returns>an object containing fresh JWToken.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<string> TokenRefresher(string refreshToken)
-    {
-        if (string.IsNullOrEmpty(refreshToken))
-            throw new ArgumentNullException(refreshToken);
-
-        RefreshToken? currentRefreshToken = await _refreshTokenRepository.GetAsync(t => t.Token == refreshToken);
-
-        if (currentRefreshToken == null)
-            throw new NotFoundException($"token {refreshToken} is not valid.");
-
-        else if (!currentRefreshToken.IsActive)
-            throw new RefreshTokenExpiredException("RefreshToken is Expired");
-
-        UserModel user = await _userRepository.GetAsync(x => x.ID == currentRefreshToken.UserId)
-            ?? throw new NotFoundException($"User {currentRefreshToken.UserId} Does not exist");
-
-        // Generating both new JWToken and RefreshToken
-        string jwToken = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
-
-        return jwToken;
+        return _mapper.Map<UserDTO>(user);
     }
 
     /// <summary>
@@ -367,7 +99,7 @@ public sealed class UserService(
         _userRepository.Update(user);
         await _uow.SaveChangesAsync();
         string jwToken = string.Empty;
-        UserDTO userDTO = UserModelToDTO(user);
+        UserDTO userDTO = _mapper.Map<UserDTO>(user);
         // if the user's username has changed, we generate them a new JWT since we authorize via username.
         if (temp.Username != user.Username)
             jwToken = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
@@ -389,98 +121,5 @@ public sealed class UserService(
             ?? throw new NotFoundException($"User {id} Does not Exist");
         _userRepository.Remove(user);
         await _uow.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// sends the token generated in front-end to cloudflare to verify if the captcha is valid.
-    /// </summary>
-    /// <param name="token"></param>
-    /// <param name="userIP"></param>
-    /// <returns></returns>
-    public async Task<CaptchaVerificationResponse> VerifyCaptcha(string token, string userIP)
-    {
-        const string cloudflareURL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-
-        FormUrlEncodedContent formData = new(
-        [
-        new KeyValuePair<string, string>("secret", _secretKey),
-        new KeyValuePair<string, string>("response", token),
-        new KeyValuePair<string, string>("remoteip", userIP ?? string.Empty) // Optional IP
-    ]);
-
-        HttpResponseMessage response = await _httpClient.PostAsync(cloudflareURL, formData);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            return new CaptchaVerificationResponse { Success = false, ErrorCodes = ["bad-request"] };
-        }
-
-        CaptchaVerificationResponse? captchaResponse = await JsonSerializer.DeserializeAsync<CaptchaVerificationResponse>(await response.Content.ReadAsStreamAsync());
-
-        return captchaResponse ?? new CaptchaVerificationResponse { Success = false, ErrorCodes = ["public-error"] };
-    }
-
-    /// <summary>
-    /// Maps a UserModel database record to a representable object.
-    /// </summary>
-    /// <param name="user">the database record.</param>
-    /// <returns>a <see cref="UserInfoDTO"/> object containing information.</returns>
-    private UserDTO UserModelToDTO(UserModel user)
-    {
-        return _mapper.Map<UserDTO>(user);
-    }
-
-    /// <summary>
-    /// checks whether a given user is an admin.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns>True if is admin, false otherwise.</returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<bool> IsAdmin(int id)
-    {
-        return (await _userRepository.GetAsync(x => x.ID == id, asNoTracking: true)
-            ?? throw new NotFoundException($"User {id} Does not Exist")).Role == UserType.Admin;
-    }
-
-    /// <summary>
-    /// checks whether a given user is an admin.
-    /// </summary>
-    /// <param name="username"></param>
-    /// <returns>True if is admin, false otherwise.</returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<bool> IsAdmin(string username)
-    {
-        return (await _userRepository.GetAsync(x => x.Username == username, asNoTracking: true)
-            ?? throw new NotFoundException($"User {username} Does not Exist")).Role == UserType.Admin;
-    }
-
-    /// <summary>
-    /// checks if a given id is a valid user.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public async Task<bool> IsUser(int id)
-    {
-        return await _userRepository.AnyAsync(x => x.ID == id);
-    }
-
-    /// <summary>
-    /// checks if a given username is a valid user.
-    /// </summary>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    public async Task<bool> IsUser(string username)
-    {
-        return await _userRepository.AnyAsync(x => x.Username == username);
-    }
-
-    /// <summary>
-    /// checks if a given email is already used.
-    /// </summary>
-    /// <param name="email"></param>
-    /// <returns>True if in use, false otherwise.</returns>
-    public async Task<bool> IsEmailTaken(string email)
-    {
-        return await _userRepository.AnyAsync(x => x.Email == email);
     }
 }

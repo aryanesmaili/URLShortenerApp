@@ -36,6 +36,7 @@ public static class RegisterServiceImplementations
         services.AddTransient<IURLService, URLService>();
         services.AddTransient<IShortenerService, ShortenerService>();
         services.AddTransient<IRedirectService, RedirectService>();
+        services.AddTransient<IAuthenticationService, AuthenticationService>();
 
         services.AddTransient<ICacheService, RedisCacheService>();
 
