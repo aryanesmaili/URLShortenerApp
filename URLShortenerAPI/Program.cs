@@ -46,6 +46,9 @@ builder.Services.AddValidatorsFromAssembly(assembly);
 string postgresConnectionString = builder.Environment.IsDevelopment() ? "PostgreSQLDockerDev" : "PostgreSQLDockerProd";
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
 
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
+
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();

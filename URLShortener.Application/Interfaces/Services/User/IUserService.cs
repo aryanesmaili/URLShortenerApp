@@ -6,7 +6,6 @@ namespace URLShortener.Application.Interfaces.Services.User;
 public interface IUserService
 {
     Task<UserDTO> GetUserByIDAsync(long userId);
-    Task<UserDashboardDTO> GetDashboardByIDAsync(int userID, string reqUsername);
     Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
     Task<UserLoginResponse> LoginUserAsync(UserLoginDTO user);
     Task<UserLoginResponse> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername);

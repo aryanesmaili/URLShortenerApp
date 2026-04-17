@@ -235,15 +235,15 @@ public sealed class UsersController : ControllerBase
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpGet("Dashboard/{id:int}")]
+    [HttpGet("Dashboard")]
     [EnableRateLimiting("DataFetch")]
-    public async Task<IActionResult> GetDashboard([FromRoute] int id)
+    public async Task<IActionResult> GetDashboard()
     {
         APIResponse<UserDashboardDTO> response;
-        var username = HttpContext.User.Identity?.Name;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
-            UserDashboardDTO result = await _userService.GetDashboardByIDAsync(id, username!);
+            UserDashboardDTO result = await _userStatsService.GetDashboardByIDAsync(userId);
             response = new()
             { Result = result, Success = true };
             return Ok(response);
