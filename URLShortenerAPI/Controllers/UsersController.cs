@@ -162,14 +162,15 @@ public sealed class UsersController : ControllerBase
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpGet("{id:int}")]
+    [HttpGet]
     [EnableRateLimiting("DataFetch")]
-    public async Task<IActionResult> GetUserById([FromRoute] int id)
+    public async Task<IActionResult> GetUserById()
     {
         APIResponse<UserDTO> response;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         try
         {
-            UserDTO result = await _userService.GetUserByIDAsync(id);
+            UserDTO result = await _userService.GetUserByIDAsync(userId);
             response = new()
             { Result = result, Success = true };
             return Ok(response);
@@ -667,12 +668,11 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> ChangeEmail(int id, [FromBody] ChangeEmailRequest reqInfo)
     {
         APIResponse<UserDTO> response;
-        var username = HttpContext.User.Identity?.Name;
         try
         {
             await _emailValidator.ValidateAndThrowAsync(reqInfo);
 
-            UserDTO result = await _userService.SetNewEmailAsync(reqInfo.NewEmail, id, username!);
+            UserDTO result = await _userService.SetNewEmailAsync(reqInfo.NewEmail, id);
             response = new()
             { Success = true, Result = result };
             return Ok(response);
@@ -823,17 +823,21 @@ public sealed class UsersController : ControllerBase
     [Authorize(Policy = "AllUsers")]
     [HttpPut("UpdateUser")]
     [EnableRateLimiting("UpdateUser")]
-    public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO user)
+    public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO newUser)
     {
         APIResponse<UserDTO> response;
-        var username = HttpContext.User.Identity?.Name;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userName = HttpContext.User.Identity?.Name!;
         try
         {
-            await _userUpdateValidator.ValidateAndThrowAsync(user);
-            UserLoginResponse result = await _userService.UpdateUserInfoAsync(user, username!);
+            await _userUpdateValidator.ValidateAndThrowAsync(newUser);
+            UserDTO result = await _userService.UpdateUserInfoAsync(newUser, userId);
 
-            if (!string.IsNullOrEmpty(result.JWToken)) // if we have a new JWT, we append a new cookie.
+            // if the user's username has changed, we generate them a new JWT since we authorize via username.
+            if (!userName.Equals(result.Username, StringComparison.Ordinal))
             {
+                var user = await _userService.GetUserByIDAsync(userId);
+                string jwToken = _authenticationService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
                 CookieOptions jwtCookieOptions = new()
                 {
                     HttpOnly = true, // Prevents access from JavaScript
@@ -841,11 +845,11 @@ public sealed class UsersController : ControllerBase
                     SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
                     Secure = true
                 };
-                Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
+                Response.Cookies.Append("jwt", jwToken, jwtCookieOptions);
             }
 
             response = new()
-            { Success = true, Result = result.User };
+            { Success = true, Result = result };
             return Ok(response);
         }
         catch (NotFoundException e)

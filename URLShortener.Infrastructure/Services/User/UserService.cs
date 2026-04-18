@@ -1,17 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using SharedDataModels.Responses;
-using System.Text.Json;
 using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
 using URLShortener.Application.Utility.Exceptions;
-using URLShortener.Common.HelperFunctions;
-using URLShortener.Domain.Entities.URL;
-using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
-using URLShortener.Domain.Enums;
 
 namespace URLShortener.Infrastructure.Services.User;
 
@@ -52,61 +45,25 @@ public sealed class UserService(
         return _mapper.Map<UserDTO>(user);
     }
 
-    /// <summary>
-    /// Sets the new email for the user.
-    /// </summary>
-    /// <param name="newEmail">The new Email to be set</param>
-    /// <param name="userID"></param>
-    /// <param name="reqUsername"></param>
-    /// <returns>a <see cref="UserDTO"/> object containing the new info to be set.</returns>
-    public async Task<UserDTO> SetNewEmailAsync(string newEmail, int userID, string reqUsername)
+    public async Task<UserDTO> SetNewEmailAsync(string newEmail, long userID)
     {
-        UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
-
+        UserModel user = await _userRepository.GetAsync(x => x.ID == userID)
+            ?? throw new NotFoundException(nameof(UserModel), nameof(UserModel.ID), userID);
         user.Email = newEmail;
         _userRepository.Update(user);
         await _uow.SaveChangesAsync();
         return _mapper.Map<UserDTO>(user);
     }
 
-    /// <summary>
-    /// updates a user's cred in database.
-    /// </summary>
-    /// <param name="newUserInfo">new information and changes.</param>
-    /// <param name="requestingUsername">the username requesting the change.</param>
-    /// <returns>a <see cref="UserDTO"/> object containing new record's info.</returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<UserLoginResponse> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, string requestingUsername)
+    public async Task<UserDTO> UpdateUserInfoAsync(UserUpdateDTO newUserInfo, long userId)
     {
-        UserModel user = await _authService.AuthorizeUserAccessAsync(newUserInfo.ID, requestingUsername);
-        UserModel temp = new()
-        {
-            ID = user.ID,
-            Name = user.Name,
-            Email = user.Email,
-            Username = user.Username,
-            PasswordHash = user.PasswordHash,
-            PasswordResetCode = user.PasswordResetCode,
-            Role = user.Role,
-            CreatedAt = user.CreatedAt,
-            URLs = user.URLs != null ? new List<URLModel>(user.URLs) : null,
-            URLCategories = user.URLCategories != null ? new List<URLCategoryModel>(user.URLCategories) : null,
-            RefreshTokens = user.RefreshTokens != null ? new List<RefreshToken>(user.RefreshTokens) : null,
-            FinancialRecord = user.FinancialRecord
-        };
-
+        UserModel user = await _userRepository.GetAsync(x => x.ID == userId)
+            ?? throw new NotFoundException(nameof(UserModel), nameof(UserModel.ID), userId);
         user = _mapper.Map(newUserInfo, user);
         _userRepository.Update(user);
         await _uow.SaveChangesAsync();
-        string jwToken = string.Empty;
         UserDTO userDTO = _mapper.Map<UserDTO>(user);
-        // if the user's username has changed, we generate them a new JWT since we authorize via username.
-        if (temp.Username != user.Username)
-            jwToken = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
-
-        UserLoginResponse response = new() { JWToken = jwToken, User = userDTO, RefreshToken = new() { Token = "" } };
-
-        return response;
+        return userDTO;
     }
 
     /// <summary>
@@ -115,7 +72,7 @@ public sealed class UserService(
     /// <param name="id">ID of the user to be deleted.</param>
     /// <returns></returns>
     /// <exception cref="NotFoundException"></exception>
-    public async Task DeleteUserAsync(int id)
+    public async Task DeleteUserAsync(long id)
     {
         UserModel user = await _userRepository.GetAsync(x => x.ID == id)
             ?? throw new NotFoundException($"User {id} Does not Exist");

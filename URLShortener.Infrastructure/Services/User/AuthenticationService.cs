@@ -1,8 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using SharedDataModels.Responses;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using URLShortener.Application.DTOs.EntityDTOs.User;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
@@ -19,7 +25,8 @@ public sealed class AuthenticationService(IMapper mapper,
     IUnitOfWork uow,
     IEmailService emailService,
     IConfiguration settings,
-    HttpClient httpClient) : IAuthenticationService
+    HttpClient httpClient,
+    JwtSettings jwtSettings) : IAuthenticationService
 {
     private readonly IMapper _mapper = mapper;
     private readonly IUserRepository _userRepository = userRepository;
@@ -29,6 +36,7 @@ public sealed class AuthenticationService(IMapper mapper,
     private readonly IEmailService _emailService = emailService;
     private readonly HttpClient _httpClient = httpClient;
     private readonly string _secretKey = settings["TurnstileSecret"]!;
+    private readonly JwtSettings _jwtSettings = jwtSettings;
 
     public async Task<UserLoginResponse> LoginUserAsync(UserLoginDTO info)
     {
@@ -45,8 +53,8 @@ public sealed class AuthenticationService(IMapper mapper,
             throw new ArgumentException("Username or Password is not correct");
 
         UserDTO userDTO = _mapper.Map<UserDTO>(user!);
-        string jwtoken = _authService.GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
-        string rawRefreshToken = _authService.GenerateRefreshToken();
+        string jwtoken = GenerateJWToken(user!.Username, user.Role.ToString(), user.Email);
+        string rawRefreshToken = GenerateRefreshToken();
         RefreshToken refreshToken = new()
         {
             Token = rawRefreshToken,
@@ -135,7 +143,7 @@ public sealed class AuthenticationService(IMapper mapper,
         UserModel user = await _userRepository.GetAsync(x => x.ID == currentRefreshToken.UserId)
             ?? throw new NotFoundException($"User {currentRefreshToken.UserId} Does not exist");
 
-        string jwToken = _authService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
+        string jwToken = GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
 
         return jwToken;
     }
@@ -143,7 +151,7 @@ public sealed class AuthenticationService(IMapper mapper,
     public async Task ResetEmailAsync(int userID, string reqUsername)
     {
         UserModel user = await _authService.AuthorizeUserAccessAsync(userID, reqUsername);
-        user.EmailResetCode = _authService.GenerateRandomPassword(8);
+        user.EmailResetCode = GenerateRandomPassword(8);
         string Subject = "Pexita Authentication code";
         string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
 
@@ -182,7 +190,7 @@ public sealed class AuthenticationService(IMapper mapper,
         if (user == null) // if no user exists with that email/username:
             throw new NotFoundException($"User {identifier} does not exist.");
 
-        user.PasswordResetCode = _authService.GenerateRandomPassword(8); // we generate a reset password code for them,
+        user.PasswordResetCode = GenerateRandomPassword(8); // we generate a reset password code for them,
         string Subject = "Pexita Authentication code";
         string Body = $"Your Authentication Code Is {user.PasswordResetCode}";
 
@@ -210,8 +218,8 @@ public sealed class AuthenticationService(IMapper mapper,
             throw new ArgumentException("Code is Wrong.");
 
         var result = _mapper.Map<UserDTO>(userRec);
-        string token = _authService.GenerateJWToken(userRec.Username, userRec.Role.ToString(), userRec.Email);
-        string refToken = _authService.GenerateRefreshToken();
+        string token = GenerateJWToken(userRec.Username, userRec.Role.ToString(), userRec.Email);
+        string refToken = GenerateRefreshToken();
 
         RefreshToken refreshToken = new()
         {
@@ -255,4 +263,66 @@ public sealed class AuthenticationService(IMapper mapper,
         return _mapper.Map<UserDTO>(user);
     }
 
+    /// <summary>
+    /// Generates a JWToken for a user based on their creds
+    /// </summary>
+    /// <param name="Username"></param>
+    /// <param name="Role"></param>
+    /// <param name="Email"></param>
+    /// <returns> a string containing JWT token</returns>
+    public string GenerateJWToken(string Username, string Role, string Email)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey!);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.Name, Username),
+                new Claim(ClaimTypes.Role, Role),
+                new Claim(ClaimTypes.Email, Email),
+            ]),
+            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience,
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+    /// <summary>
+    /// Generates a random password containing alphabet characters and numbers.
+    /// </summary>
+    /// <param name="length">length of password.</param>
+    /// <returns></returns>
+    public string GenerateRandomPassword(int length = 8)
+    {
+        Random random = new();
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder passwordBuilder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++)
+        {
+            int randomIndex = random.Next(0, chars.Length);
+            char randomChar = chars[randomIndex];
+            passwordBuilder.Append(randomChar);
+        }
+
+        return passwordBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Generates the refresh token needed for user to refresh their JWToken.
+    /// </summary>
+    /// <returns>a random string containing the new RefreshToken</returns>
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using RandomNumberGenerator rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
+    }
 }
