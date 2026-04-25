@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using URLShortener.Application.Models;
 using URLShortener.Domain.Entities.Analytics;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.Finance;
@@ -9,9 +11,9 @@ using URLShortener.Domain.Entities.User;
 
 namespace URLShortenerAPI.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppIdentityUser, AppRole, long>(options)
 {
-    public DbSet<UserModel> Users { get; set; }
+    public DbSet<UserModel> DomainUsers { get; set; }
     public DbSet<URLModel> URLs { get; set; }
     public virtual DbSet<ClickInfoModel> Clicks { get; set; }
     public DbSet<URLCategoryModel> URLCategories { get; set; }
@@ -26,6 +28,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+
+        builder.Entity<RefreshToken>()
+            .HasIndex(x => x.TokenHash)
+            .IsUnique();
+
         builder.Entity<UserModel>()
             .HasMany(u => u.URLs)
             .WithOne(u => u.User)
@@ -36,12 +44,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasMany(x => x.URLCategories)
             .WithOne(x => x.User)
             .HasForeignKey(x => x.UserID)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<UserModel>()
-            .HasMany(rt => rt.RefreshTokens)
-            .WithOne(u => u.User)
-            .HasForeignKey(fk => fk.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<URLModel>()

@@ -4,7 +4,6 @@ using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Services.URL;
-using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Repositories;
 using URLShortener.Application.Utility.Exceptions;
 using URLShortener.Common.Responses;
@@ -20,7 +19,6 @@ namespace URLShortener.Infrastructure.Services.URL;
 public sealed class URLService : IURLService
 {
     private readonly IMapper _mapper;
-    private readonly IAuthService _authService;
     private readonly IShortenerService _shortenerService;
     private readonly ICacheService _cacheService;
     private readonly IURLRepository _urlRepository;
@@ -34,7 +32,6 @@ public sealed class URLService : IURLService
 
     public URLService(
         IMapper mapper,
-        IAuthService authService,
         IShortenerService shortenerService,
         ICacheService cacheService,
         IURLRepository urlRepository,
@@ -48,7 +45,6 @@ public sealed class URLService : IURLService
     {
         _urlRepository = urlRepository;
         _mapper = mapper;
-        _authService = authService;
         _shortenerService = shortenerService;
         _cacheService = cacheService;
         _urlRepository = urlRepository;

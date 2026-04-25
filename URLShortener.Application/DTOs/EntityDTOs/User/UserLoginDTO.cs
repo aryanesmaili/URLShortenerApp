@@ -1,26 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Text.Json.Serialization;
+using URLShortener.Common.HelperFunctions;
 
 namespace URLShortener.Application.DTOs.EntityDTOs.User;
 
-public sealed class UserLoginDTO
+public sealed record UserLoginDTO
 {
-    private string? _identifier;
+    private string _identifier = string.Empty;
 
-    [Required(ErrorMessage = "Email or Username is Required.")]
-    public string? Identifier
+    public string Identifier
     {
         get => _identifier;
-        set => _identifier = value?.Trim();
+        init => _identifier = value.Trim();
     }
 
-    private string? _password;
+    private string _password = string.Empty;
 
-    [Required(ErrorMessage = "Password is Required.")]
-    [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
-    public string? Password
+    public string Password
     {
         get => _password;
-        set => _password = value?.Trim();
+        init => _password = value.Trim();
     }
+
+    [JsonIgnore]
+    public bool IsEmailIdentifier => HelperFunctions.IsEmail(Identifier ?? string.Empty);
 }
 

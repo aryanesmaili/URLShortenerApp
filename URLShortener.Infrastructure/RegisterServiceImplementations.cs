@@ -32,7 +32,6 @@ public static class RegisterServiceImplementations
 
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IUserStatsService, UserStatsService>();
-        services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IURLService, URLService>();
         services.AddTransient<IShortenerService, ShortenerService>();
         services.AddTransient<IRedirectService, RedirectService>();
@@ -79,6 +78,12 @@ public static class RegisterServiceImplementations
 
         // Creds needed for ZibalPayment to work
         services.AddBinding<ZibalSettings>(configuration, "PaymentProviders:Zibal");
+
+        // General Information about the app itself.
+        services.AddBinding<AppInfo>(configuration, "AppInfo");
+
+        // JWT Settings to configure Auth Services
+        services.AddBinding<JwtSettings>(configuration, "JwtSettings");
 
         return services;
     }

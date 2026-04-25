@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +10,11 @@ using System.Text;
 using System.Threading.RateLimiting;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
+using URLShortener.Application.Models;
 using URLShortener.Application.Utility.SignalR;
 using URLShortener.Infrastructure;
 using URLShortener.Infrastructure.Services.User;
+using URLShortener.Infrastructure.Utility;
 using URLShortener.Persistence;
 using URLShortenerAPI.Data;
 using URLShortenerAPI.Middlewares;
@@ -48,6 +51,18 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
+
+builder.Services
+    .AddIdentity<AppIdentityUser, AppRole>(options =>
+    {
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add the SMTP service to be able to send emails
 builder.Services.Configure<SMTPSettings>(builder.Configuration.GetSection("SmtpSettings"));
@@ -90,10 +105,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMult
 
 
 
-JwtSettings jwtSettings = new();
-builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
-builder.Services.AddSingleton(jwtSettings);
-var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey!);
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("JwtSettings could not be found in configuration");
+
+var key = Encoding.ASCII.GetBytes(jwtSettings.TokenSecretKey!); // Adjust property name as needed
 
 builder.Services.AddAuthentication(auth =>
 {
@@ -188,6 +203,13 @@ if (builder.Environment.IsProduction())
     builder.WebHost.UseUrls("http://0.0.0.0:5261");
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+    await IdentitySeeder.SeedRoles(roleManager);
+}
 
 // Global Exception Handler Middleware
 app.UseMiddleware<ExceptionMiddleware>();

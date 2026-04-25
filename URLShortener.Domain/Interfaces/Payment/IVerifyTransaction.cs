@@ -4,5 +4,5 @@ namespace URLShortener.Domain.Interfaces.Payment;
 
 public interface IVerifyTransaction
 {
-    public Task<PaymentVerifyResult> VerifyTransactionAsync(PaymentVerifyRequest request);
+    Task<PaymentVerifyResult> VerifyTransactionAsync(PaymentVerifyRequest request);
 }

@@ -3,7 +3,7 @@
     public class APIResponse<T>
     {
         public bool Success { get; set; } = false;
-        public ErrorType? ErrorType { get; set; }
+        public ErrorType? ErrorType { get; set; } // TODO: change to ErrorCode and use (int)ErrorType for better extensibility
         public string ErrorMessage { get; set; } = string.Empty;
         public List<string> Errors { get; set; } = [];
         public T? Result { get; set; }
@@ -21,11 +21,12 @@
 
     public enum ErrorType
     {
-        NotFound,
-        ArgumentException,
-        ArgumentNullException,
-        ValidationException,
-        NotAuthorizedException,
-        CaptchaFailureException
+        NotFound = 404,
+        ArgumentException = 400,
+        ArgumentNullException = 4002,
+        ValidationException = 4003,
+        NotAuthorizedException = 401,
+        CaptchaFailureException = 4004,
+        InternalError = 500,
     }
 }

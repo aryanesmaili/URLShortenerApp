@@ -1,17 +1,14 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SharedDataModels.Responses;
 using System.Security.Claims;
-using System.Text.Json;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.DTOs.EntityDTOs.User;
-using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Models;
 using URLShortener.Application.Utility.Exceptions;
-using URLShortener.Common.Responses;
 
 namespace URLShortenerAPI.Controllers;
 
@@ -20,145 +17,31 @@ namespace URLShortenerAPI.Controllers;
 public sealed class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IValidator<UserCreateDTO> _userValidator;
     private readonly IValidator<UserUpdateDTO> _userUpdateValidator;
-    private readonly IValidator<UserLoginDTO> _userLoginValidator;
     private readonly IValidator<ChangeEmailRequest> _emailValidator;
-    private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
     private readonly IWebHostEnvironment _webHostEnvironment;
-    private readonly IAntiforgery _antiForgery;
-    private readonly IURLService _urlService;
     private readonly IUserStatsService _userStatsService;
     private readonly IAuthenticationService _authenticationService;
+    private readonly UserManager<AppIdentityUser> _userManager;
+    private readonly ITokenService _tokenService;
 
     public UsersController(IUserService userService,
-        IValidator<UserCreateDTO> userValidator,
-        IValidator<UserLoginDTO> userLoginValidator,
         IValidator<UserUpdateDTO> userUpdateValidator,
         IValidator<ChangeEmailRequest> emailValidator,
-        IValidator<ChangePasswordRequest> changePasswordValidator,
         IWebHostEnvironment webHostEnvironment,
-        IAntiforgery antiForgery,
-        IURLService urlService,
         IUserStatsService userStatsService,
-        IAuthenticationService authenticationService)
+        IAuthenticationService authenticationService,
+        UserManager<AppIdentityUser> userManager,
+        ITokenService tokenService)
     {
         _userService = userService;
-        _userValidator = userValidator;
-        _userLoginValidator = userLoginValidator;
         _userUpdateValidator = userUpdateValidator;
         _emailValidator = emailValidator;
-        _changePasswordValidator = changePasswordValidator;
         _webHostEnvironment = webHostEnvironment;
-        _antiForgery = antiForgery;
-        _urlService = urlService;
         _userStatsService = userStatsService;
         _authenticationService = authenticationService;
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpGet("antiforgery/token")]
-    [EnableRateLimiting("Auth")]
-    [IgnoreAntiforgeryToken]
-    public IActionResult GetForgeryToken()
-    {
-        APIResponse<string> response;
-        try
-        {
-            var tokens = _antiForgery.GetAndStoreTokens(HttpContext);
-            response = new()
-            { Success = true, Result = tokens.RequestToken };
-            return Ok(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace?.ToString() ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpGet("GetRoles")]
-    [EnableRateLimiting("Auth")]
-    public IActionResult GetUserRoles()
-    {
-        APIResponse<ClaimValue> response;
-        try
-        {
-            response = new()
-            {
-                Success = true,
-                Result = new()
-                {
-                    Email = User.Claims.First(x => x.Type == ClaimTypes.Email).Value,
-                    Username = User.Claims.First(x => x.Type == ClaimTypes.Name).Value,
-                    Role = User.Claims.First(x => x.Type == ClaimTypes.Role).Value
-                },
-            };
-
-            return Ok(response);
-        }
-        catch (Exception e)
-        {
-            response = new() { Success = false, ErrorMessage = e.Message };
-            return StatusCode(500, response);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpGet("Profile/URLTable")]
-    [EnableRateLimiting("DataFetch")]
-    public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-    {
-        APIResponse<PagedResult<URLDTO>> response;
-        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        try
-        {
-            if (pageNumber < 1)
-                throw new ArgumentException("Page number must be greater than or equal to 1.");
-
-            else if (pageSize < 1)
-                throw new ArgumentException("Page size must be greater than or equal to 1.");
-
-            PagedResult<URLDTO> result = await _urlService.GetPagedURLsAsync(userId, pageNumber, pageSize);
-
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace?.ToString() ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        _userManager = userManager;
+        _tokenService = tokenService;
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -194,9 +77,9 @@ public sealed class UsersController : ControllerBase
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpGet("Profile/{id:int}")]
+    [HttpGet("Profile")]
     [EnableRateLimiting("DataFetch")]
-    public async Task<IActionResult> GetStats(int id)
+    public async Task<IActionResult> GetStats()
     {
         APIResponse<UserStats> response;
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -276,392 +159,6 @@ public sealed class UsersController : ControllerBase
         }
     }
 
-    [IgnoreAntiforgeryToken]
-    [HttpPost("Captcha")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> VerifyCaptcha([FromBody] string token)
-    {
-        APIResponse<CaptchaVerificationResponse> response;
-        try
-        {
-            string IPAddress = HttpContext.Connection.RemoteIpAddress!.MapToIPv4().ToString();
-            CaptchaVerificationResponse result = await _authenticationService.VerifyCaptcha(token, IPAddress);
-
-            response = new()
-            { Success = result.Success, Result = result };
-            return Ok(response);
-
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [HttpPost("Login")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDTO LoginInfo)
-    {
-        APIResponse<UserDTO> response;
-        try
-        {
-            await _userLoginValidator.ValidateAndThrowAsync(LoginInfo);
-
-            UserLoginResponse result = await _authenticationService.LoginUserAsync(LoginInfo);
-
-            CookieOptions refreshCookieOptions = new()
-            {
-                HttpOnly = true, // Prevents access from JavaScript
-                Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
-                SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
-                Secure = true, // Use HTTPS
-                Path = "/"
-            };
-            CookieOptions jwtCookieOptions = new()
-            {
-                HttpOnly = true, // Prevents access from JavaScript
-                Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
-                SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                Secure = true,
-                Path = "/"
-            };
-
-            Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
-            Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
-
-            response = new()
-            { Result = result.User, Success = true };
-            return Ok(response);
-        }
-
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-        catch (ValidationException e)
-        {
-            List<string> errors = [];
-
-            foreach (var error in e.Errors)
-            {
-                errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
-
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [HttpPost("Register")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> Register([FromBody] UserCreateDTO userCreateDTO)
-    {
-        APIResponse<UserDTO> response;
-        try
-        {
-            await _userValidator.ValidateAndThrowAsync(userCreateDTO);
-
-            UserDTO result = await _authenticationService.RegisterUserAsync(userCreateDTO);
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-        catch (ValidationException e)
-        {
-            List<string> errors = [];
-
-            foreach (var error in e.Errors)
-            {
-                errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
-
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [HttpPost("ResetPassword")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> ResetPassword([FromBody] string identifier)
-    {
-        APIResponse<string> response;
-        try
-        {
-            await _authenticationService.ResetPasswordAsync(identifier);
-            response = new()
-            { Result = string.Empty, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [HttpPost("CheckResetCode")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> CheckPasswordResetCode([FromBody] CheckVerificationCode reqInfo)
-    {
-        APIResponse<UserDTO> response;
-        try
-        {
-            UserLoginResponse result = await _authenticationService.CheckPasswordResetCodeAsync(reqInfo.Identifier, reqInfo.Code);
-
-            CookieOptions refreshCookieOptions = new()
-            {
-                HttpOnly = true, // Prevents access from JavaScript
-                Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
-                SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
-                Secure = true // Use HTTPS
-            };
-            CookieOptions jwtCookieOptions = new()
-            {
-                HttpOnly = true, // Prevents access from JavaScript
-                Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
-                SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                Secure = true
-            };
-
-            Response.Cookies.Append("refreshToken", JsonSerializer.Serialize(result.RefreshToken), refreshCookieOptions);
-            Response.Cookies.Append("jwt", result.JWToken, jwtCookieOptions);
-
-            response = new()
-            { Result = result.User, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [Authorize(Policy = "AllUsers")]
-    [HttpPost("ChangePassword")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest reqInfo)
-    {
-        APIResponse<UserDTO> response;
-        var username = HttpContext.User.Identity?.Name;
-        try
-        {
-            await _changePasswordValidator.ValidateAndThrowAsync(reqInfo);
-            UserDTO result = await _authenticationService.ChangePasswordAsync(reqInfo, username!);
-
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-
-        catch (ValidationException e)
-        {
-            List<string> errors = [];
-
-            foreach (var error in e.Errors)
-            {
-                errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
-
-            return BadRequest(response);
-        }
-
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpPost("ResetEmail/{id:int}")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> ResetEmail(int id)
-    {
-        APIResponse<string> response;
-        var username = HttpContext.User.Identity?.Name;
-        try
-        {
-            await _authenticationService.ResetEmailAsync(id, username!);
-            response = new()
-            { Success = true, Result = string.Empty };
-            return Ok(response);
-        }
-
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
-    [HttpPost("CheckEmailResetCode/{id:int}")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> CheckEmailResetCode(int id, [FromBody] CheckVerificationCode reqInfo)
-    {
-        APIResponse<string> response;
-        var username = HttpContext.User.Identity?.Name;
-        try
-        {
-            ArgumentException.ThrowIfNullOrEmpty(reqInfo.Code);
-
-            await _authenticationService.CheckEmailResetCodeAsync(reqInfo.Code, id, username!);
-            response = new()
-            { Success = true, Result = string.Empty };
-            return Ok(response);
-        }
-
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
     [Authorize(Policy = "AllUsers")]
     [HttpPost("ChangeEmail/{id:int}")]
     [EnableRateLimiting("Auth")]
@@ -721,106 +218,6 @@ public sealed class UsersController : ControllerBase
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpPost("Logout")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> Logout()
-    {
-        APIResponse<string> response;
-        // Retrieve the refresh token from the cookies
-        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshTokenJson))
-        {
-            return BadRequest("No refresh token found in cookies.");
-        }
-        try
-        {
-            RefreshTokenDTO? refreshToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
-            // Invalidate the refresh token in the database
-            await _authenticationService.RevokeTokenAsync(refreshToken!.Token);
-
-            // Remove the cookie
-            Response.Cookies.Delete("refreshToken");
-            Response.Cookies.Delete("jwt");
-            Response.Cookies.Delete("XSRF-TOKEN");
-
-            response = new()
-            { Success = true, Result = string.Empty };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [IgnoreAntiforgeryToken]
-    [HttpPost("RefreshToken")]
-    [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> RefreshToken()
-    {
-        APIResponse<string> response;
-        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshTokenJson))
-        {
-            return BadRequest("No refresh token found in cookies.");
-        }
-        try
-        {
-            RefreshTokenDTO? refrehToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
-            string result = await _authenticationService.TokenRefresher(refrehToken!.Token);
-
-            CookieOptions jwtCookieOptions = new()
-            {
-                HttpOnly = true, // Prevents access from JavaScript
-                Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
-                SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                Secure = true
-            };
-            Response.Cookies.Append("jwt", result, jwtCookieOptions);
-
-            response = new()
-            { Result = string.Empty, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
-            return BadRequest(response);
-        }
-
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
-    }
-
-    [Authorize(Policy = "AllUsers")]
     [HttpPut("UpdateUser")]
     [EnableRateLimiting("UpdateUser")]
     public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO newUser)
@@ -833,19 +230,32 @@ public sealed class UsersController : ControllerBase
             await _userUpdateValidator.ValidateAndThrowAsync(newUser);
             UserDTO result = await _userService.UpdateUserInfoAsync(newUser, userId);
 
-            // if the user's username has changed, we generate them a new JWT since we authorize via username.
+            // if the user's username has changed, we generate them a new JWT
             if (!userName.Equals(result.Username, StringComparison.Ordinal))
             {
-                var user = await _userService.GetUserByIDAsync(userId);
-                string jwToken = _authenticationService.GenerateJWToken(user.Username, user.Role.ToString(), user.Email);
-                CookieOptions jwtCookieOptions = new()
+                // get identity user id from claims (the NameIdentifier claim is the identity user id)
+                var identityId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var identityUser = await _userManager.FindByIdAsync(identityId.ToString());
+                if (identityUser != null && !string.Equals(identityUser.UserName, result.Username, StringComparison.Ordinal))
                 {
-                    HttpOnly = true, // Prevents access from JavaScript
-                    Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
-                    SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                    Secure = true
-                };
-                Response.Cookies.Append("jwt", jwToken, jwtCookieOptions);
+                    identityUser.UserName = result.Username;
+                    var updateResult = await _userManager.UpdateAsync(identityUser);
+                    if (!updateResult.Succeeded)
+                        throw new ArgumentException("Failed to update identity username");
+
+                    // generate fresh JWT using TokenService that builds claims from Identity
+                    var jwToken = await _tokenService.GenerateJWTokenAsync(identityUser);
+
+                    var jwtCookieOptions = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Expires = DateTime.UtcNow.AddMinutes(30),
+                        SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
+                        Secure = true,
+                        Path = "/"
+                    };
+                    Response.Cookies.Append("jwt", jwToken, jwtCookieOptions);
+                }
             }
 
             response = new()

@@ -9,7 +9,6 @@ using URLShortener.Domain.Entities.User;
 namespace URLShortener.Infrastructure.Services.User;
 
 public sealed class UserService(
-                           IAuthService authorizationService,
                            IMapper mapper,
                            IEmailService emailService,
                            ICacheService cacheService,
@@ -20,7 +19,6 @@ public sealed class UserService(
                            IRefreshTokenRepository refreshTokenRepository,
                            IUnitOfWork uow) : IUserService
 {
-    private readonly IAuthService _authService = authorizationService;
     private readonly IMapper _mapper = mapper;
     private readonly IEmailService _emailService = emailService;
     private readonly ICacheService _cacheService = cacheService;
@@ -34,13 +32,13 @@ public sealed class UserService(
     /// <summary>
     /// gets a user's info by their ID asynchronously.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="userId"></param>
     /// <returns> an object containing showable user info</returns>
     /// <exception cref="NotFoundException"></exception>
-    public async Task<UserDTO> GetUserByIDAsync(long id)
+    public async Task<UserDTO> GetUserByIDAsync(long userId)
     {
-        UserModel? user = await _userRepository.GetAsync(x => x.ID == id, asNoTracking: true)
-            ?? throw new NotFoundException(nameof(UserModel), nameof(UserModel.ID), id);
+        UserModel? user = await _userRepository.GetAsync(x => x.ID == userId, asNoTracking: true)
+            ?? throw new NotFoundException(nameof(UserModel), nameof(UserModel.ID), userId);
 
         return _mapper.Map<UserDTO>(user);
     }

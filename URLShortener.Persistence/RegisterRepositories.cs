@@ -8,7 +8,6 @@ public static class RegisterRepositories
 {
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-
         // Register Repository Implementation
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

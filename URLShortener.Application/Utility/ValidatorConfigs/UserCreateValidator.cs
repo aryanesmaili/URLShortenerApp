@@ -66,15 +66,16 @@ public class ChangePasswordValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordValidator()
     {
-        RuleFor(x => x.UserInfo).NotEmpty();
+        // TODO: Implement This Validator
+        //RuleFor(x => x.UserInfo).NotEmpty();
 
-        RuleFor(x => x.NewPassword).NotEmpty()
-            .MinimumLength(5).WithMessage("Your Password should have at least 5 Characters")
-            .MaximumLength(64).WithMessage("Your Password should have at most 64 Characters");
+        //RuleFor(x => x.NewPassword).NotEmpty()
+        //    .MinimumLength(5).WithMessage("Your Password should have at least 5 Characters")
+        //    .MaximumLength(64).WithMessage("Your Password should have at most 64 Characters");
 
-        RuleFor(x => x.ConfirmPassword).NotEmpty()
-            .MinimumLength(5).WithMessage("Your Password should have at least 5 Characters")
-            .MaximumLength(64).WithMessage("Your Password should have at most 64 Characters")
-            .Equal(x => x.NewPassword).WithMessage("entered Passowrd fields are not the same.");
+        //RuleFor(x => x.ConfirmPassword).NotEmpty()
+        //    .MinimumLength(5).WithMessage("Your Password should have at least 5 Characters")
+        //    .MaximumLength(64).WithMessage("Your Password should have at most 64 Characters")
+        //    .Equal(x => x.NewPassword).WithMessage("entered Passowrd fields are not the same.");
     }
 }

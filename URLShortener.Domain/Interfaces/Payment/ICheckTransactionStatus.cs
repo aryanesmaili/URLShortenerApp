@@ -4,5 +4,5 @@ namespace URLShortener.Domain.Interfaces.Payment;
 
 public interface ICheckTransactionStatus
 {
-    public Task<PaymentStatusResult> CheckTransactionStatusAsync(PaymentStatusRequest request);
+    Task<PaymentStatusResult> CheckTransactionStatusAsync(PaymentStatusRequest request);
 }

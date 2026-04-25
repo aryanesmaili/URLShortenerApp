@@ -7,6 +7,7 @@ using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.URL;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Common.Responses;
 
 namespace URLShortenerAPI.Controllers;
 
@@ -47,6 +48,57 @@ public sealed class URLController : ControllerBase
         {
             DebugErrorResponse errorResponse = new()
             { Message = e.Message, InnerException = e.InnerException?.ToString() ?? "", StackTrace = e.StackTrace ?? "" };
+            return StatusCode(500, errorResponse);
+        }
+    }
+
+    [Authorize(Policy = "AllUsers")]
+    [HttpGet("Profile/URLTable")]
+    [EnableRateLimiting("DataFetch")]
+    public async Task<ActionResult<PagedResult<URLDTO>>> GetUserURLs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        APIResponse<PagedResult<URLDTO>> response;
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        try
+        {
+            if (pageNumber < 1)
+                throw new ArgumentException("Page number must be greater than or equal to 1.");
+
+            else if (pageSize < 1)
+                throw new ArgumentException("Page size must be greater than or equal to 1.");
+
+            PagedResult<URLDTO> result = await _urlService.GetPagedURLsAsync(userId, pageNumber, pageSize);
+
+            response = new()
+            { Result = result, Success = true };
+            return Ok(response);
+        }
+        catch (NotFoundException e)
+        {
+            response = new()
+            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            return NotFound(response);
+        }
+        catch (ArgumentException e)
+        {
+            response = new()
+            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            return BadRequest(response);
+        }
+        catch (NotAuthorizedException e)
+        {
+            response = new()
+            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            return BadRequest(response);
+        }
+        catch (Exception e)
+        {
+            DebugErrorResponse errorResponse = new()
+            {
+                Message = e.Message,
+                InnerException = e.InnerException?.ToString() ?? "",
+                StackTrace = e.StackTrace?.ToString() ?? ""
+            };
             return StatusCode(500, errorResponse);
         }
     }
