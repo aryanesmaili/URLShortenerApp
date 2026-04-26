@@ -1,5 +1,6 @@
 ﻿using SharedDataModels.Responses;
 using URLShortener.Application.DTOs.EntityDTOs.User;
+using URLShortener.Application.Models;
 
 namespace URLShortener.Application.Interfaces.Services.User;
 
@@ -12,6 +13,7 @@ public interface IAuthenticationService
     Task RequestPasswordResetAsync(ChangePasswordRequest request);
     Task ResetPasswordAsync(string email, string encodedToken, string newPassword);
     Task RevokeTokenAsync(string token);
+    void SoftDeleteIdentityUser(AppIdentityUser user);
     Task<(string jwt, string refreshToken)> TokenRefresher(string refreshToken);
     Task<CaptchaVerificationResponse> VerifyCaptcha(string token, string userIP);
 }

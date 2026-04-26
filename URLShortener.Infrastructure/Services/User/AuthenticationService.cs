@@ -74,7 +74,7 @@ public sealed class AuthenticationService(IMapper mapper,
                 return new() { ErrorMessage = "Invalid Credentials.", ErrorType = ErrorType.ArgumentException };
 
             // Retrieve domain user
-            var domainUser = await _userRepository.GetAsync(x => x.ID == identityUser.DomainUserId);
+            var domainUser = await _userRepository.GetAsync(x => x.ID == identityUser.Id);
             if (domainUser == null)
                 return new() { ErrorMessage = "Invalid Credentials.", ErrorType = ErrorType.ArgumentException };
 
@@ -149,15 +149,7 @@ public sealed class AuthenticationService(IMapper mapper,
             _userRepository.Add(domainUser);
             await _uow.SaveChangesAsync();
 
-            // 3. Establish bidirectional relationship - link Identity user back to domain user
-            identityUser.DomainUserId = domainUser.ID;
-
-            // Update the identity user with the domain user reference
-            var updateResult = await _userManager.UpdateAsync(identityUser);
-            if (!updateResult.Succeeded)
-                throw new ArgumentException("Failed to update identity user");
-
-            // 4. Assign the default "User" role to the newly created user
+            // 3. Assign the default "User" role to the newly created user
             var roleResult = await _userManager.AddToRoleAsync(identityUser, "User");
             if (!roleResult.Succeeded)
                 throw new Exception("Failed to assign role");
@@ -536,5 +528,22 @@ public sealed class AuthenticationService(IMapper mapper,
         // Revoke all existing refresh tokens to invalidate all user sessions (security measure)
         // This forces the user to re-authenticate with their new password
         await _tokenService.RevokeAllUserRefreshTokens(identityUser.Id);
+    }
+
+    /// <summary>
+    /// Soft deletes the specified identity user by anonymizing their email and username, and marking them as deleted.
+    /// </summary>
+    /// <param name="user">The <see cref="AppIdentityUser"/> to be soft deleted.</param>
+    /// <remarks>
+    /// This method anonymizes the user's email and username by assigning unique values based on the current UTC timestamp,
+    /// sets the <c>IsDeleted</c> flag to <c>true</c>, and records the deletion time in <c>DeletedAt</c>.
+    /// This approach preserves referential integrity while ensuring the user's credentials are no longer usable.
+    /// </remarks>
+    public void SoftDeleteIdentityUser(AppIdentityUser user)
+    {
+        user.Email = $"deleted_{DateTime.UtcNow:yyyyMMddHHmmssfff}@example.com";
+        user.UserName = $"deleted_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
+        user.IsDeleted = true;
+        user.DeletedAt = DateTime.UtcNow;
     }
 }

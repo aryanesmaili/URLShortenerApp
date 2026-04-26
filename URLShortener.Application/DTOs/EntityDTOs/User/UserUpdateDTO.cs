@@ -2,8 +2,6 @@
 
 public sealed class UserUpdateDTO
 {
-    public int ID { get; set; }
-
     private string? _name;
     public string? Name
     {

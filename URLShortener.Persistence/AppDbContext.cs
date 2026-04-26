@@ -30,6 +30,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<AppIdentityUser>()
+            .HasQueryFilter(x => !x.IsDeleted);
+        builder.Entity<UserModel>()
+            .HasQueryFilter(x => !x.IsDeleted);
+
+        builder.Entity<AppIdentityUser>()
+            .HasOne(x => x.DomainUser)
+            .WithOne()
+            .HasForeignKey<UserModel>(x => x.ID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<UserModel>()
+            .Property(x => x.ID)
+            .ValueGeneratedNever();
+
+        builder.Entity<RefreshToken>()
+            .HasOne<AppIdentityUser>()
+            .WithMany(x => x.RefreshTokens)
+            .HasForeignKey(x => x.IdentityUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Entity<RefreshToken>()
             .HasIndex(x => x.TokenHash)
             .IsUnique();

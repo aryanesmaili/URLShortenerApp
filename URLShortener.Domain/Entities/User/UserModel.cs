@@ -11,10 +11,22 @@ public sealed class UserModel
     public required string Email { get; set; }
     public required string Username { get; set; }
     public DateTime CreatedAt { get; set; }
-    public long IdentityUserId { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+
     public ICollection<URLModel>? URLs { get; set; } = [];
     public ICollection<URLCategoryModel>? URLCategories { get; set; } = [];
 
     public long FinancialID { get; set; }
     public required FinancialRecordModel FinancialRecord { get; set; }
+
+    public void SoftDelete()
+    {
+        if (IsDeleted)
+            return;
+        Email = $"deleted_{DateTime.UtcNow:yyyyMMddHHmmssfff}@example.com";
+        Username = $"deleted_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+    }
 }

@@ -2,7 +2,7 @@
 
 public sealed class URLAnalyticsDTO
 {
-    public int ID { get; set; }
+    public long ID { get; set; }
 
     public required string MostUsedLocationsJSON { get; set; }
     public required string MostUsedDevicesJSON { get; set; }
@@ -10,5 +10,5 @@ public sealed class URLAnalyticsDTO
     public int ClickCount { get; set; } = 0;
     public DateTime LastTimeCalculated { get; set; }
 
-    public int URLID { get; set; }
+    public long URLID { get; set; }
 }

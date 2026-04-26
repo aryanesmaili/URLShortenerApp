@@ -33,6 +33,7 @@
 	  <ProjectReference Include="..\URLShortener.Application\URLShortener.Application.csproj" />
 	  <ProjectReference Include="..\URLShortener.Common\URLShortener.Common.csproj" />
 	  <ProjectReference Include="..\URLShortener.Infrastructure\URLShortener.Infrastructure.csproj" />
+	  <ProjectReference Include="..\URLShortener.Persistence\URLShortener.Persistence.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -46,11 +46,11 @@ builder.Configuration.AddUserSecrets<Program>();
 var assembly = typeof(Program).Assembly;
 builder.Services.AddValidatorsFromAssembly(assembly);
 
-string postgresConnectionString = builder.Environment.IsDevelopment() ? "PostgreSQLDockerDev" : "PostgreSQLDockerProd";
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
+string connString = "DefaultConnection";
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString(connString)));
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(postgresConnectionString)));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(connString)));
 
 builder.Services
     .AddIdentity<AppIdentityUser, AppRole>(options =>
@@ -108,7 +108,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMult
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
     ?? throw new InvalidOperationException("JwtSettings could not be found in configuration");
 
-var key = Encoding.ASCII.GetBytes(jwtSettings.TokenSecretKey!); // Adjust property name as needed
+var key = Encoding.ASCII.GetBytes(jwtSettings.TokenSecretKey!);
 
 builder.Services.AddAuthentication(auth =>
 {

@@ -62,12 +62,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return asNoTracking ? _dbSet.AsQueryable().AsNoTracking() : _dbSet.AsQueryable();
     }
 
-    public void Remove(T entity)
+    public virtual void Remove(T entity)
     {
         throw new NotImplementedException();
     }
 
-    public void RemoveRange(IEnumerable<T> entities)
+    public virtual void RemoveRange(IEnumerable<T> entities)
     {
         throw new NotImplementedException();
     }

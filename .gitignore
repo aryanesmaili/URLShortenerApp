@@ -367,3 +367,4 @@ URLShortenerBlazor/wwwroot/Images/
 /.vscode/launch.json
 /Directory.Build.props
 /NuGet.config
+/.dotnet/.dotnet

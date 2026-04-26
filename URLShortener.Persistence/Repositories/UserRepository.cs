@@ -12,4 +12,15 @@ public sealed class UserRepository : GenericRepository<UserModel>, IUserReposito
     {
         _context = context;
     }
+
+    public override void Remove(UserModel userModel)
+    {
+        userModel.SoftDelete();
+    }
+
+    public override void RemoveRange(IEnumerable<UserModel> entities)
+    {
+        foreach (var entity in entities)
+            entity.SoftDelete();
+    }
 }

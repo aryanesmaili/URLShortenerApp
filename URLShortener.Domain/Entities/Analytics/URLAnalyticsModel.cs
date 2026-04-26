@@ -12,6 +12,6 @@ public sealed class URLAnalyticsModel
     public int ClickCount { get; set; } = 0;
     public DateTime LastTimeCalculated { get; set; }
 
-    public int URLID { get; set; }
+    public long URLID { get; set; }
     public required URLModel URL { get; set; }
 }
