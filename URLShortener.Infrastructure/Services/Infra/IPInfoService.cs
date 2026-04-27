@@ -1,5 +1,6 @@
-﻿using IPinfo;
+using IPinfo;
 using IPinfo.Models;
+using Microsoft.Extensions.Options;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
 
@@ -9,11 +10,12 @@ public sealed class IPInfoService : IIPInfoService
 {
     private readonly IPinfoClient client;
 
-    public IPInfoService(IPInfoCreds creds)
+    public IPInfoService(IOptions<IpInfoSettings> settings)
     {
+        var ipInfoSettings = settings.Value;
         client = new IPinfoClient
             .Builder()
-            .AccessToken(creds.AccessToken)
+            .AccessToken(ipInfoSettings.AccessToken)
             .Build();
     }
 

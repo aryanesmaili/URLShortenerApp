@@ -1,7 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 using SharedDataModels.Responses;
 using System.Net;
 using System.Text;
@@ -17,17 +18,18 @@ using URLShortener.Domain.Entities.User;
 
 namespace URLShortener.Infrastructure.Services.User;
 
-public sealed class AuthenticationService(IMapper mapper,
+public sealed class AuthenticationService(
+    IMapper mapper,
     IUserRepository userRepository,
     IRefreshTokenRepository refreshTokenRepository,
     IUnitOfWork uow,
     IEmailService emailService,
     HttpClient httpClient,
-    JwtSettings jwtSettings,
     UserManager<AppIdentityUser> userManager,
     SignInManager<AppIdentityUser> signInManager,
     ITokenService tokenService,
-    AppInfo appInfo) : IAuthenticationService
+    IOptions<ApplicationInfoSettings> appInfo,
+    IOptions<AuthorizationSettings> authorizationSettings) : IAuthenticationService
 {
     private readonly IMapper _mapper = mapper;
     private readonly IUserRepository _userRepository = userRepository;
@@ -35,11 +37,11 @@ public sealed class AuthenticationService(IMapper mapper,
     private readonly IUnitOfWork _uow = uow;
     private readonly IEmailService _emailService = emailService;
     private readonly HttpClient _httpClient = httpClient;
-    private readonly JwtSettings _jwtSettings = jwtSettings;
     private readonly UserManager<AppIdentityUser> _userManager = userManager;
     private readonly SignInManager<AppIdentityUser> _signInManager = signInManager;
     private readonly ITokenService _tokenService = tokenService;
-    private readonly AppInfo _appInfo = appInfo;
+    private readonly ApplicationInfoSettings _appInfo = appInfo.Value;
+    private readonly AuthorizationSettings _authorizationSettings = authorizationSettings.Value;
 
     /// <summary>
     /// Authenticates a user by validating their credentials and generating authentication tokens.
@@ -150,7 +152,7 @@ public sealed class AuthenticationService(IMapper mapper,
             await _uow.SaveChangesAsync();
 
             // 3. Assign the default "User" role to the newly created user
-            var roleResult = await _userManager.AddToRoleAsync(identityUser, "User");
+            var roleResult = await _userManager.AddToRoleAsync(identityUser, _authorizationSettings.DefaultRegistrationRole);
             if (!roleResult.Succeeded)
                 throw new Exception("Failed to assign role");
 
@@ -196,17 +198,15 @@ public sealed class AuthenticationService(IMapper mapper,
         FormUrlEncodedContent formData = new(
         [
             // TODO: solve this error:
-        //new KeyValuePair<string, string>("secret", _secretKey),
-        new KeyValuePair<string, string>("response", token),
-        new KeyValuePair<string, string>("remoteip", userIP ?? string.Empty)
+            //new KeyValuePair<string, string>("secret", _secretKey),
+            new KeyValuePair<string, string>("response", token),
+            new KeyValuePair<string, string>("remoteip", userIP ?? string.Empty)
         ]);
 
         HttpResponseMessage response = await _httpClient.PostAsync(cloudflareURL, formData);
 
         if (!response.IsSuccessStatusCode)
-        {
             return new CaptchaVerificationResponse { Success = false, ErrorCodes = ["bad-request"] };
-        }
 
         CaptchaVerificationResponse? captchaResponse = await JsonSerializer.DeserializeAsync<CaptchaVerificationResponse>(await response.Content.ReadAsStreamAsync());
 
@@ -287,16 +287,15 @@ public sealed class AuthenticationService(IMapper mapper,
 
         // Generate a secure token that will be used to verify the email change request
         var token = await _userManager.GenerateChangeEmailTokenAsync(identityUser, newEmail);
-
         // Encode the token for safe inclusion in URLs
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
         // Encode the new email for safe URL parameter transmission
         var emailEncoded = WebUtility.UrlEncode(newEmail);
 
         // Construct the confirmation link with all necessary parameters
-        var confirmationLink = $"{_appInfo.BaseURL}/confirm-email-change" +
-                               $"?userId={userId}&email={emailEncoded}&token={encodedToken}";
+        var confirmationLink = BuildFrontendUrl(
+            _appInfo.EmailChangeConfirmationPath,
+            $"userId={userId}&email={emailEncoded}&token={encodedToken}");
 
         // Prepare email subject and body with clear instructions
         var subject = "Confirm your email change";
@@ -340,10 +339,8 @@ public sealed class AuthenticationService(IMapper mapper,
 
             // Store the old email for security notification purposes
             var oldEmail = identityUser.Email;
-
             // Decode the Base64Url-encoded token to its original string format
             var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(encodedToken));
-
             // Apply the email change in the identity system using the decoded token for verification
             var result = await _userManager.ChangeEmailAsync(identityUser, newEmail, token);
 
@@ -467,16 +464,15 @@ public sealed class AuthenticationService(IMapper mapper,
 
         // Generate a secure, time-limited token for password reset
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
         // Encode the token using Base64Url to ensure it's safe for URL transmission
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
         // Encode the user's email for safe URL parameter transmission
         var emailEncoded = WebUtility.UrlEncode(user.Email);
 
         // Construct the password reset link with all necessary encoded parameters
-        var resetLink = $"{_appInfo.BaseURL}/ResetPassword" +
-                        $"?email={emailEncoded}&token={encodedToken}";
+        var resetLink = BuildFrontendUrl(
+            _appInfo.PasswordResetPath,
+            $"email={emailEncoded}&token={encodedToken}");
 
         // Prepare and send the password reset email
         var subject = "Reset your password";
@@ -517,7 +513,6 @@ public sealed class AuthenticationService(IMapper mapper,
 
         // Decode the Base64Url-encoded token to its original string format
         var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(encodedToken));
-
         // Apply the password reset using the decoded token for verification
         var result = await _userManager.ResetPasswordAsync(identityUser, token, newPassword);
 
@@ -545,5 +540,16 @@ public sealed class AuthenticationService(IMapper mapper,
         user.UserName = $"deleted_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
         user.IsDeleted = true;
         user.DeletedAt = DateTime.UtcNow;
+    }
+
+    private string BuildFrontendUrl(string path, string query)
+    {
+        var absoluteUri = new Uri(new Uri($"{_appInfo.BaseUrl.TrimEnd('/')}/"), path.TrimStart('/'));
+        var uriBuilder = new UriBuilder(absoluteUri)
+        {
+            Query = query
+        };
+
+        return uriBuilder.Uri.ToString();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+using Microsoft.Extensions.Options;
+using System.Text;
 using System.Text.Json;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
@@ -9,19 +10,19 @@ namespace URLShortener.Infrastructure.Services.Infra;
 public sealed class UserAgentService : IUserAgentService
 {
     private readonly HttpClient _httpClient;
-    private readonly UserAgentServiceCreds _userAgentServiceCreds;
+    private readonly UserAgentServiceSettings _userAgentServiceSettings;
 
-    public UserAgentService(HttpClient httpClient, UserAgentServiceCreds userAgentServiceCreds)
+    public UserAgentService(HttpClient httpClient, IOptions<UserAgentServiceSettings> userAgentServiceSettings)
     {
         _httpClient = httpClient;
-        _userAgentServiceCreds = userAgentServiceCreds;
+        _userAgentServiceSettings = userAgentServiceSettings.Value;
     }
 
     /// <inheritdoc/>
     public async Task<DeviceInfo?> GetUserAgentInfo(string userAgent)
     {
         HttpContent content = new StringContent(userAgent, Encoding.UTF8, "application/json");
-        HttpResponseMessage response = await _httpClient.PostAsync(_userAgentServiceCreds.APIAddress, content);
+        HttpResponseMessage response = await _httpClient.PostAsync(_userAgentServiceSettings.ApiAddress, content);
         DeviceInfo? result = await JsonSerializer.DeserializeAsync<DeviceInfo>(await response.Content.ReadAsStreamAsync());
 
         return result;

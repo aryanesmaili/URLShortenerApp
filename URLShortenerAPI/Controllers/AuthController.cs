@@ -1,13 +1,15 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using System.Text.Json;
 using URLShortener.Application.DTOs.EntityDTOs.User;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Models;
 using URLShortener.Application.Utility.Exceptions;
@@ -19,13 +21,15 @@ public sealed class AuthController(
     IValidator<UserLoginDTO> loginValidator,
     IValidator<ChangeEmailRequest> emailValidator,
     IValidator<ChangePasswordRequest> changePasswordValidator,
-    IWebHostEnvironment webHostEnvironment,
     IAntiforgery antiForgery,
     IValidator<UserCreateDTO> userValidator,
     UserManager<AppIdentityUser> userManager,
     SignInManager<AppIdentityUser> signInManager,
     ITokenService tokenService,
-    IValidator<CheckResetEmailCodeRequest> checkEmailCodeValidator) : ControllerBase
+    IValidator<CheckResetEmailCodeRequest> checkEmailCodeValidator,
+    IOptions<AuthenticationCookieSettings> authenticationCookieSettings,
+    IOptions<AntiforgerySettings> antiforgerySettings,
+    IOptions<JwtSettings> jwtSettings) : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IValidator<UserCreateDTO> _userValidator = userValidator;
@@ -33,12 +37,13 @@ public sealed class AuthController(
     private readonly IValidator<ChangeEmailRequest> _emailValidator = emailValidator;
     private readonly IValidator<ChangePasswordRequest> _changePasswordValidator = changePasswordValidator;
     private readonly IValidator<CheckResetEmailCodeRequest> _checkEmailCodeValidator = checkEmailCodeValidator; // TODO: Implement This
-    private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
     private readonly IAntiforgery _antiForgery = antiForgery;
-
     private readonly UserManager<AppIdentityUser> _userManager = userManager;
     private readonly SignInManager<AppIdentityUser> _signInManager = signInManager;
     private readonly ITokenService _tokenService = tokenService;
+    private readonly AuthenticationCookieSettings _authenticationCookieSettings = authenticationCookieSettings.Value;
+    private readonly AntiforgerySettings _antiforgerySettings = antiforgerySettings.Value;
+    private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
     // TODO: in the end of refactoring Check if we still need this endpoint
     [Authorize(Policy = "AllUsers")]
@@ -81,7 +86,6 @@ public sealed class AuthController(
             response = new()
             { Success = result.Success, Result = result };
             return Ok(response);
-
         }
         catch (Exception e)
         {
@@ -115,7 +119,6 @@ public sealed class AuthController(
             { Result = loginResult.Result.User, Success = true };
             return Ok(response);
         }
-
         catch (NotFoundException e)
         {
             response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
@@ -131,9 +134,8 @@ public sealed class AuthController(
             List<string> errors = [];
 
             foreach (var error in e.Errors)
-            {
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
+
             response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
             return BadRequest(response);
@@ -150,28 +152,13 @@ public sealed class AuthController(
         }
     }
 
-    private const string RefreshTokenCookieName = "refreshToken";
-    private const string JWTCookieName = "jwt";
     private void SetAuthCookies(string jwt, string refreshToken)
     {
-        CookieOptions refreshCookieOptions = new()
-        {
-            HttpOnly = true, // Prevents access from JavaScript
-            Expires = DateTime.UtcNow.AddDays(7), // Set expiry for refresh token
-            SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Lax, // Prevents CSRF attacks
-            Secure = true, // Use HTTPS
-            Path = "/"
-        };
-        CookieOptions jwtCookieOptions = new()
-        {
-            HttpOnly = true, // Prevents access from JavaScript
-            Expires = DateTime.UtcNow.AddMinutes(30), // Set expiry for refresh token
-            SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-            Secure = true,
-            Path = "/"
-        };
-        Response.Cookies.Append(RefreshTokenCookieName, JsonSerializer.Serialize(refreshToken), refreshCookieOptions);
-        Response.Cookies.Append(JWTCookieName, jwt, jwtCookieOptions);
+        var refreshCookieOptions = CookieOptionsFactory.CreateRefreshCookieOptions(_authenticationCookieSettings);
+        var jwtCookieOptions = CookieOptionsFactory.CreateJwtCookieOptions(_authenticationCookieSettings, _jwtSettings);
+
+        Response.Cookies.Append(_authenticationCookieSettings.RefreshTokenCookieName, JsonSerializer.Serialize(refreshToken), refreshCookieOptions);
+        Response.Cookies.Append(_authenticationCookieSettings.JwtCookieName, jwt, jwtCookieOptions);
     }
 
     [IgnoreAntiforgeryToken]
@@ -204,9 +191,8 @@ public sealed class AuthController(
             List<string> errors = [];
 
             foreach (var error in e.Errors)
-            {
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
+
             response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
             return BadRequest(response);
@@ -248,7 +234,6 @@ public sealed class AuthController(
             response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-
         catch (Exception e)
         {
             var errorResponse = new DebugErrorResponse
@@ -392,10 +377,9 @@ public sealed class AuthController(
     {
         APIResponse<string> response;
         // Retrieve the refresh token from the cookies
-        if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var refreshTokenJson))
-        {
+        if (!Request.Cookies.TryGetValue(_authenticationCookieSettings.RefreshTokenCookieName, out var refreshTokenJson))
             return BadRequest("No refresh token found in cookies.");
-        }
+
         try
         {
             RefreshTokenDTO? refreshToken = JsonSerializer.Deserialize<RefreshTokenDTO>(refreshTokenJson);
@@ -403,9 +387,10 @@ public sealed class AuthController(
             await _authenticationService.RevokeTokenAsync(refreshToken!.Token);
 
             // Remove the cookie
-            Response.Cookies.Delete(RefreshTokenCookieName);
-            Response.Cookies.Delete(JWTCookieName);
-            Response.Cookies.Delete("XSRF-TOKEN");
+            var deleteOptions = CookieOptionsFactory.CreateDeletionOptions(_authenticationCookieSettings);
+            Response.Cookies.Delete(_authenticationCookieSettings.RefreshTokenCookieName, deleteOptions);
+            Response.Cookies.Delete(_authenticationCookieSettings.JwtCookieName, deleteOptions);
+            Response.Cookies.Delete(_antiforgerySettings.CookieName, new CookieOptions { Path = _antiforgerySettings.CookiePath });
 
             response = new()
             { Success = true, Result = string.Empty };
@@ -439,7 +424,7 @@ public sealed class AuthController(
     public async Task<IActionResult> RefreshToken()
     {
         APIResponse<string> response;
-        if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var refreshTokenJson))
+        if (!Request.Cookies.TryGetValue(_authenticationCookieSettings.RefreshTokenCookieName, out var refreshTokenJson))
         {
             response = new() { Success = false, ErrorMessage = "RefreshToken Not Found" };
             return BadRequest(response);
@@ -465,7 +450,6 @@ public sealed class AuthController(
             response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-
         catch (Exception e)
         {
             var errorResponse = new DebugErrorResponse

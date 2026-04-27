@@ -1,11 +1,13 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SharedDataModels.Responses;
 using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.User;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Models;
 using URLShortener.Application.Utility.Exceptions;
@@ -19,29 +21,33 @@ public sealed class UsersController : ControllerBase
     private readonly IUserService _userService;
     private readonly IValidator<UserUpdateDTO> _userUpdateValidator;
     private readonly IValidator<ChangeEmailRequest> _emailValidator;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IUserStatsService _userStatsService;
     private readonly IAuthenticationService _authenticationService;
     private readonly UserManager<AppIdentityUser> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly AuthenticationCookieSettings _authenticationCookieSettings;
+    private readonly JwtSettings _jwtSettings;
 
-    public UsersController(IUserService userService,
+    public UsersController(
+        IUserService userService,
         IValidator<UserUpdateDTO> userUpdateValidator,
         IValidator<ChangeEmailRequest> emailValidator,
-        IWebHostEnvironment webHostEnvironment,
         IUserStatsService userStatsService,
         IAuthenticationService authenticationService,
         UserManager<AppIdentityUser> userManager,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IOptions<AuthenticationCookieSettings> authenticationCookieSettings,
+        IOptions<JwtSettings> jwtSettings)
     {
         _userService = userService;
         _userUpdateValidator = userUpdateValidator;
         _emailValidator = emailValidator;
-        _webHostEnvironment = webHostEnvironment;
         _userStatsService = userStatsService;
         _authenticationService = authenticationService;
         _userManager = userManager;
         _tokenService = tokenService;
+        _authenticationCookieSettings = authenticationCookieSettings.Value;
+        _jwtSettings = jwtSettings.Value;
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -179,9 +185,8 @@ public sealed class UsersController : ControllerBase
             List<string> errors = [];
 
             foreach (var error in e.Errors)
-            {
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-            }
+
             response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
             return BadRequest(response);
@@ -191,20 +196,17 @@ public sealed class UsersController : ControllerBase
             response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-
         catch (NotFoundException e)
         {
             response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
             return NotFound(response);
         }
-
         catch (NotAuthorizedException e)
         {
             response = new()
             { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-
         catch (Exception e)
         {
             var errorResponse = new DebugErrorResponse
@@ -245,16 +247,8 @@ public sealed class UsersController : ControllerBase
 
                     // generate fresh JWT using TokenService that builds claims from Identity
                     var jwToken = await _tokenService.GenerateJWTokenAsync(identityUser);
-
-                    var jwtCookieOptions = new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Expires = DateTime.UtcNow.AddMinutes(30),
-                        SameSite = _webHostEnvironment.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
-                        Secure = true,
-                        Path = "/"
-                    };
-                    Response.Cookies.Append("jwt", jwToken, jwtCookieOptions);
+                    var jwtCookieOptions = CookieOptionsFactory.CreateJwtCookieOptions(_authenticationCookieSettings, _jwtSettings);
+                    Response.Cookies.Append(_authenticationCookieSettings.JwtCookieName, jwToken, jwtCookieOptions);
                 }
             }
 
@@ -277,9 +271,8 @@ public sealed class UsersController : ControllerBase
             List<string> errors = [];
 
             foreach (var error in e.Errors)
-            {
                 errors.Add($"{error.PropertyName + ":"} {error.ErrorMessage}");
-            }
+
             response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
 
             return BadRequest(response);
@@ -319,7 +312,6 @@ public sealed class UsersController : ControllerBase
             response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
             return BadRequest(response);
         }
-
         catch (Exception e)
         {
             var errorResponse = new DebugErrorResponse

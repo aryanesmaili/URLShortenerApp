@@ -1,24 +1,19 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 
 namespace URLShortener.Infrastructure.Services.Infra;
 
 public sealed class RedisCacheService : ICacheService
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly RedisConnectionCreds _connectionCreds;
     private readonly IDatabase _db;
     private readonly JsonSerializerOptions _serializerOptions;
     private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromDays(3);
     private const string DefaultCollectionIdentifier = "all";
 
-    public RedisCacheService(IConnectionMultiplexer redis, RedisConnectionCreds connectionCreds)
+    public RedisCacheService(IConnectionMultiplexer redis)
     {
-        _redis = redis;
-        _connectionCreds = connectionCreds;
         _db = redis.GetDatabase();
         _serializerOptions = new()
         { ReferenceHandler = ReferenceHandler.Preserve };

@@ -1,5 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.DTOs.ZibalDTOs;
 using URLShortener.Domain.Enums;
 using URLShortener.Domain.Interfaces;
@@ -17,10 +19,10 @@ public sealed class ZibalPayment : IPaymentMethod,
     private readonly ZibalSettings _settings;
     private readonly IMapper _mapper;
 
-    public ZibalPayment(HttpClient httpClient, ZibalSettings settings, IMapper mapper)
+    public ZibalPayment(HttpClient httpClient, IOptions<ZibalSettings> settings, IMapper mapper)
     {
         _httpClient = httpClient;
-        _settings = settings;
+        _settings = settings.Value;
         _mapper = mapper;
     }
 
@@ -52,7 +54,6 @@ public sealed class ZibalPayment : IPaymentMethod,
     /// <returns></returns>
     private static string GenerateRandomOrderID(long userID) =>
          $"{userID}_{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
-
 
     public async Task<PaymentVerifyResult> VerifyTransactionAsync(PaymentVerifyRequest request)
     {

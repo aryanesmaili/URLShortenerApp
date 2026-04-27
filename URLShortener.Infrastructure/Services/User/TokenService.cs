@@ -1,5 +1,6 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security;
@@ -28,13 +29,13 @@ namespace URLShortener.Infrastructure.Services.User;
 /// </remarks>
 public sealed class TokenService(
     UserManager<AppIdentityUser> userManager,
-    JwtSettings jwtSettings,
+    IOptions<JwtSettings> jwtSettings,
     IRefreshTokenRepository refreshTokenRepository,
     IUnitOfWork uow,
     IMapper mapper) : ITokenService
 {
     private readonly UserManager<AppIdentityUser> _userManager = userManager;
-    private readonly JwtSettings _jwtSettings = jwtSettings;
+    private readonly JwtSettings _jwtSettings = jwtSettings.Value;
     private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
@@ -67,7 +68,7 @@ public sealed class TokenService(
     private string GenerateJWToken(List<Claim> claims)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_jwtSettings.TokenSecretKey!);
+        var key = Encoding.ASCII.GetBytes(_jwtSettings.TokenSecretKey);
 
         var descriptor = new SecurityTokenDescriptor
         {
@@ -200,6 +201,7 @@ public sealed class TokenService(
 
         await _uow.SaveChangesAsync();
     }
+
     // ================= HELPERS =================
 
     /// <summary>
@@ -220,5 +222,4 @@ public sealed class TokenService(
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
         return Convert.ToBase64String(bytes);
     }
-
 }

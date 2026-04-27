@@ -1,10 +1,21 @@
-﻿namespace URLShortener.Application.DTOs.Settings;
+using System.ComponentModel.DataAnnotations;
+
+namespace URLShortener.Application.DTOs.Settings;
 
 public sealed record JwtSettings
 {
-    public string? TokenSecretKey { get; init; }
-    public required string RefreshHashSalt { get; init; }
-    public string? Issuer { get; init; }
-    public string? Audience { get; init; }
-    public int ExpiresInMinutes { get; init; }
+    [Required]
+    public string TokenSecretKey { get; init; } = string.Empty;
+
+    [Required]
+    public string RefreshHashSalt { get; init; } = string.Empty;
+
+    [Required]
+    public string Issuer { get; init; } = string.Empty;
+
+    [Required]
+    public string Audience { get; init; } = string.Empty;
+
+    [Range(1, 525600)]
+    public int ExpiresInMinutes { get; init; } = 30;
 }

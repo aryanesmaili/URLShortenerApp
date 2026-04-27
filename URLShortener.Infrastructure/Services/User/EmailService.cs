@@ -1,4 +1,5 @@
-﻿using System.Net;
+using Microsoft.Extensions.Options;
+using System.Net;
 using System.Net.Mail;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Infrastructure.External;
@@ -7,16 +8,17 @@ namespace URLShortener.Infrastructure.Services.User;
 
 public sealed class EmailService : IEmailService
 {
-    private readonly SMTPSettings _smtpSettings;
+    private readonly SmtpSettings _smtpSettings;
     private readonly SmtpClient _smtpClient;
     private readonly MailAddress _mailAddress;
-    public EmailService(SMTPSettings smtpSettings)
+
+    public EmailService(IOptions<SmtpSettings> smtpSettings)
     {
-        _smtpSettings = smtpSettings;
+        _smtpSettings = smtpSettings.Value;
         _smtpClient = new SmtpClient(_smtpSettings.Server, _smtpSettings.Port)
         {
             Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
-            EnableSsl = true
+            EnableSsl = _smtpSettings.EnableSsl
         };
         _mailAddress = new MailAddress(_smtpSettings.SenderEmail, _smtpSettings.SenderName);
     }
@@ -34,7 +36,7 @@ public sealed class EmailService : IEmailService
             From = _mailAddress,
             Subject = subject,
             Body = body,
-            IsBodyHtml = false,
+            IsBodyHtml = false
         };
         mailMessage.To.Add(to);
 
