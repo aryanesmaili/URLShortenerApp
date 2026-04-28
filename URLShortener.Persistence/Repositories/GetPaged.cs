@@ -3,16 +3,12 @@ using System.Linq.Expressions;
 using URLShortener.Application.Repositories;
 using URLShortener.Common.Responses;
 using URLShortenerAPI.Data;
+
 namespace URLShortener.Persistence.Repositories;
 
-public sealed class GetPaged<T> : IGetPaged<T> where T : class
+public sealed class GetPaged<T>(AppDbContext dbContext) : IGetPaged<T> where T : class
 {
-    private readonly AppDbContext _dbContext;
-
-    public GetPaged(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly AppDbContext _dbContext = dbContext;
 
     public async Task<PagedResult<T>> GetPagedAsync<TKey>(
         int pageNumber,
@@ -42,14 +38,14 @@ public sealed class GetPaged<T> : IGetPaged<T> where T : class
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-        return CreateResult.CreatePagedSuccess(
-            items,
-            pageNumber,
-            pageSize,
-            totalCount,
-            totalPages
-        );
+        return new()
+        {
+            Items = items,
+            TotalPages = totalPages,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
-
 }
 

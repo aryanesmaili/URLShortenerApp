@@ -48,6 +48,14 @@ public static class CreateResult
     /// <param name="pageSize">The number of items per page.</param>
     /// <param name="totalItems">The total number of items.</param>
     /// <returns>A paged success response containing the specified data and pagination information.</returns>
-    public static PagedResult<T> Paged<T>(List<T> data, int pageNumber, int pageSize, int totalItems)
-        => new() { Success = true, Result = data, PageNumber = pageNumber, PageSize = pageSize, TotalCount = totalItems, TotalPages = (int)Math.Ceiling((double)totalItems / pageSize) };
+    public static PagedResponse<T> Paged<T>(PagedResult<T> paged)
+        => new()
+        {
+            Success = true,
+            Result = paged.Items,
+            TotalCount = paged.TotalCount,
+            PageNumber = paged.PageNumber,
+            PageSize = paged.PageSize,
+            TotalPages = paged.TotalPages
+        };
 }

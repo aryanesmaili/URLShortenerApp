@@ -4,13 +4,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
-using SharedDataModels.Responses;
 using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.User;
 using URLShortener.Application.Models;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortenerAPI.Utility;
 
 namespace URLShortenerAPI.Controllers;
 
@@ -22,7 +21,6 @@ public sealed class UsersController : ControllerBase
     private readonly IValidator<UserUpdateDTO> _userUpdateValidator;
     private readonly IValidator<ChangeEmailRequest> _emailValidator;
     private readonly IUserStatsService _userStatsService;
-    private readonly IAuthenticationService _authenticationService;
     private readonly UserManager<AppIdentityUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly AuthenticationCookieSettings _authenticationCookieSettings;
@@ -33,7 +31,6 @@ public sealed class UsersController : ControllerBase
         IValidator<UserUpdateDTO> userUpdateValidator,
         IValidator<ChangeEmailRequest> emailValidator,
         IUserStatsService userStatsService,
-        IAuthenticationService authenticationService,
         UserManager<AppIdentityUser> userManager,
         ITokenService tokenService,
         IOptions<AuthenticationCookieSettings> authenticationCookieSettings,
@@ -43,7 +40,6 @@ public sealed class UsersController : ControllerBase
         _userUpdateValidator = userUpdateValidator;
         _emailValidator = emailValidator;
         _userStatsService = userStatsService;
-        _authenticationService = authenticationService;
         _userManager = userManager;
         _tokenService = tokenService;
         _authenticationCookieSettings = authenticationCookieSettings.Value;
@@ -55,31 +51,10 @@ public sealed class UsersController : ControllerBase
     [EnableRateLimiting("DataFetch")]
     public async Task<IActionResult> GetUserById()
     {
-        APIResponse<UserDTO> response;
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        try
-        {
-            UserDTO result = await _userService.GetUserByIDAsync(userId);
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        UserDTO result = await _userService.GetUserByIDAsync(userId);
+        var response = CreateResult.Success(result);
+        return Ok(response);
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -87,44 +62,10 @@ public sealed class UsersController : ControllerBase
     [EnableRateLimiting("DataFetch")]
     public async Task<IActionResult> GetStats()
     {
-        APIResponse<UserStats> response;
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        try
-        {
-            UserStats result = await _userStatsService.GetUserStats(userId);
-
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.Argument, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace?.ToString() ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        UserStats result = await _userStatsService.GetUserStats(userId);
+        var response = CreateResult.Success(result);
+        return Ok(response);
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -132,91 +73,22 @@ public sealed class UsersController : ControllerBase
     [EnableRateLimiting("DataFetch")]
     public async Task<IActionResult> GetDashboard()
     {
-        APIResponse<UserDashboardDTO> response;
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        try
-        {
-            UserDashboardDTO result = await _userStatsService.GetDashboardByIDAsync(userId);
-            response = new()
-            { Result = result, Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            DebugErrorResponse errorResponse = new()
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        UserDashboardDTO result = await _userStatsService.GetDashboardByIDAsync(userId);
+        var response = CreateResult.Success(result);
+        return Ok(response);
     }
 
     [Authorize(Policy = "AllUsers")]
-    [HttpPost("ChangeEmail/{id:int}")]
+    [HttpPost("ChangeEmail")]
     [EnableRateLimiting("Auth")]
-    public async Task<IActionResult> ChangeEmail(int id, [FromBody] ChangeEmailRequest reqInfo)
+    public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest reqInfo)
     {
-        APIResponse<UserDTO> response;
-        try
-        {
-            await _emailValidator.ValidateAndThrowAsync(reqInfo);
-
-            UserDTO result = await _userService.SetNewEmailAsync(reqInfo.NewEmail, id);
-            response = new()
-            { Success = true, Result = result };
-            return Ok(response);
-        }
-        catch (ValidationException e)
-        {
-            List<string> errors = [];
-
-            foreach (var error in e.Errors)
-                errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
-
-            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
-
-            return BadRequest(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (NotAuthorizedException e)
-        {
-            response = new()
-            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        await _emailValidator.ValidateAndThrowAsync(reqInfo);
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        UserDTO result = await _userService.SetNewEmailAsync(reqInfo.NewEmail, userId);
+        var response = CreateResult.Success(result);
+        return Ok(response);
     }
 
     [Authorize(Policy = "AllUsers")]
@@ -224,103 +96,41 @@ public sealed class UsersController : ControllerBase
     [EnableRateLimiting("UpdateUser")]
     public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDTO newUser)
     {
-        APIResponse<UserDTO> response;
-        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var userName = HttpContext.User.Identity?.Name!;
-        try
-        {
-            await _userUpdateValidator.ValidateAndThrowAsync(newUser);
-            UserDTO result = await _userService.UpdateUserInfoAsync(newUser, userId);
+        await _userUpdateValidator.ValidateAndThrowAsync(newUser);
 
-            // if the user's username has changed, we generate them a new JWT
-            if (!userName.Equals(result.Username, StringComparison.Ordinal))
-            {
-                // get identity user id from claims (the NameIdentifier claim is the identity user id)
-                var identityId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                var identityUser = await _userManager.FindByIdAsync(identityId.ToString());
-                if (identityUser != null && !string.Equals(identityUser.UserName, result.Username, StringComparison.Ordinal))
-                {
-                    identityUser.UserName = result.Username;
-                    var updateResult = await _userManager.UpdateAsync(identityUser);
-                    if (!updateResult.Succeeded)
-                        throw new ArgumentException("Failed to update identity username");
+        // extract user identity from JWT claims
+        long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        string userName = HttpContext.User.Identity?.Name!;
 
-                    // generate fresh JWT using TokenService that builds claims from Identity
-                    var jwToken = await _tokenService.GenerateJWTokenAsync(identityUser);
-                    var jwtCookieOptions = CookieOptionsFactory.CreateJwtCookieOptions(_authenticationCookieSettings, _jwtSettings);
-                    Response.Cookies.Append(_authenticationCookieSettings.JwtCookieName, jwToken, jwtCookieOptions);
-                }
-            }
+        UserDTO result = await _userService.UpdateUserInfoAsync(newUser, userId);
 
-            response = new()
-            { Success = true, Result = result };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (ValidationException e)
-        {
-            List<string> errors = [];
+        // if username changed, the current JWT is stale, I issue a fresh one
+        if (!userName.Equals(result.Username, StringComparison.Ordinal))
+            await ReAuthenticateUser(userId);
 
-            foreach (var error in e.Errors)
-                errors.Add($"{error.PropertyName + ":"} {error.ErrorMessage}");
+        var response = CreateResult.Success(result);
+        return Ok(response);
+    }
 
-            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
+    private async Task ReAuthenticateUser(long userId)
+    {
+        // fetch the updated Identity user to build claims from the latest state
+        var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (identityUser is null) return;
 
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        // generate a new JWT and overwrite the existing cookie
+        var jwToken = await _tokenService.GenerateJWTokenAsync(identityUser);
+        var jwtCookieOptions = CookieOptionsFactory.CreateJwtCookieOptions(_authenticationCookieSettings, _jwtSettings);
+        Response.Cookies.Append(_authenticationCookieSettings.JwtCookieName, jwToken, jwtCookieOptions);
     }
 
     [Authorize(Policy = "AdminOnly")]
-    [HttpDelete("Delete/{id:int}")]
+    [HttpDelete("Delete/{id:long}")]
     [EnableRateLimiting("UpdateUser")]
-    public async Task<IActionResult> DeleteUser([FromRoute] int id)
+    public async Task<IActionResult> DeleteUser([FromRoute] long id)
     {
-        APIResponse<string> response;
-        try
-        {
-            await _userService.DeleteUserAsync(id);
-            response = new()
-            { Success = true };
-            return Ok(response);
-        }
-        catch (NotFoundException e)
-        {
-            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
-            return NotFound(response);
-        }
-        catch (ArgumentException e)
-        {
-            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
-            return BadRequest(response);
-        }
-        catch (Exception e)
-        {
-            var errorResponse = new DebugErrorResponse
-            {
-                Message = e.Message,
-                InnerException = e.InnerException?.ToString() ?? "",
-                StackTrace = e.StackTrace ?? ""
-            };
-            return StatusCode(500, errorResponse);
-        }
+        await _userService.DeleteUserAsync(id);
+        var response = CreateResult.Success();
+        return Ok(response);
     }
 }

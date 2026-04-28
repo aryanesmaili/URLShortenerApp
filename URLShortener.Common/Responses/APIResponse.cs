@@ -41,5 +41,6 @@ public enum ErrorType
     Unauthorized,
     CaptchaFailure,
     InsufficientBalance,
+    PaymentFailed,
     InternalError,
 }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.DTOs.EntityDTOs.URL;
+using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.URL;
 using URLShortener.Application.Utility.Exceptions;
 using URLShortenerAPI.Utility;
@@ -9,26 +11,22 @@ namespace URLShortenerAPI.Controllers;
 
 [ApiController]
 [Route("/")]
-public sealed class RedirectController : ControllerBase
+public sealed class RedirectController(IRedirectService redirectService, IWebHostEnvironment webHostEnvironment, IOptions<ApplicationInfoSettings> appInfo) : ControllerBase
 {
-    private readonly IRedirectService _redirectService;
-    private readonly IWebHostEnvironment _webHostEnvironment;
-    public RedirectController(IRedirectService redirectService, IWebHostEnvironment webHostEnvironment)
-    {
-        _redirectService = redirectService;
-        _webHostEnvironment = webHostEnvironment;
-    }
+    private readonly IRedirectService _redirectService = redirectService;
+    private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
+    private readonly ApplicationInfoSettings _appInfo = appInfo.Value;
 
     [HttpGet("{shortCode}")]
     public async Task<IActionResult> CheckURLExists([FromRoute] string shortCode)
     {
-        var baseUrl = GetBaseUrl();
+        string baseUrl = _appInfo.BaseUrl;
 
         try
         {
-            var requestInfo = BuildRequestInfo();
+            IncomingRequestMetadata requestInfo = BuildRequestInfo();
 
-            var result = await _redirectService.CheckURLExists(shortCode, requestInfo);
+            URLDTO result = await _redirectService.CheckURLExists(shortCode, requestInfo);
 
             if (result.IsMonetized)
                 return Redirect($"{baseUrl}/RedirectURL/{shortCode}");
@@ -53,31 +51,17 @@ public sealed class RedirectController : ControllerBase
 
     private string GetClientIpAddress()
     {
-        if (_webHostEnvironment.IsDevelopment())
-        {
-            return HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unknown";
-        }
-
         return HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
             ?? HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
             ?? HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString()
             ?? "Unknown";
     }
 
-    private string GetBaseUrl()
-    {
-        return _webHostEnvironment.IsDevelopment()
-            ? "https://localhost:7112"
-            : "http://Pexita.click";
-    }
-
     [HttpGet("Resolve/{shortcode}")]
     public async Task<IActionResult> ResolveURL(string shortcode)
     {
         URLDTO result = await _redirectService.ResolveShortCode(shortcode);
-
-        var response = CreateResult.CreateDataSuccess(result);
+        var response = CreateResult.Success(result);
         return Ok(response);
-
     }
 }
