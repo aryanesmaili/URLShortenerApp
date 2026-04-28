@@ -67,7 +67,7 @@ public sealed class UsersController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (Exception e)
@@ -100,19 +100,19 @@ public sealed class UsersController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentException e)
         {
             response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return BadRequest(response);
         }
         catch (Exception e)
@@ -144,13 +144,13 @@ public sealed class UsersController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return BadRequest(response);
         }
         catch (Exception e)
@@ -187,24 +187,24 @@ public sealed class UsersController : ControllerBase
             foreach (var error in e.Errors)
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
 
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
 
             return BadRequest(response);
         }
         catch (ArgumentException e)
         {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotFoundException e)
         {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return BadRequest(response);
         }
         catch (Exception e)
@@ -258,12 +258,12 @@ public sealed class UsersController : ControllerBase
         }
         catch (NotFoundException e)
         {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentException e)
         {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (ValidationException e)
@@ -273,7 +273,7 @@ public sealed class UsersController : ControllerBase
             foreach (var error in e.Errors)
                 errors.Add($"{error.PropertyName + ":"} {error.ErrorMessage}");
 
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
 
             return BadRequest(response);
         }
@@ -304,12 +304,12 @@ public sealed class UsersController : ControllerBase
         }
         catch (NotFoundException e)
         {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentException e)
         {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (Exception e)

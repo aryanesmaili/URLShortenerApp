@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility;
 using URLShortener.Common.Responses;
 using URLShortenerAPI.Data;
 namespace URLShortener.Persistence.Repositories;

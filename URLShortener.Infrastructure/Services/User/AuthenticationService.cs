@@ -47,60 +47,47 @@ public sealed class AuthenticationService(
     /// Authenticates a user by validating their credentials and generating authentication tokens.
     /// </summary>
     /// <param name="loginInfo">Contains the user identifier (email or username) and password.</param>
-    /// <returns>An APIResponse containing the authenticated user's DTO and generated JWT/refresh tokens.</returns>
+    /// <returns>An Object containing the authenticated user's DTO and generated JWT/refresh tokens.</returns>
     /// <remarks>
     /// This method orchestrates the entire login flow:
     /// 1. Finds the user by email or username
     /// 2. Validates the password (with lockout on failure)
     /// 3. Retrieves the domain user model
     /// 4. Generates JWT and refresh tokens
-    /// Returns APIResponse with appropriate error types and messages on failure.
     /// </remarks>
-    public async Task<APIResponse<UserLoginResponse>> LoginAsync(UserLoginDTO loginInfo)
+    public async Task<UserLoginResponse> LoginAsync(UserLoginDTO loginInfo)
     {
-        try
+        // Find user by email or username
+        AppIdentityUser? identityUser;
+        if (loginInfo.IsEmailIdentifier)
+            identityUser = await _userManager.FindByEmailAsync(loginInfo.Identifier!);
+        else
+            identityUser = await _userManager.FindByNameAsync(loginInfo.Identifier!);
+
+        if (identityUser == null)
+            throw new ArgumentException("Identifier Or Password is incorrect.");
+
+        // Validate password (lockout on failure)
+        var signInResult = await _signInManager.CheckPasswordSignInAsync(identityUser, loginInfo.Password, lockoutOnFailure: true);
+        if (!signInResult.Succeeded)
+            throw new ArgumentException("Identifier Or Password is incorrect.");
+
+        // Retrieve domain user
+        var domainUser = await _userRepository.GetAsync(x => x.ID == identityUser.Id)
+            ?? throw new ArgumentException("Identifier Or Password is incorrect."); // I throw ArgumentException instead of NotFoundException to avoid user enumeration
+
+        // Generate tokens
+        string jwt = await _tokenService.GenerateJWTokenAsync(identityUser);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(identityUser.Id);
+
+        var userDto = _mapper.Map<UserDTO>(domainUser);
+
+        return new UserLoginResponse
         {
-            // Find user by email or username
-            AppIdentityUser? identityUser;
-            if (loginInfo.IsEmailIdentifier)
-                identityUser = await _userManager.FindByEmailAsync(loginInfo.Identifier!);
-            else
-                identityUser = await _userManager.FindByNameAsync(loginInfo.Identifier!);
-
-            if (identityUser == null)
-                return new() { ErrorMessage = "Invalid Credentials.", ErrorType = ErrorType.ArgumentException };
-
-            // Validate password (lockout on failure)
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(identityUser, loginInfo.Password, lockoutOnFailure: true);
-            if (!signInResult.Succeeded)
-                return new() { ErrorMessage = "Invalid Credentials.", ErrorType = ErrorType.ArgumentException };
-
-            // Retrieve domain user
-            var domainUser = await _userRepository.GetAsync(x => x.ID == identityUser.Id);
-            if (domainUser == null)
-                return new() { ErrorMessage = "Invalid Credentials.", ErrorType = ErrorType.ArgumentException };
-
-            // Generate tokens
-            string jwt = await _tokenService.GenerateJWTokenAsync(identityUser);
-            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(identityUser.Id);
-
-            var userDto = _mapper.Map<UserDTO>(domainUser);
-
-            return new()
-            {
-                Result = new UserLoginResponse
-                {
-                    User = userDto,
-                    JWToken = jwt,
-                    RefreshToken = refreshToken
-                },
-                Success = true
-            };
-        }
-        catch (Exception ex)
-        {
-            return new() { ErrorMessage = ex.Message, ErrorType = ErrorType.InternalError };
-        }
+            User = userDto,
+            JWToken = jwt,
+            RefreshToken = refreshToken
+        };
     }
 
     /// <summary>

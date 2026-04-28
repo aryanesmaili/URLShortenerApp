@@ -41,7 +41,7 @@ public sealed class URLController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (Exception e)
@@ -76,19 +76,19 @@ public sealed class URLController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentException e)
         {
             response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return BadRequest(response);
         }
         catch (Exception e)
@@ -123,7 +123,7 @@ public sealed class URLController : ControllerBase
         catch (InsufficientBalanceException e)
         {
             response = new()
-            { Success = false, ErrorMessage = e.Message };
+            { Success = false, Message = e.Message };
             return BadRequest(response);
         }
 
@@ -135,23 +135,23 @@ public sealed class URLController : ControllerBase
             {
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
             }
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
 
             return BadRequest(response);
         }
         catch (NotFoundException e)
         {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentException e)
         {
-            response = new() { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotAuthorizedException e)
         {
-            response = new() { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return Unauthorized(response);
         }
         catch (Exception e)
@@ -187,22 +187,22 @@ public sealed class URLController : ControllerBase
                 errors.Add($"{error.PropertyName}: {error.ErrorMessage}");
             }
 
-            response = new() { ErrorType = ErrorType.ValidationException, ErrorMessage = e.Message, Errors = errors };
+            response = new() { ErrorType = ErrorType.Validation, Message = e.Message, Errors = errors };
             return BadRequest(response);
         }
         catch (NotFoundException e)
         {
-            response = new() { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (ArgumentNullException e)
         {
-            response = new() { ErrorType = ErrorType.ArgumentNullException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.ArgumentNullException, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotAuthorizedException e)
         {
-            response = new() { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            response = new() { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return Unauthorized(response);
         }
         catch (Exception e)
@@ -230,19 +230,19 @@ public sealed class URLController : ControllerBase
         catch (ArgumentException e)
         {
             response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return Unauthorized(response);
         }
         catch (Exception e)
@@ -270,19 +270,19 @@ public sealed class URLController : ControllerBase
         catch (ArgumentException e)
         {
             response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(response);
         }
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return Unauthorized(response);
         }
         catch (Exception e)
@@ -311,20 +311,20 @@ public sealed class URLController : ControllerBase
         catch (NotFoundException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotFound, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.NotFound, Message = e.Message };
             return NotFound(response);
         }
 
         catch (NotAuthorizedException e)
         {
             response = new()
-            { ErrorType = ErrorType.NotAuthorizedException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Unauthorized, Message = e.Message };
             return Unauthorized(response);
         }
         catch (ArgumentException e)
         {
             response = new()
-            { ErrorType = ErrorType.ArgumentException, ErrorMessage = e.Message };
+            { ErrorType = ErrorType.Argument, Message = e.Message };
             return BadRequest(e.Message);
         }
         catch (Exception e)

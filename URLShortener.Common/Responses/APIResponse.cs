@@ -1,32 +1,45 @@
-﻿namespace SharedDataModels.Responses
+﻿namespace SharedDataModels.Responses;
+
+/// <summary>
+/// A standardized response model for API endpoints, encapsulating success status, error information, and result data. This structure allows for consistent handling of API responses across the application, making it easier to manage success and failure cases in a unified way.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class APIResponse<T>
 {
-    public class APIResponse<T>
-    {
-        public bool Success { get; set; } = false;
-        public ErrorType? ErrorType { get; set; } // TODO: change to ErrorCode and use (int)ErrorType for better extensibility
-        public string ErrorMessage { get; set; } = string.Empty;
-        public List<string> Errors { get; set; } = [];
-        public T? Result { get; set; }
-    }
+    /// <summary>
+    /// <c>True</c> if the API operation was successful, <c>False</c> if it failed. This field is the primary indicator of the outcome of the API call and should be checked before processing any result data or error information.
+    /// </summary>
+    public bool Success { get; set; }
+    /// <summary>
+    /// <c>Null</c> on Success, Indicates the type of error that occurred, if any.
+    /// </summary>
+    public ErrorType? ErrorType { get; set; }
+    /// <summary>
+    /// <c>Null</c> on Success, <c>Error message</c> on Failure.
+    /// </summary>
+    public string? Message { get; set; }
+    /// <summary>
+    /// For Validation errors, this will contain <c>a list of error messages</c>. For other error types, this may be <c>Null</c> or contain additional error details.
+    /// </summary>
+    public List<string>? Errors { get; set; }
+    /// <summary>
+    /// <c>Null</c> on Failure, <c>Result</c> on Success.
+    /// </summary>
+    public T? Result { get; set; }
+}
+/// <summary>
+/// A non-generic version of APIResponse for cases where no specific result data is needed, such as simple success/failure responses or when only error information is relevant.
+/// </summary>
+public class APIResponse : APIResponse<object> { }
 
-    public class CaptchaVerificationResponse
-    {
-        public bool Success { get; set; }
-        public string? Challenge_ts { get; set; } // Time the challenge was solved (ISO timestamp)
-        public string? Hostname { get; set; } // Hostname of the served challenge
-        public List<string>? ErrorCodes { get; set; } // List of error codes, if any
-        public string? Action { get; set; } // Action identifier for client validation
-        public string? Cdata { get; set; } // Additional customer data if passed
-    }
 
-    public enum ErrorType
-    {
-        NotFound = 404,
-        ArgumentException = 400,
-        ArgumentNullException = 4002,
-        ValidationException = 4003,
-        NotAuthorizedException = 401,
-        CaptchaFailureException = 4004,
-        InternalError = 500,
-    }
+public enum ErrorType
+{
+    NotFound,
+    Argument,
+    Validation,
+    Unauthorized,
+    CaptchaFailure,
+    InsufficientBalance,
+    InternalError,
 }

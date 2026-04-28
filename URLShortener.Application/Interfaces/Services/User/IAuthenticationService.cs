@@ -7,7 +7,7 @@ namespace URLShortener.Application.Interfaces.Services.User;
 public interface IAuthenticationService
 {
     Task ConfirmEmailChangeAsync(long userId, string newEmail, string encodedToken);
-    Task<APIResponse<UserLoginResponse>> LoginAsync(UserLoginDTO loginInfo);
+    Task<UserLoginResponse> LoginAsync(UserLoginDTO loginInfo);
     Task<UserDTO> RegisterUserAsync(UserCreateDTO newUserInfo);
     Task RequestEmailChangeAsync(long userId, string newEmail);
     Task RequestPasswordResetAsync(ChangePasswordRequest request);
