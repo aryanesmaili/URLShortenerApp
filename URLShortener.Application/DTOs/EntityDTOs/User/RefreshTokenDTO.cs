@@ -1,10 +1,17 @@
 ﻿namespace URLShortener.Application.DTOs.EntityDTOs.User;
 
-public sealed class RefreshTokenDTO
+public sealed record RefreshTokenDTO
 {
-    public long ID { get; set; }
-    public required string Token { get; set; }
-    public DateTime Expires { get; set; }
-    public DateTime Created { get; set; }
+    public long ID { get; init; }
+
+    private string token = string.Empty;
+    public required string Token
+    {
+        get => token;
+        init => token = value.Trim();
+    }
+
+    public DateTime Expires { get; init; }
+    public DateTime Created { get; init; }
 }
 

@@ -5,7 +5,12 @@ namespace URLShortener.Application.DTOs.EntityDTOs.User;
 
 public sealed record ChangePasswordRequest
 {
-    public string Identifier { get; init; } = string.Empty;
+    private string identifier = string.Empty;
+    public string Identifier
+    {
+        get => identifier;
+        init => identifier = value.Trim();
+    }
 
     [JsonIgnore]
     public bool IdentifierIsEmail => Identifier.IsEmail();

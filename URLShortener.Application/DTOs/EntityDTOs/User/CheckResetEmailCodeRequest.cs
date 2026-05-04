@@ -2,6 +2,18 @@
 
 public sealed record CheckResetEmailCodeRequest
 {
-    public string NewEmail { get; init; } = string.Empty;
-    public string Token { get; init; } = string.Empty;
+    private string newEmail = string.Empty;
+
+    public string NewEmail
+    {
+        get => newEmail;
+        init => newEmail = value.Trim();
+    }
+
+    private string token = string.Empty;
+    public string Token
+    {
+        get => token;
+        init => token = value.Trim();
+    }
 }

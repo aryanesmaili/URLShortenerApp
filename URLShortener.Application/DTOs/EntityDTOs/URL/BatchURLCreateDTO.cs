@@ -19,7 +19,18 @@ public sealed record BatchURLCreateDTO
     public bool IsActive { get; init; } = true;
     public bool IsMonetized { get; init; } = true;
 
-    public List<string> Categories { get; init; } = [];
-    public string? Description { get; init; }
+    private List<string> categories = [];
+    public List<string> Categories
+    {
+        get => categories;
+        init => categories = value?.Select(x => x.Trim()).ToList() ?? [];
+    }
+
+    private string? description;
+    public string? Description
+    {
+        get => description;
+        init => description = value;
+    }
 }
 

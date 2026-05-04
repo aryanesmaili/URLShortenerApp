@@ -1,14 +1,25 @@
 ﻿namespace URLShortener.Application.DTOs.EntityDTOs.URL;
 
-public sealed class URLAnalyticsDTO
+public sealed record URLAnalyticsDTO
 {
-    public long ID { get; set; }
+    public long ID { get; init; }
+    private string mostUsedLocationsJSON = string.Empty;
 
-    public required string MostUsedLocationsJSON { get; set; }
-    public required string MostUsedDevicesJSON { get; set; }
+    public required string MostUsedLocationsJSON
+    {
+        get => mostUsedLocationsJSON;
+        init => mostUsedLocationsJSON = value.Trim();
+    }
 
-    public int ClickCount { get; set; } = 0;
-    public DateTime LastTimeCalculated { get; set; }
+    private string mostUsedDevicesJSON = string.Empty;
+    public required string MostUsedDevicesJSON
+    {
+        get => mostUsedDevicesJSON;
+        init => mostUsedDevicesJSON = value.Trim();
+    }
 
-    public long URLID { get; set; }
+    public int ClickCount { get; init; } = 0;
+    public DateTime LastTimeCalculated { get; init; }
+
+    public long URLID { get; init; }
 }

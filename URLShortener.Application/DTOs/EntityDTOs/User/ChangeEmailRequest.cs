@@ -2,11 +2,11 @@
 
 public sealed record ChangeEmailRequest
 {
-    private string? _email;
+    private string newEmail = string.Empty;
     public string NewEmail
     {
-        get => _email ?? string.Empty;
-        init => _email = value?.Trim();
+        get => newEmail;
+        init => newEmail = value.Trim();
     }
 }
 

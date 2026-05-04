@@ -1,19 +1,39 @@
 ﻿namespace URLShortener.Application.DTOs.EntityDTOs.Finance;
 
-public sealed class DepositDTO
+public sealed record DepositDTO
 {
-    public int ID { get; set; }
-    public double Amount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime PaidAt { get; set; }
-    public bool IsSuccessful { get; set; }
-    public string? FailureReason { get; set; }
-    public long? TrackID { get; set; }
-    public string OrderID { get; set; } = string.Empty;
-    public string CardNumber { get; set; } = string.Empty;
-    public int? RefNumber { get; set; }
-    public string? Description { get; set; }
 
+    public int ID { get; init; }
+    public double Amount { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime PaidAt { get; init; }
+    public bool IsSuccessful { get; init; }
+    private string? failureReason;
+    public string? FailureReason
+    {
+        get => failureReason;
+        init => failureReason = value?.Trim();
+    }
+    public long? TrackID { get; init; }
+    private string orderID = string.Empty;
+    public string OrderID
+    {
+        get => orderID;
+        init => orderID = value.Trim();
+    }
+    private string cardNumber = string.Empty;
 
-    public int FinanceID { get; set; }
+    public string CardNumber
+    {
+        get => cardNumber;
+        init => cardNumber = value.Trim();
+    }
+    public int? RefNumber { get; init; }
+    private string? description;
+    public string? Description
+    {
+        get => description;
+        init => description = value?.Trim();
+    }
+    public int FinanceID { get; init; }
 }

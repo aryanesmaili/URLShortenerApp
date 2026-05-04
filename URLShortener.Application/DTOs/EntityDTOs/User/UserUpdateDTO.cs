@@ -1,19 +1,19 @@
 ﻿namespace URLShortener.Application.DTOs.EntityDTOs.User;
 
-public sealed class UserUpdateDTO
+public sealed record UserUpdateDTO
 {
-    private string? _name;
+    private string? name;
     public string? Name
     {
-        get => _name;
-        set => _name = value?.Trim();
+        get => name;
+        init => name = value?.Trim();
     }
 
-    private string? _username;
+    private string? username;
     public string? Username
     {
-        get => _username;
-        set => _username = value?.Trim();
+        get => username;
+        init => username = value?.Trim();
     }
 }
 

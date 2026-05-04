@@ -1,8 +1,20 @@
 ﻿namespace URLShortener.Application.DTOs.EntityDTOs.URL;
 
-public sealed class URLSummaryDTO
+public sealed record URLSummaryDTO
 {
-    public int ID { get; set; }
-    public string ShortCode { get; set; } = string.Empty;
-    public string LongURL { get; set; } = string.Empty;
+    public int ID { get; init; }
+
+    private string shortCode = string.Empty;
+    public string ShortCode
+    {
+        get => shortCode;
+        init => shortCode = value.Trim();
+    }
+
+    private string longURL = string.Empty;
+    public string LongURL
+    {
+        get => longURL;
+        init => longURL = value.Trim();
+    }
 }

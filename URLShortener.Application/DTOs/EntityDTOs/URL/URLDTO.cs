@@ -2,18 +2,18 @@
 
 namespace URLShortener.Application.DTOs.EntityDTOs.URL;
 
-public sealed class URLDTO
+public sealed record URLDTO
 {
-    public int ID { get; set; }
-    public string? Description { get; set; }
-    public string ShortCode { get; set; } = string.Empty;
-    public string LongURL { get; set; } = string.Empty;
-    public int ClickCount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public bool IsActive { get; set; }
-    public bool IsMonetized { get; set; }
+    public int ID { get; init; }
+    public string? Description { get; init; }
+    public string ShortCode { get; init; } = string.Empty;
+    public string LongURL { get; init; } = string.Empty;
+    public int ClickCount { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public bool IsActive { get; init; }
+    public bool IsMonetized { get; init; }
 
-    public int UserID { get; set; }
-    public List<CategorySummaryDTO>? Categories { get; set; }
-    public int? URLAnalyticsID { get; set; }
+    public int UserID { get; init; }
+    public List<CategorySummaryDTO>? Categories { get; init; }
+    public int? URLAnalyticsID { get; init; }
 }

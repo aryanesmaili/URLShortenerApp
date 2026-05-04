@@ -2,6 +2,12 @@
 
 public sealed record GetPaymentStatusRequest
 {
-    public string Terminal { get; init; } = string.Empty;
+    private string terminal = string.Empty;
+
+    public string Terminal
+    {
+        get => terminal;
+        init => terminal = value.Trim();
+    }
     public long TrackID { get; init; }
 }

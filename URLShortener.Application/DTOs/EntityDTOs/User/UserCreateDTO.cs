@@ -1,58 +1,45 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace URLShortener.Application.DTOs.EntityDTOs.User;
 
-namespace URLShortener.Application.DTOs.EntityDTOs.User;
-
-public sealed class UserCreateDTO
+public sealed record UserCreateDTO
 {
-    private string? _name;
+    private string name = string.Empty;
 
-    [Required(ErrorMessage = "Full Name is Required.")]
-    [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Full Name should have at least 5 Characters and at most 64 Characters.")]
     public required string Name
     {
-        get => _name ?? string.Empty;
-        set => _name = value?.Trim();
+        get => name;
+        init => name = value.Trim();
     }
 
-    private string? _email;
+    private string email = string.Empty;
 
-    [Required(ErrorMessage = "Email is Required.")]
-    [EmailAddress(ErrorMessage = "Entered value is not a valid Email.")]
     public required string Email
     {
-        get => _email ?? string.Empty;
-        set => _email = value?.Trim();
+        get => email;
+        init => email = value.Trim();
     }
 
-    private string? _username;
+    private string username = string.Empty;
 
-    [Required(ErrorMessage = "Username is Required.")]
-    [StringLength(32, MinimumLength = 5, ErrorMessage = "Your Username should have at least 5 Characters and at most 32 Characters.")]
     public required string Username
     {
-        get => _username ?? string.Empty;
-        set => _username = value?.Trim();
+        get => username;
+        init => username = value.Trim();
     }
 
-    private string? _password;
+    private string password = string.Empty;
 
-    [Required(ErrorMessage = "Password is Required.")]
-    [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Password should have at least 5 Characters and at most 64 Characters.")]
     public required string Password
     {
-        get => _password ?? string.Empty;
-        set => _password = value?.Trim();
+        get => password;
+        init => password = value.Trim();
     }
 
-    private string? _confirmPassword;
+    private string confirmPassword = string.Empty;
 
-    [Required(ErrorMessage = "Confirm Password is Required.")]
-    [StringLength(64, MinimumLength = 5, ErrorMessage = "Your Confirm Password should have at least 5 Characters and at most 64 Characters.")]
-    [Compare("Password", ErrorMessage = "Your Password is not equal to your Confirm Password.")]
     public required string ConfirmPassword
     {
-        get => _confirmPassword ?? string.Empty;
-        set => _confirmPassword = value?.Trim();
+        get => confirmPassword;
+        init => confirmPassword = value.Trim();
     }
 }
 

@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -10,7 +9,6 @@ using System.Security.Claims;
 using URLShortener.Application.DTOs.EntityDTOs.User;
 using URLShortener.Application.DTOs.Settings;
 using URLShortener.Application.Interfaces.Services.User;
-using URLShortener.Application.Models;
 using URLShortenerAPI.Utility;
 
 namespace URLShortenerAPI.Controllers;
@@ -22,9 +20,6 @@ public sealed class AuthController(
     IValidator<ChangePasswordRequest> changePasswordValidator,
     IAntiforgery antiForgery,
     IValidator<UserCreateDTO> userValidator,
-    UserManager<AppIdentityUser> userManager,
-    SignInManager<AppIdentityUser> signInManager,
-    ITokenService tokenService,
     IValidator<CheckResetEmailCodeRequest> checkEmailCodeValidator,
     IOptions<AuthenticationCookieSettings> authenticationCookieSettings,
     IOptions<AntiforgerySettings> antiforgerySettings,
@@ -37,13 +32,10 @@ public sealed class AuthController(
     private readonly IValidator<UserLoginDTO> _userLoginValidator = loginValidator;
     private readonly IValidator<ChangeEmailRequest> _emailValidator = emailValidator;
     private readonly IValidator<ChangePasswordRequest> _changePasswordValidator = changePasswordValidator;
-    private readonly IValidator<CheckResetEmailCodeRequest> _checkEmailCodeValidator = checkEmailCodeValidator; // TODO: Implement This
-    private readonly IValidator<VerifyCaptchaRequest> _verifyCaptchaValidator = verifyCaptchaValidator; // TODO: Implement This
-    private readonly IValidator<CheckResetPasswordCodeRequest> _checkResetPasswordCodeValidator = checkResetPasswordCodeValidator; // TODO: Implement This
+    private readonly IValidator<CheckResetEmailCodeRequest> _checkEmailCodeValidator = checkEmailCodeValidator;
+    private readonly IValidator<VerifyCaptchaRequest> _verifyCaptchaValidator = verifyCaptchaValidator;
+    private readonly IValidator<CheckResetPasswordCodeRequest> _checkResetPasswordCodeValidator = checkResetPasswordCodeValidator;
     private readonly IAntiforgery _antiForgery = antiForgery;
-    private readonly UserManager<AppIdentityUser> _userManager = userManager;
-    private readonly SignInManager<AppIdentityUser> _signInManager = signInManager;
-    private readonly ITokenService _tokenService = tokenService;
     private readonly AuthenticationCookieSettings _authenticationCookieSettings = authenticationCookieSettings.Value;
     private readonly AntiforgerySettings _antiforgerySettings = antiforgerySettings.Value;
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;

@@ -7,37 +7,34 @@ namespace URLShortener.Application.DTOs.ZibalDTOs;
 /// </summary>
 public sealed record ZibalCreateTransactionRequest
 {
-    private string _merchant = string.Empty;
+    private string merchant = string.Empty;
     /// <summary>
     /// provides access to the merchant. if this is a test, returns "zibal" else the merchant.
     /// </summary>
-    public required string Merchant { get => IsTest ? "zibal" : _merchant; set => _merchant = value.Trim(); }
+    public required string Merchant { get => IsTest ? "zibal" : merchant; set => merchant = value.Trim(); }
 
     /// <summary>
     /// is this transaction a test one?
     /// </summary>
     [JsonIgnore]
-    public bool IsTest { get; set; } = false;
+    public bool IsTest { get; init; } = false;
 
     /// <summary>
     /// Amount to pay (in Rials)
     /// </summary>
-    public required long Amount { get; set; }
+    public required long Amount { get; init; }
 
-
-    private string _callbackURL = string.Empty;
+    private string callbackURL = string.Empty;
     /// <summary>
     /// The Address that will receive Zibal's response.
     /// </summary>
-    public required string CallbackURL { get => _callbackURL; set => _callbackURL = value.Trim(); }
+    public required string CallbackURL { get => callbackURL; set => callbackURL = value.Trim(); }
 
-
-    private string? _description;
+    private string? description;
     /// <summary>
     /// Description regarding the Purchase. (Optional)
     /// </summary>
-    public string? Description { get => _description; set => _description = value?.Trim(); }
-
+    public string? Description { get => description; init => description = value?.Trim(); }
 
     private string? orderID;
     /// <summary>
@@ -45,36 +42,33 @@ public sealed record ZibalCreateTransactionRequest
     /// </summary>
     public string? OrderID { get => orderID; set => orderID = value?.Trim(); }
 
-
     private string? mobile;
     /// <summary>
     /// If This Value if set, the user will see their registered card numbers in Zibal. (Optional)
     /// </summary>
-    public string? Mobile { get => mobile; set => mobile = value?.Trim(); }
+    public string? Mobile { get => mobile; init => mobile = value?.Trim(); }
 
-
-    private List<string>? _allowedCards;
+    private List<string>? allowedCards;
     /// <summary>
     /// If you want to limit the user to pay only from certain card numbers, you can specify them here, each card in a separate string. (Optional)
     /// </summary>
-    public List<string>? AllowedCards { get => _allowedCards; set => _allowedCards = value?.Select(x => x.Trim()).ToList(); }
-
+    public List<string>? AllowedCards { get => allowedCards; init => allowedCards = value?.Select(x => x.Trim()).ToList(); }
 
     private string? ledgerID;
     /// <summary>
     /// LedgerID associated with this transaction. if the transaction is successful, the <see cref="Amount"/> will be added to this ledger. (Optional)
     /// </summary>
-    public string? LedgerID { get => ledgerID; set => ledgerID = value?.Trim(); }
+    public string? LedgerID { get => ledgerID; init => ledgerID = value?.Trim(); }
 
+    private string? nationalCode;
     /// <summary>
     /// The 10 digit long NationalCode, if set, the national code of the owner of the card used in payment is compared with this national code. 
     /// if the match fails, the transaction will be aborted. (Optional)
     /// </summary>
-    public string? NationalCode { get; set; }
+    public string? NationalCode { get => nationalCode; init => nationalCode = value?.Trim(); }
 
     /// <summary>
     /// Whether the card used in payment and the phone number should belong to the same person. (Optional)
     /// </summary>
-    public bool CheckMobileWithCard { get; set; } = false;
-
+    public bool CheckMobileWithCard { get; init; } = false;
 }

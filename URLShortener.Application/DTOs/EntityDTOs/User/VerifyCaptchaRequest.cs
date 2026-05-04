@@ -2,5 +2,11 @@
 
 public sealed record VerifyCaptchaRequest
 {
-    public string Token { get; init; } = string.Empty;
+    private string token = string.Empty;
+
+    public string Token
+    {
+        get => token;
+        init => token = value.Trim();
+    }
 }

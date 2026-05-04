@@ -2,12 +2,25 @@
 
 namespace URLShortener.Application.DTOs.EntityDTOs.Category;
 
-public sealed class CategoryDTO
+public sealed record CategoryDTO
 {
-    public int ID { get; set; }
-    public required string Title { get; set; }
-    public string? Description { get; set; }
+    public int ID { get; init; }
 
-    public int UserID { get; set; }
-    public List<URLSummaryDTO>? URLs { get; set; }
+    private string _title = string.Empty;
+    public required string Title
+    {
+        get => _title;
+        init
+        {
+            _title = value.Trim();
+        }
+    }
+    private string? description;
+    public string? Description
+    {
+        get => description;
+        init => description = value?.Trim();
+    }
+    public int UserID { get; init; }
+    public List<URLSummaryDTO>? URLs { get; init; }
 }

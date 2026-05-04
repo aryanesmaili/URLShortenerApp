@@ -21,9 +21,9 @@ public sealed class FinancialController(IPaymentService paymentService, IMapper 
 {
     private readonly IPaymentService _paymentService = paymentService;
     private readonly IMapper _mapper = mapper;
-    private readonly IValidator<GetPagedItemsRequest> _getPaymentsRequestValidator = getPaymentsRequestValidator; // TODO: Implement This
-    private readonly IValidator<PaymentCreateRequest> _paymentCreateRequestValidator = paymentCreateRequestValidator; // TODO: Implement This
-    private readonly IValidator<GetPaymentStatusRequest> _getPaymentStatusValidator = getPaymentStatusValidator; // TODO: Implement This
+    private readonly IValidator<GetPagedItemsRequest> _getPaymentsRequestValidator = getPaymentsRequestValidator;
+    private readonly IValidator<PaymentCreateRequest> _paymentCreateRequestValidator = paymentCreateRequestValidator;
+    private readonly IValidator<GetPaymentStatusRequest> _getPaymentStatusValidator = getPaymentStatusValidator;
 
     [Authorize(Policy = "AllUsers")]
     [HttpGet("Balance")]
@@ -85,7 +85,11 @@ public sealed class FinancialController(IPaymentService paymentService, IMapper 
     {
         await _getPaymentStatusValidator.ValidateAndThrowAsync(reqInfo);
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        PaymentTerminals paymentTerminal = Enum.Parse<PaymentTerminals>(reqInfo.Terminal);
+        if (!Enum.TryParse<PaymentTerminals>(reqInfo.Terminal, out var paymentTerminal))
+        {
+            var failureResponse = CreateResult.Failure(ErrorType.Argument, "Invalid payment terminal.");
+            return BadRequest(failureResponse);
+        }
         PaymentStatusRequest request = new() { TrackID = reqInfo.TrackID };
         var result = await _paymentService.CheckTransactionStatusAsync(paymentTerminal, request, userId);
         var response = CreateResult.Success(result);
