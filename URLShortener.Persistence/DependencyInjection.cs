@@ -11,10 +11,10 @@ using URLShortener.Application.Features.Finance.Interfaces.Repositories;
 using URLShortener.Application.Features.URLs.Interfaces.Repositories;
 using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Persistence.Repositories;
+using URLShortener.Persistence.Repositories.Categories;
+using URLShortener.Persistence.Repositories.Finance;
 using URLShortener.Persistence.Repositories.URLs;
 using URLShortener.Persistence.Repositories.Users;
-using URLShortener.Persistence.Repositories.Finance;
-using URLShortener.Persistence.Repositories.Categories;
 using URLShortenerAPI.Data;
 
 namespace URLShortener.Persistence;

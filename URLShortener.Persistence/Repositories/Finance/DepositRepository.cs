@@ -1,8 +1,7 @@
-using System.Linq.Expressions;
 using URLShortener.Application.Common.Interfaces.Repositories;
 using URLShortener.Application.Features.Finance.Interfaces.Repositories;
-using URLShortener.Domain.Entities.Finance;
 using URLShortener.Common.Responses;
+using URLShortener.Domain.Entities.Finance;
 using URLShortenerAPI.Data;
 
 namespace URLShortener.Persistence.Repositories.Finance;
