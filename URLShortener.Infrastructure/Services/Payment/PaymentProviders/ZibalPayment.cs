@@ -1,12 +1,12 @@
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.DTOs.ZibalDTOs;
+using URLShortener.Application.Configuration;
+using URLShortener.Application.Features.Finance.DTOs.Zibal;
 using URLShortener.Domain.Enums;
 using URLShortener.Domain.Interfaces;
 using URLShortener.Domain.Interfaces.Payment;
-using URLShortener.Domain.ValueObjects.Payment;
+using URLShortener.Domain.Services.Payment.Contracts;
 
 namespace URLShortener.Infrastructure.Services.Payment.PaymentProviders;
 

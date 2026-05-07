@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using URLShortener.Application.Models;
+using URLShortener.Application.Common.Models.Identity;
 using URLShortener.Domain.Entities.Analytics;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortener.Domain.Entities.Finance;

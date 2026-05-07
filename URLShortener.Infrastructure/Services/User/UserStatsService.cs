@@ -2,11 +2,11 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
-using URLShortener.Application.DTOs.EntityDTOs.User;
-using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Services.User;
-using URLShortener.Application.Repositories;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Features.URLs.DTOs;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
+using URLShortener.Application.Features.Users.DTOs;
+using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortenerAPI.Data;
 
 namespace URLShortener.Infrastructure.Services.User;

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Configuration;
 using URLShortener.Domain.Entities.ClickInfo;
 
 namespace URLShortener.Infrastructure.Services.Infra;

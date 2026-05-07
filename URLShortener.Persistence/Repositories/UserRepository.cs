@@ -1,4 +1,4 @@
-﻿using URLShortener.Application.Repositories;
+﻿using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Domain.Entities.User;
 using URLShortenerAPI.Data;
 

@@ -1,8 +1,8 @@
 using IPinfo;
 using IPinfo.Models;
 using Microsoft.Extensions.Options;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Configuration;
 
 namespace URLShortener.Infrastructure.Services.Infra;
 

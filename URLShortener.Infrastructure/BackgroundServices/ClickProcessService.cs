@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using URLShortener.Application.DTOs;
-using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
-using URLShortener.Application.Repositories;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Common.Models;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortenerAPI.Data;
 

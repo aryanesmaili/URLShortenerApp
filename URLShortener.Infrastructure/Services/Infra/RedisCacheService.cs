@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using URLShortener.Application.Interfaces.Infrastructure.External;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
 
 namespace URLShortener.Infrastructure.Services.Infra;
 

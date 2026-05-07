@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using URLShortener.Application.DTOs;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Interfaces.Services.URL;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Application.Common.Exceptions;
+using URLShortener.Application.Common.Models;
+using URLShortener.Application.Configuration;
+using URLShortener.Application.Features.URLs.DTOs;
+using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortenerAPI.Utility;
 
 namespace URLShortenerAPI.Controllers;

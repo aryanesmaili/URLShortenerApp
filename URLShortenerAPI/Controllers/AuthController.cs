@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using SharedDataModels.Responses;
 using System.Security.Claims;
-using URLShortener.Application.DTOs.EntityDTOs.User;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Interfaces.Services.User;
+using URLShortener.Application.Configuration;
+using URLShortener.Application.Features.Users.DTOs;
+using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortenerAPI.Utility;
 
 namespace URLShortenerAPI.Controllers;

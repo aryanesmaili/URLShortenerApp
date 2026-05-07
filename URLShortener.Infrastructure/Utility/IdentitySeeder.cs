@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Models;
+using URLShortener.Application.Common.Models.Identity;
+using URLShortener.Application.Configuration;
 
 namespace URLShortener.Infrastructure.Utility;
 

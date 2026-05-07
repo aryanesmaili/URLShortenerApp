@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
-using URLShortener.Application.DTOs.Settings;
+using URLShortener.Application.Configuration;
 
 namespace URLShortenerAPI;
 

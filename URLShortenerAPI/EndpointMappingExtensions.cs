@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Utility.SignalR;
+using URLShortener.Application.Common.SignalR;
+using URLShortener.Application.Configuration;
 
 namespace URLShortenerAPI;
 

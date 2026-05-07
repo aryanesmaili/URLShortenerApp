@@ -1,7 +1,8 @@
-﻿using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Services.URL;
-using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility.Exceptions;
+﻿using URLShortener.Application.Common.Exceptions;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Common.Interfaces.Repositories;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
+using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Domain.Entities.ServiceTariffs;
 using URLShortener.Domain.Enums;
 

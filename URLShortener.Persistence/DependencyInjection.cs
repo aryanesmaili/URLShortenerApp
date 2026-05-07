@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Models;
-using URLShortener.Application.Repositories;
+using URLShortener.Application.Common.Interfaces.Repositories;
+using URLShortener.Application.Common.Models.Identity;
+using URLShortener.Application.Configuration;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
+using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Persistence.Repositories;
 using URLShortenerAPI.Data;
 

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
-using URLShortener.Application.DTOs.EntityDTOs;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
-using URLShortener.Application.Interfaces.Services.URL;
+using URLShortener.Application.Features.Paged.DTOs;
+using URLShortener.Application.Features.URLs.DTOs;
+using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Common.Responses;
 using URLShortenerAPI.Utility;
 

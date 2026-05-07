@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using URLShortener.Application.Interfaces.Services.URL;
+using URLShortener.Application.Features.URLs.Interfaces.Services;
 
 namespace URLShortener.Infrastructure.Services.URL;
 

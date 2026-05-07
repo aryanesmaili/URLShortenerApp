@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
-using URLShortener.Application.DTOs.Settings;
-using URLShortener.Application.Interfaces.Infrastructure.External;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Configuration;
 
 namespace URLShortener.Infrastructure.Services.User;
 

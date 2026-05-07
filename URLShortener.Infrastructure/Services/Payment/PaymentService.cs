@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using URLShortener.Application.DTOs.EntityDTOs.Finance;
-using URLShortener.Application.Interfaces.Services.Payment;
-using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Application.Common.Exceptions;
+using URLShortener.Application.Features.Finance.DTOs;
+using URLShortener.Application.Features.Finance.Interfaces.Repositories;
+using URLShortener.Application.Features.Finance.Interfaces.Services;
 using URLShortener.Common.Responses;
 using URLShortener.Domain.Entities.Finance;
 using URLShortener.Domain.Enums;

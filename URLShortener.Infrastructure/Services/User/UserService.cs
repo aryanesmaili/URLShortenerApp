@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using URLShortener.Application.DTOs.EntityDTOs.User;
-using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Services.User;
-using URLShortener.Application.Models;
-using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Application.Common.Exceptions;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Common.Interfaces.Repositories;
+using URLShortener.Application.Common.Models.Identity;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
+using URLShortener.Application.Features.Users.DTOs;
+using URLShortener.Application.Features.Users.Interfaces.Repositories;
+using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortener.Domain.Entities.User;
 
 namespace URLShortener.Infrastructure.Services.User;

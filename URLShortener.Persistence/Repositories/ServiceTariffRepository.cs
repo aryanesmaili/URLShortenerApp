@@ -1,4 +1,4 @@
-﻿using URLShortener.Application.Repositories;
+﻿using URLShortener.Application.Features.URLs.Interfaces.Repositories;
 using URLShortener.Domain.Entities.ServiceTariffs;
 using URLShortenerAPI.Data;
 

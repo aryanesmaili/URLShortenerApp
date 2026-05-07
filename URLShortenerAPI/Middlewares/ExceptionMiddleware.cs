@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using SharedDataModels.Responses;
 using System.Net;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Application.Common.Exceptions;
 using URLShortenerAPI.Utility;
 
 namespace URLShortenerAPI.Middlewares;

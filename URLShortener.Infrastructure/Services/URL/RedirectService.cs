@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using URLShortener.Application.DTOs;
-using URLShortener.Application.DTOs.EntityDTOs.URL;
-using URLShortener.Application.Interfaces.Infrastructure.External;
-using URLShortener.Application.Interfaces.Services.URL;
-using URLShortener.Application.Repositories;
-using URLShortener.Application.Utility.Exceptions;
+using URLShortener.Application.Common.Exceptions;
+using URLShortener.Application.Common.Interfaces.Infrastructure;
+using URLShortener.Application.Common.Models;
+using URLShortener.Application.Features.URLs.DTOs;
+using URLShortener.Application.Features.URLs.Interfaces.Repositories;
+using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Domain.Entities.URL;
 
 namespace URLShortener.Infrastructure.Services.URL;
