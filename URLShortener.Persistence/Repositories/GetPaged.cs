@@ -38,7 +38,7 @@ public sealed class GetPaged<T>(AppDbContext dbContext) : IGetPaged<T> where T :
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-        return new()
+        return new PagedResult<T>
         {
             Items = items,
             TotalPages = totalPages,

@@ -6,9 +6,15 @@ using Microsoft.Extensions.Options;
 using URLShortener.Application.Common.Interfaces.Repositories;
 using URLShortener.Application.Common.Models.Identity;
 using URLShortener.Application.Configuration;
+using URLShortener.Application.Features.Categories.Interfaces.Repositories;
+using URLShortener.Application.Features.Finance.Interfaces.Repositories;
 using URLShortener.Application.Features.URLs.Interfaces.Repositories;
 using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Persistence.Repositories;
+using URLShortener.Persistence.Repositories.URLs;
+using URLShortener.Persistence.Repositories.Users;
+using URLShortener.Persistence.Repositories.Finance;
+using URLShortener.Persistence.Repositories.Categories;
 using URLShortenerAPI.Data;
 
 namespace URLShortener.Persistence;
@@ -33,10 +39,29 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        // Register Repositories and Unit of Work to DI container
+        // Register Repositories and paged helper to DI container
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped(typeof(IGetPaged<>), typeof(GetPaged<>));
+
+        // Register specific repositories
         services.AddScoped<IServiceTariffRepository, ServiceTariffRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        // URL related repositories
+        services.AddScoped<IURLRepository, URLRepository>();
+        services.AddScoped<IURLAnalyticsRepository, URLAnalyticsRepository>();
+        services.AddScoped<IClickInfoRepository, ClickInfoRepository>();
+        services.AddScoped<IDeviceInfoRepository, DeviceInfoRepository>();
+        services.AddScoped<ILocationInfoRepository, LocationInfoRepository>();
+        services.AddScoped<IURLCategoryRepository, URLCategoryRepository>();
+
+        // User related repositories
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        // Finance related repositories
+        services.AddScoped<IDepositRepository, DepositRepository>();
+        services.AddScoped<IFinancialRecordRepository, FinancialRecordRepository>();
+        services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
         return services;
     }
