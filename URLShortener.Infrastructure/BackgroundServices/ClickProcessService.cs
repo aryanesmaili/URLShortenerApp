@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using URLShortener.Application.DTOs;
 using URLShortener.Application.Interfaces.Infrastructure.External;
 using URLShortener.Application.Interfaces.Infrastructure.RequestProcessing;
+using URLShortener.Application.Repositories;
 using URLShortener.Domain.Entities.ClickInfo;
 using URLShortenerAPI.Data;
 
@@ -39,7 +40,8 @@ public sealed class ClickProcessService : BackgroundService
             using (var scope = _serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await ProcessClick(itemToProcess!, dbContext);
+                var clickRepo = scope.ServiceProvider.GetRequiredService<IClickInfoRepository>();
+                await ProcessClick(itemToProcess!, dbContext, clickRepo);
             }
 
             // to process 20 items per minute to save hardware resources.
@@ -52,7 +54,7 @@ public sealed class ClickProcessService : BackgroundService
     /// </summary>
     /// <param name="requestInfo">Information about the click.</param>
     /// <returns></returns>
-    public async Task ProcessClick(IncomingRequestMetadata requestInfo, AppDbContext context)
+    public async Task ProcessClick(IncomingRequestMetadata requestInfo, AppDbContext context, IClickInfoRepository clickInfoRepository)
     {
         using var transaction = await context.Database.BeginTransactionAsync();
         try
@@ -61,7 +63,8 @@ public sealed class ClickProcessService : BackgroundService
             {
                 context.Attach(requestInfo.URL!); // to avoid postgreSQL from throwing PK error.
             }
-
+            var userAgentTask = AnalyzeUserAgent(requestInfo.UserAgent);
+            var ipAddressTask = AnalyzeIPAddress(requestInfo.IPAddress);
             // create a new processed record 
             ClickInfoModel clickInfo = new()
             {
@@ -71,12 +74,15 @@ public sealed class ClickProcessService : BackgroundService
                 ClickedAt = DateTime.UtcNow,
 
             };
-            clickInfo.DeviceInfo = await AnalyzeUserAgent(requestInfo.UserAgent);
-            clickInfo.PossibleLocation = await AnalyzeIPAddress(requestInfo.IPAddress);
+
+            await Task.WhenAll(userAgentTask, ipAddressTask);
+            clickInfo.DeviceInfo = await userAgentTask;
+            clickInfo.PossibleLocation = await ipAddressTask;
+
             requestInfo.URL!.ClickCount++;
 
             // Add click info, location, and device info to the database.
-            await context.Clicks.AddAsync(clickInfo);
+            clickInfoRepository.Add(clickInfo);
 
             // Save everything to database
             await context.SaveChangesAsync();
