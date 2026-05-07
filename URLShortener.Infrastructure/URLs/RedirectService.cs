@@ -8,7 +8,7 @@ using URLShortener.Application.Features.URLs.Interfaces.Repositories;
 using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Domain.Entities.URL;
 
-namespace URLShortener.Infrastructure.Services.URL;
+namespace URLShortener.Infrastructure.URLs;
 
 public sealed class RedirectService : IRedirectService
 {

@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using URLShortener.Application.Common.Interfaces.Infrastructure;
 
-namespace URLShortener.Infrastructure.Services.Infra;
+namespace URLShortener.Infrastructure.ExternalServices.Caching;
 
 public sealed class RedisCacheService : ICacheService
 {

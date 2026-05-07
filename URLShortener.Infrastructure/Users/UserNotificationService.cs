@@ -2,7 +2,7 @@
 using URLShortener.Application.Common.SignalR;
 using URLShortener.Common.SignalR;
 
-namespace URLShortener.Infrastructure.Services.User;
+namespace URLShortener.Infrastructure.Users;
 
 public sealed class UserNotificationService
 {

@@ -12,7 +12,7 @@ using URLShortener.Domain.Interfaces;
 using URLShortener.Domain.Interfaces.Payment;
 using URLShortener.Domain.ValueObjects.Payment;
 
-namespace URLShortener.Infrastructure.Services.Payment;
+namespace URLShortener.Infrastructure.Finance;
 
 public sealed class PaymentService : IPaymentService
 {

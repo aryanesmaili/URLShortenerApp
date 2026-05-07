@@ -16,9 +16,9 @@ using URLShortener.Domain.Entities.URL;
 using URLShortener.Domain.Entities.URLCategory;
 using URLShortener.Domain.Entities.User;
 using URLShortener.Domain.Enums;
-using URLShortener.Infrastructure.Services.User;
+using URLShortener.Infrastructure.Users;
 
-namespace URLShortener.Infrastructure.Services.URL;
+namespace URLShortener.Infrastructure.URLs;
 
 public sealed class URLService : IURLService
 {

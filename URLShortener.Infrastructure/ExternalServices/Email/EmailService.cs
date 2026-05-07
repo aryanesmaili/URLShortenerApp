@@ -4,7 +4,7 @@ using System.Net.Mail;
 using URLShortener.Application.Common.Interfaces.Infrastructure;
 using URLShortener.Application.Configuration;
 
-namespace URLShortener.Infrastructure.Services.User;
+namespace URLShortener.Infrastructure.ExternalServices.Email;
 
 public sealed class EmailService : IEmailService
 {

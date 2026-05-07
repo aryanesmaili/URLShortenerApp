@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using URLShortener.Application.Common.Interfaces.Infrastructure;
 using URLShortener.Application.Configuration;
 
-namespace URLShortener.Infrastructure.Services.Infra;
+namespace URLShortener.Infrastructure.ExternalServices.ExternalAPIs;
 
 public sealed class IPInfoService : IIPInfoService
 {

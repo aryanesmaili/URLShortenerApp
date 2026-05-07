@@ -5,7 +5,7 @@ using URLShortener.Application.Common.Interfaces.Infrastructure;
 using URLShortener.Application.Configuration;
 using URLShortener.Domain.Entities.ClickInfo;
 
-namespace URLShortener.Infrastructure.Services.Infra;
+namespace URLShortener.Infrastructure.ExternalServices.ExternalAPIs;
 
 public sealed class UserAgentService : IUserAgentService
 {

@@ -2,7 +2,7 @@
 using System.Text;
 using URLShortener.Application.Features.URLs.Interfaces.Services;
 
-namespace URLShortener.Infrastructure.Services.URL;
+namespace URLShortener.Infrastructure.URLs;
 
 public sealed class ShortenerService : IShortenerService
 {

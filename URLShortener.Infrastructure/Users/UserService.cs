@@ -10,7 +10,7 @@ using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortener.Domain.Entities.User;
 
-namespace URLShortener.Infrastructure.Services.User;
+namespace URLShortener.Infrastructure.Users;
 
 public sealed class UserService(
                            IMapper mapper,

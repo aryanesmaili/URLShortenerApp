@@ -6,9 +6,9 @@ using URLShortener.Application.Features.Finance.DTOs.Zibal;
 using URLShortener.Domain.Enums;
 using URLShortener.Domain.Interfaces;
 using URLShortener.Domain.Interfaces.Payment;
-using URLShortener.Domain.Services.Payment.Contracts;
+using URLShortener.Domain.ValueObjects.Payment;
 
-namespace URLShortener.Infrastructure.Services.Payment.PaymentProviders;
+namespace URLShortener.Infrastructure.Finance.PaymentProviders;
 
 public sealed class ZibalPayment : IPaymentMethod,
     ICreateTransaction,

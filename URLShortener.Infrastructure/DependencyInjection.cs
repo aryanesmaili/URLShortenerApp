@@ -10,12 +10,15 @@ using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortener.Domain.Enums;
 using URLShortener.Domain.Interfaces;
+using URLShortener.Infrastructure.Authentication;
 using URLShortener.Infrastructure.BackgroundServices;
-using URLShortener.Infrastructure.Services.Infra;
-using URLShortener.Infrastructure.Services.Payment;
-using URLShortener.Infrastructure.Services.Payment.PaymentProviders;
-using URLShortener.Infrastructure.Services.URL;
-using URLShortener.Infrastructure.Services.User;
+using URLShortener.Infrastructure.ExternalServices.Caching;
+using URLShortener.Infrastructure.ExternalServices.Email;
+using URLShortener.Infrastructure.ExternalServices.ExternalAPIs;
+using URLShortener.Infrastructure.Finance;
+using URLShortener.Infrastructure.Finance.PaymentProviders;
+using URLShortener.Infrastructure.URLs;
+using URLShortener.Infrastructure.Users;
 
 namespace URLShortener.Infrastructure;
 

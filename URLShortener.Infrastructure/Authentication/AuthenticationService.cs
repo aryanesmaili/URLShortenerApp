@@ -17,7 +17,7 @@ using URLShortener.Application.Features.Users.Interfaces.Repositories;
 using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortener.Domain.Entities.User;
 
-namespace URLShortener.Infrastructure.Services.User;
+namespace URLShortener.Infrastructure.Authentication;
 
 public sealed class AuthenticationService(
     IMapper mapper,

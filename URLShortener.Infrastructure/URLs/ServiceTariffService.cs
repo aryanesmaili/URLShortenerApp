@@ -6,7 +6,7 @@ using URLShortener.Application.Features.URLs.Interfaces.Services;
 using URLShortener.Domain.Entities.ServiceTariffs;
 using URLShortener.Domain.Enums;
 
-namespace URLShortener.Infrastructure.Services.URL;
+namespace URLShortener.Infrastructure.URLs;
 
 public sealed class ServiceTariffService : IServiceTariffService
 {

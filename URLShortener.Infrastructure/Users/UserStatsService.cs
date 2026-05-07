@@ -9,7 +9,7 @@ using URLShortener.Application.Features.Users.DTOs;
 using URLShortener.Application.Features.Users.Interfaces.Services;
 using URLShortenerAPI.Data;
 
-namespace URLShortener.Infrastructure.Services.User;
+namespace URLShortener.Infrastructure.Users;
 
 /// <summary>
 /// Service for retrieving and calculating user statistics including URL counts, click analytics, and dashboard data.
